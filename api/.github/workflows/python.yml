@@ -1,0 +1,42 @@
+name: Python Backend CI
+
+on:
+  push:
+    paths:
+      - 'api/**'
+  pull_request:
+    paths:
+      - 'api/**'
+
+jobs:
+  lint-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r api/requirements.txt
+          pip install black flake8 isort mypy pytest
+
+      - name: Run black (formatting)
+        run: black --check api/
+
+      - name: Run isort (import sorting)
+        run: isort api/ --check-only
+
+      - name: Run flake8 (lint)
+        run: flake8 api/
+
+      - name: Run mypy (typing)
+        run: mypy api/
+
+      - name: Run pytest (tests)
+        run: pytest api/
