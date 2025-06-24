@@ -5,7 +5,8 @@ from sqlalchemy.orm import Session
 from uuid import UUID
 import os
 
-from api import models, database
+from api import models
+from api.database import get_db
 
 # JWT nastavení
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret")
@@ -18,7 +19,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 # Funkce pro získání aktuálního uživatele
 def get_current_user(
     token: str = Depends(oauth2_scheme),
-    db: Session = Depends(database.SessionLocal),
+    db: Session = Depends(get_db),
 ) -> models.User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
