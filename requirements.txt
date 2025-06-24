@@ -13,7 +13,7 @@
     python-jose[cryptography]
 
 # Validation / Serialization
-    pydantic
+    pydantic[email]
 
 # Dev Tools
     black

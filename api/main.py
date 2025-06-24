@@ -22,9 +22,9 @@ app.add_middleware(
 )
 
 # Import routerů
-# from api.routers import auth, car, seat, invitation
+from api.routers import auth, car, seat, invitation
 
-# app.include_router(auth.router, prefix="/auth", tags=["auth"])
+app.include_router(auth.router, prefix="/auth", tags=["auth"])
 # app.include_router(car.router, prefix="/cars", tags=["cars"])
 # app.include_router(seat.router, prefix="/seats", tags=["seats"])
 # app.include_router(invitation.router, prefix="/invitations", tags=["invitations"])

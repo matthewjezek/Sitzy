@@ -7,6 +7,7 @@ from uuid import UUID
 
 from api import schemas, models, database
 from api.schemas import UserCreate, UserLogin, UserOut
+from api.deps import get_current_user
 
 import os
 
@@ -59,3 +60,9 @@ def login(user_in: UserLogin, db: Session = Depends(database.SessionLocal)):
 
     token = create_access_token({"sub": str(user.id)})
     return {"access_token": token, "token_type": "bearer"}
+
+
+# === Získání aktuálního uživatele ===
+@router.get("/me", response_model=UserOut)
+def read_me(current_user: models.User = Depends(get_current_user)):
+    return current_user
