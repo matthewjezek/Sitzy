@@ -8,6 +8,7 @@ from uuid import UUID
 from api import schemas, models, database
 from api.schemas import UserCreate, UserLogin, UserOut
 from api.deps import get_current_user
+from api.database import get_db
 
 import os
 
@@ -38,7 +39,7 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
 
 # === Registrace ===
 @router.post("/register", response_model=UserOut)
-def register(user_in: UserCreate, db: Session = Depends(database.SessionLocal)):
+def register(user_in: UserCreate, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.email == user_in.email).first()
     if user:
         raise HTTPException(status_code=400, detail="Email už je zaregistrovaný")

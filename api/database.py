@@ -19,3 +19,11 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Deklarativní základna pro modely
 Base = declarative_base()
+
+# Funkce pro získání databázové relace
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
