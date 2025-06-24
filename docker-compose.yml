@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_DB: sitzy
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  # volitelně: můžeš později přidat i api:
+  # api:
+  #   build: ./api
+  #   ports:
+  #     - "8000:8000"
+  #   depends_on:
+  #     - db
+
+volumes:
+  pgdata:
