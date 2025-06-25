@@ -148,3 +148,9 @@ class CarFullOut(CarOut):
             ],
             seats=[SeatOut.from_orm_with_labels(seat, lang) for seat in car.seats],
         )
+
+
+class DashboardOut(BaseModel):
+    owned_car: CarOut | None
+    passenger_cars: list[CarOut]
+    pending_invitations: list[InvitationOut]
