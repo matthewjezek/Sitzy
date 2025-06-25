@@ -30,8 +30,8 @@ MESSAGES = {
         "en": "An invitation for this email already exists."
     },
     "invitation_not_found": {
-    "cs": "Pozvánka nebyla nalezena.",
-    "en": "Invitation not found."
+        "cs": "Pozvánka nebyla nalezena.",
+        "en": "Invitation not found."
     },
     "invitation_already_responded": {
         "cs": "Pozvánka již byla vyřízena.",
