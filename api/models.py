@@ -26,6 +26,10 @@ class User(Base):
     car: Mapped["Car"] = relationship(
         back_populates="owner", uselist=False, cascade="all, delete"
     )
+    passenger_entries: Mapped[list["Passenger"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
+    seat: Mapped["Seat | None"] = relationship(back_populates="user", uselist=False)
 
 
 class Car(Base):
@@ -48,6 +52,12 @@ class Car(Base):
 
     owner: Mapped["User"] = relationship(back_populates="car")
     invitations: Mapped[list["Invitation"]] = relationship(
+        back_populates="car", cascade="all, delete"
+    )
+    passengers: Mapped[list["Passenger"]] = relationship(
+        back_populates="car", cascade="all, delete-orphan"
+    )
+    seats: Mapped[list["Seat"]] = relationship(
         back_populates="car", cascade="all, delete"
     )
 
@@ -76,3 +86,32 @@ class Invitation(Base):
     )
 
     car: Mapped["Car"] = relationship(back_populates="invitations")
+
+
+class Passenger(Base):
+    __tablename__ = "passengers"
+
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("users.id"), primary_key=True
+    )
+    car_id: Mapped[uuid.UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("cars.id"), primary_key=True
+    )
+
+    user: Mapped["User"] = relationship(back_populates="passenger_entries")
+    car: Mapped["Car"] = relationship(back_populates="passengers")
+
+
+class Seat(Base):
+    __tablename__ = "seats"
+
+    car_id: Mapped[uuid.UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("cars.id"), primary_key=True
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("users.id"), primary_key=True
+    )
+    position: Mapped[int] = mapped_column(nullable=False)
+
+    car: Mapped["Car"] = relationship(back_populates="seats")
+    user: Mapped["User"] = relationship(back_populates="seat")
