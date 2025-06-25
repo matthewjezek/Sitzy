@@ -1,10 +1,11 @@
+from typing import Generic, Type, TypeVar
+
 from pydantic import BaseModel
 
+T = TypeVar("T", bound=BaseModel)
 
-class BaseModelWithLabels(BaseModel):
+
+class BaseModelWithLabels(BaseModel, Generic[T]):
     @classmethod
-    def from_orm_with_labels(cls, obj, lang: str = "cs"):
-        """Defaultní fallback – přebití možná v konkrétních modelech.
-        ---
-        Default fallback – can be overridden in specific models."""
+    def from_orm_with_labels(cls: Type[T], obj: object, lang: str = "cs") -> T:
         return cls.model_validate(obj)
