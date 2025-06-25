@@ -34,7 +34,7 @@ class Car(Base):
         UUID(as_uuid=True), ForeignKey("users.id"), unique=True, nullable=False
     )
     name = Column(String, nullable=False)
-    layout = Column(SqlEnum(CarLayout, name="car_layouts"), nullable=False)
+    layout: CarLayout = Column(SqlEnum(CarLayout, name="car_layouts"), nullable=False)
     date = Column(DateTime(timezone=True), nullable=False)
     created_at = Column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
@@ -55,7 +55,7 @@ class Invitation(Base):
     )
     invited_email = Column(String, index=True, nullable=False)
     token = Column(String, unique=True, nullable=False)
-    status = Column(
+    status: InvitationStatus = Column(
         SqlEnum(InvitationStatus, name="invitation_statuses"),
         nullable=False,
         default=InvitationStatus.PENDING,
