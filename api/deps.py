@@ -7,6 +7,7 @@ from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
 from api.database import get_db
+from api.models import User
 from api.translations.localization_utils import get_message
 
 # JWT nastavení
@@ -22,7 +23,7 @@ def get_current_user(
     request: Request,
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db),
-):
+) -> User:
     from api import models  # Import uvnitř funkce kvůli vyhnutí se kruhovým importům
 
     credentials_exception = HTTPException(
