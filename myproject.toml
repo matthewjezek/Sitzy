@@ -23,6 +23,10 @@ no_implicit_optional = true
 [tool.pytest.ini_options]
 addopts = "--strict-markers"
 testpaths = ["api/tests"]
+markers = [
+    "happy: tests for happy path scenarios",
+    "edge: tests for edge cases"
+]
 
 [build-system]
 requires = ["setuptools>=61.0"]
