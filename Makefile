@@ -14,6 +14,8 @@ env:
 format:
 	black api
 	isort api
+	flake8 api
+	mypy api
 
 # === TESTY ===
 test:
