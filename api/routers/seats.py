@@ -11,7 +11,7 @@ router = APIRouter()
 
 
 # === Získání všech sedadel konkrétního auta ===
-@router.get("/seats", response_model=list[SeatOut])
+@router.get("/", response_model=list[SeatOut])
 def get_seats(
     request: Request,
     db: Session = Depends(get_db),
@@ -29,7 +29,7 @@ def get_seats(
 
 # === Výběr sedadla ===
 @router.post(
-    "/seats/choose", response_model=SeatOut, status_code=status.HTTP_201_CREATED
+    "/choose", response_model=SeatOut, status_code=status.HTTP_201_CREATED
 )
 def choose_seat(
     seat_in: SeatBase,
@@ -67,7 +67,7 @@ def choose_seat(
 
 
 # === Uvolnění sedadla ===
-@router.delete("/seats", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/", status_code=status.HTTP_204_NO_CONTENT)
 def leave_seat(
     request: Request,
     db: Session = Depends(get_db),
@@ -85,7 +85,7 @@ def leave_seat(
 
 
 # === Změna sedadla ===
-@router.patch("/seats/change", response_model=SeatOut)
+@router.patch("/change", response_model=SeatOut)
 def change_seat(
     seat_in: SeatBase,
     request: Request,

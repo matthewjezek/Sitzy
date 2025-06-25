@@ -10,7 +10,7 @@ router = APIRouter()
 
 
 # === Získání dashboardu aktuálního uživatele ===
-@router.get("/dashboard", response_model=DashboardOut)
+@router.get("/", response_model=DashboardOut)
 def get_dashboard(
     request: Request,
     db: Session = Depends(get_db),
