@@ -49,5 +49,9 @@ MESSAGES = {
         "cs": "Tato pozvánka není určena pro váš účet.",
         "en": "This invitation does not belong to your account."
     },
+    "user_in_car": {
+        "cs": "Uživatel je již v tomto autě.",
+        "en": "User is already in this car."
+    },
 }
 # fmt: on
