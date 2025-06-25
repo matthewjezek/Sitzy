@@ -7,7 +7,7 @@ from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
 from api.database import get_db
-from api.translations.utils import get_message
+from api.translations.localization_utils import get_message
 
 # JWT nastavení
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret")

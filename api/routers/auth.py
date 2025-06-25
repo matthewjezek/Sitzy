@@ -10,7 +10,7 @@ from api import models
 from api.database import get_db
 from api.deps import get_current_user
 from api.schemas import UserCreate, UserLogin, UserOut
-from api.translations.utils import get_message
+from api.translations.localization_utils import get_message
 
 router = APIRouter()
 

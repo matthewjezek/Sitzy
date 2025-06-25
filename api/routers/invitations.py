@@ -7,7 +7,7 @@ from api.deps import get_current_user
 from api.enums import InvitationStatus
 from api.models import User
 from api.schemas import InvitationOut
-from api.translations.utils import get_message
+from api.translations.localization_utils import get_message
 
 router = APIRouter(prefix="/invitations")
 

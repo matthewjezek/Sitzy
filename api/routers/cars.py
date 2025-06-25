@@ -10,7 +10,7 @@ from api.enums import InvitationStatus
 from api.models import Car, User
 from api.schemas import (CarBase, CarCreate, CarOut, InvitationCreate,
                          InvitationOut)
-from api.translations.utils import get_message
+from api.translations.localization_utils import get_message
 from api.utils.security import generate_token
 
 router = APIRouter()
