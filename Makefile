@@ -4,7 +4,7 @@ run:
 
 # === VYTVOŘENÍ DB TABULEK (DOČASNĚ BEZ ALEMBICU) ===
 init-db:
-	python -c "from api.database import Base, engine; Base.metadata.create_all(bind=engine)"
+	python -c "from api.database import Base, engine; import api.models; Base.metadata.create_all(bind=engine)"
 
 # === VYTVOŘENÍ .ENV ZE ŠABLONY ===
 env:
