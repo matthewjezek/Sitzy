@@ -4,6 +4,8 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from api.middleware.language import LanguageMiddleware
+
 # Načtení proměnných z .env
 load_dotenv()
 
@@ -21,6 +23,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.add_middleware(LanguageMiddleware)
 
 # Import routerů
 from api.routers import auth, car

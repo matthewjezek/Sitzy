@@ -2,7 +2,7 @@ import os
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
@@ -11,6 +11,7 @@ from api import database, models, schemas
 from api.database import get_db
 from api.deps import get_current_user
 from api.schemas import UserCreate, UserLogin, UserOut
+from api.translations.utils import get_message
 
 router = APIRouter()
 
@@ -41,10 +42,10 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
 
 # === Registrace ===
 @router.post("/register", response_model=UserOut)
-def register(user_in: UserCreate, db: Session = Depends(get_db)):
+def register(request: Request, user_in: UserCreate, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.email == user_in.email).first()
     if user:
-        raise HTTPException(status_code=400, detail="Email už je zaregistrovaný")
+        raise HTTPException(status_code=400, detail=get_message("email_registered", request.state.lang))
 
     hashed_password = get_password_hash(user_in.password)
     new_user = models.User(email=user_in.email, hashed_password=hashed_password)
@@ -56,10 +57,10 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
 
 # === Přihlášení ===
 @router.post("/login")
-def login(user_in: UserLogin, db: Session = Depends(get_db)):
+def login(request: Request, user_in: UserLogin, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.email == user_in.email).first()
-    if not user or not verify_password(user_in.password, user.hashed_password):
-        raise HTTPException(status_code=401, detail="Nesprávné přihlašovací údaje")
+    if not user or not verify_password(...):
+        raise HTTPException(status_code=401, detail=get_message("login_failed", request.state.lang))
 
     token = create_access_token({"sub": str(user.id)})
     return {"access_token": token, "token_type": "bearer"}

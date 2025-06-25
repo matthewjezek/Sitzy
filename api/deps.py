@@ -1,12 +1,13 @@
 import os
 from uuid import UUID
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
 from api.database import get_db
+from api.translations.utils import get_message
 
 # JWT nastavení
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret")
@@ -18,6 +19,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 # Funkce pro získání aktuálního uživatele
 def get_current_user(
+    request: Request,
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db),
 ):
@@ -26,7 +28,7 @@ def get_current_user(
 
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Neplatný přístupový token",
+        detail=get_message("invalid_token", request.state.lang),
         headers={"WWW-Authenticate": "Bearer"},
     )
 
