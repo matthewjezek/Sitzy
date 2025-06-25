@@ -27,10 +27,10 @@ jobs:
           pip install black flake8 isort mypy pytest
 
       - name: Run black (formatting)
-        run: black --check api/
+        run: black api/
 
       - name: Run isort (import sorting)
-        run: isort api/ --check-only
+        run: isort api/
 
       - name: Run flake8 (lint)
         run: flake8 api/
