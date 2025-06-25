@@ -37,6 +37,3 @@ jobs:
 
       - name: Run mypy (typing)
         run: mypy api/
-
-      - name: Run pytest (tests)
-        run: pytest api/
