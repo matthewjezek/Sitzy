@@ -28,9 +28,7 @@ def get_seats(
 
 
 # === Výběr sedadla ===
-@router.post(
-    "/choose", response_model=SeatOut, status_code=status.HTTP_201_CREATED
-)
+@router.post("/choose", response_model=SeatOut, status_code=status.HTTP_201_CREATED)
 def choose_seat(
     seat_in: SeatBase,
     request: Request,
