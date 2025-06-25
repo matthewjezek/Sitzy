@@ -21,7 +21,7 @@ def read_my_car(
     request: Request,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
-):
+) -> CarOut:
     car = db.query(Car).filter(Car.owner_id == current_user.id).first()
     if not car:
         raise HTTPException(
@@ -37,7 +37,7 @@ def create_car(
     car_in: CarCreate,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
-):
+) -> CarOut:
     if current_user.car:
         raise HTTPException(
             status_code=400, detail=get_message("user_has_car", request.state.lang)
@@ -57,7 +57,7 @@ def change_car(
     car_in: CarBase,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
-):
+) -> CarOut:
     car = db.query(models.Car).filter(models.Car.id == car_id).first()
     if not car or car.owner_id != current_user.id:
         raise HTTPException(
@@ -80,7 +80,7 @@ def delete_car(
     car_id: UUID,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
-):
+) -> Response:
     car = db.query(models.Car).filter(models.Car.id == car_id).first()
     if not car or car.owner_id != current_user.id:
         raise HTTPException(
@@ -100,7 +100,7 @@ def create_invitation(
     invitation_in: InvitationCreate,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
-):
+) -> InvitationOut:
     car = db.query(models.Car).filter(models.Car.id == car_id).first()
     if not car or car.owner_id != current_user.id:
         raise HTTPException(
