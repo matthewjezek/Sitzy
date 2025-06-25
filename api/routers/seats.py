@@ -10,6 +10,7 @@ from api.translations.localization_utils import get_message
 router = APIRouter()
 
 
+# === Získání všech sedadel konkrétního auta ===
 @router.get("/seats", response_model=list[SeatOut])
 def get_seats(
     request: Request,
@@ -26,6 +27,7 @@ def get_seats(
     return [SeatOut.model_validate(seat) for seat in seats]
 
 
+# === Výběr sedadla ===
 @router.post(
     "/seats/choose", response_model=SeatOut, status_code=status.HTTP_201_CREATED
 )
@@ -64,16 +66,57 @@ def choose_seat(
     return SeatOut.model_validate(new_seat)
 
 
-@router.delete("/seats/me", status_code=status.HTTP_204_NO_CONTENT)
-def release_seat(
+# === Uvolnění sedadla ===
+@router.delete("/seats", status_code=status.HTTP_204_NO_CONTENT)
+def leave_seat(
     request: Request,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> None:
-    if not current_user.seat:
+    seat = current_user.seat
+    if not seat:
         raise HTTPException(
-            status_code=404, detail=get_message("user_not_in_seat", request.state.lang)
+            status_code=404,
+            detail=get_message("no_seat_found", request.state.lang),
         )
 
-    db.delete(current_user.seat)
+    db.delete(seat)
     db.commit()
+
+
+# === Změna sedadla ===
+@router.patch("/seats/change", response_model=SeatOut)
+def change_seat(
+    seat_in: SeatBase,
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> SeatOut:
+    if not current_user.seat:
+        raise HTTPException(
+            status_code=400,
+            detail=get_message("no_seat_to_change", request.state.lang),
+        )
+
+    current_seat = current_user.seat
+    if current_seat.position == seat_in.position:
+        raise HTTPException(
+            status_code=400,
+            detail=get_message("already_on_this_seat", request.state.lang),
+        )
+
+    existing = (
+        db.query(Seat)
+        .filter_by(car_id=current_seat.car_id, position=seat_in.position)
+        .first()
+    )
+    if existing:
+        raise HTTPException(
+            status_code=400,
+            detail=get_message("seat_already_taken", request.state.lang),
+        )
+
+    current_seat.position = seat_in.position
+    db.commit()
+    db.refresh(current_seat)
+    return SeatOut.from_orm_with_labels(current_seat, request.state.lang)

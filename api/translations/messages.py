@@ -69,5 +69,17 @@ MESSAGES = {
         "cs": "Nemáte přiřazené místo.",
         "en": "You do not have an assigned seat."
     },
+    "no_seat_found": {
+        "cs": "Nemáte žádné místo.",
+        "en": "You do not have a seat.",
+    },
+    "no_seat_to_change": {
+        "cs": "Nemáte žádné místo, které by šlo změnit.",
+        "en": "You don’t have a seat to change.",
+    },
+    "already_on_this_seat": {
+        "cs": "Toto místo už máte přidělené.",
+        "en": "You already occupy this seat.",
+    },
 }
 # fmt: on
