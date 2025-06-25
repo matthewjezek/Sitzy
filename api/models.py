@@ -1,11 +1,11 @@
 import uuid
+from datetime import datetime
 
-from sqlalchemy import Column, DateTime
+from sqlalchemy import DateTime
 from sqlalchemy import Enum as SqlEnum
 from sqlalchemy import ForeignKey, String
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .database import Base
 from .enums import CarLayout, InvitationStatus
@@ -14,55 +14,65 @@ from .enums import CarLayout, InvitationStatus
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
-    email = Column(String, unique=True, nullable=False, index=True)
-    hashed_password = Column(String, nullable=False)
-    created_at = Column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
+    id: Mapped[uuid.UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    email: Mapped[str] = mapped_column(String, unique=True, nullable=False, index=True)
+    hashed_password: Mapped[str] = mapped_column(String, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default="now()"
     )
 
-    car = relationship(
-        "Car", back_populates="owner", uselist=False, cascade="all, delete"
+    car: Mapped["Car"] = relationship(
+        back_populates="owner", uselist=False, cascade="all, delete"
     )
 
 
 class Car(Base):
     __tablename__ = "cars"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
-    owner_id = Column(
-        UUID(as_uuid=True), ForeignKey("users.id"), unique=True, nullable=False
+    id: Mapped[uuid.UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
-    name = Column(String, nullable=False)
-    layout: CarLayout = Column(SqlEnum(CarLayout, name="car_layouts"), nullable=False)
-    date = Column(DateTime(timezone=True), nullable=False)
-    created_at = Column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
+    owner_id: Mapped[uuid.UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("users.id"), unique=True, nullable=False
+    )
+    name: Mapped[str] = mapped_column(String, nullable=False)
+    layout: Mapped[CarLayout] = mapped_column(
+        SqlEnum(CarLayout, name="car_layouts"), nullable=False
+    )
+    date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default="now()"
     )
 
-    owner = relationship("User", back_populates="car")
-    invitations = relationship(
-        "Invitation", back_populates="car", cascade="all, delete"
+    owner: Mapped["User"] = relationship(back_populates="car")
+    invitations: Mapped[list["Invitation"]] = relationship(
+        back_populates="car", cascade="all, delete"
     )
 
 
 class Invitation(Base):
     __tablename__ = "invitations"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
-    car_id = Column(
-        UUID(as_uuid=True), ForeignKey("cars.id"), nullable=False, index=True
+    id: Mapped[uuid.UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
-    invited_email = Column(String, index=True, nullable=False)
-    token = Column(String, unique=True, nullable=False)
-    status: InvitationStatus = Column(
+    car_id: Mapped[uuid.UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("cars.id"), nullable=False, index=True
+    )
+    invited_email: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    token: Mapped[str] = mapped_column(String, unique=True, nullable=False)
+    status: Mapped[InvitationStatus] = mapped_column(
         SqlEnum(InvitationStatus, name="invitation_statuses"),
-        nullable=False,
         default=InvitationStatus.PENDING,
+        nullable=False,
     )
-    created_at = Column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default="now()"
     )
-    expires_at = Column(DateTime(timezone=True), nullable=True)
+    expires_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
-    car = relationship("Car", back_populates="invitations")
+    car: Mapped["Car"] = relationship(back_populates="invitations")
