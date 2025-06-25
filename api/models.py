@@ -17,7 +17,9 @@ class User(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
     email = Column(String, unique=True, nullable=False, index=True)
     hashed_password = Column(String, nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    created_at = Column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
 
     car = relationship(
         "Car", back_populates="owner", uselist=False, cascade="all, delete"
@@ -34,7 +36,9 @@ class Car(Base):
     name = Column(String, nullable=False)
     layout = Column(SqlEnum(CarLayout, name="car_layouts"), nullable=False)
     date = Column(DateTime(timezone=True), nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    created_at = Column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
 
     owner = relationship("User", back_populates="car")
     invitations = relationship(
@@ -56,7 +60,9 @@ class Invitation(Base):
         nullable=False,
         default=InvitationStatus.PENDING,
     )
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    created_at = Column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
     expires_at = Column(DateTime(timezone=True), nullable=True)
 
     car = relationship("Car", back_populates="invitations")
