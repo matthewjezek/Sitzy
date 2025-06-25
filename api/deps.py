@@ -41,7 +41,6 @@ def get_current_user(
     except (JWTError, ValueError):
         raise credentials_exception
 
-
     user = db.query(models.User).filter(models.User.id == user_uuid).first()
     if not user:
         raise credentials_exception
