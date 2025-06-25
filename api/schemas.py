@@ -98,3 +98,14 @@ class InvitationOut(BaseModelWithLabels["InvitationOut"], InvitationBase):
             created_at=inv.created_at,
             expires_at=inv.expires_at,
         )
+
+
+class SeatBase(BaseModel):
+    position: int
+
+
+class SeatOut(SeatBase):
+    car_id: UUID
+    user_id: UUID
+
+    model_config = ConfigDict(from_attributes=True)

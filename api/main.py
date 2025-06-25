@@ -27,9 +27,9 @@ app.add_middleware(
 app.add_middleware(LanguageMiddleware)
 
 # Import routerů
-from api.routers import auth, cars, invitations  # noqa: E402
+from api.routers import auth, cars, invitations, seats  # noqa: E402
 
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(cars.router, prefix="/cars", tags=["cars"])
-# app.include_router(seat.router, prefix="/seats", tags=["seats"])
+app.include_router(seats.router, prefix="/seats", tags=["seats"])
 app.include_router(invitations.router, prefix="/invitations", tags=["invitations"])
