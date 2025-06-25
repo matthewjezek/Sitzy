@@ -1,3 +1,5 @@
+# fmt: off
+
 MESSAGES = {
     "invalid_token": {
         "cs": "Neplatný přístupový token",
@@ -24,3 +26,4 @@ MESSAGES = {
         "en": "Incorrect login credentials"
     },
 }
+# fmt: on
