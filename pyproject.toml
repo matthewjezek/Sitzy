@@ -2,7 +2,6 @@
 line-length = 88
 target-version = ["py311"]
 skip-string-normalization = true
-black . --exclude '(^|/)test_.*\.py$'
 
 [tool.isort]
 profile = "black"
