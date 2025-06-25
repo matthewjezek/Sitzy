@@ -18,7 +18,7 @@ def get_invitation_by_token(
     token: str,
     request: Request,
     db: Session = Depends(get_db),
-):
+) -> InvitationOut:
     invitation = (
         db.query(models.Invitation).filter(models.Invitation.token == token).first()
     )
@@ -39,7 +39,7 @@ def respond_to_invitation(
     request: Request,
     accepted: bool,
     db: Session = Depends(get_db),
-):
+) -> InvitationOut:
     invitation = (
         db.query(models.Invitation).filter(models.Invitation.token == token).first()
     )
@@ -72,7 +72,7 @@ def cancel_invitation(
     request: Request,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
-):
+) -> None:
     invitation = (
         db.query(models.Invitation)
         .join(models.Car)
