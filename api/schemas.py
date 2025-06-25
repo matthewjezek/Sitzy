@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Annotated
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, StringConstraints
+from pydantic import BaseModel, ConfigDict, EmailStr, StringConstraints
 
 from .enums import CarLayout, InvitationStatus
 from .utils.base_models import BaseModelWithLabels
@@ -29,8 +29,7 @@ class UserOut(BaseModelWithLabels, UserBase):
     id: UUID
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # === Auta ===
@@ -50,8 +49,7 @@ class CarOut(BaseModelWithLabels, CarBase):
     created_at: datetime
     layout_label: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
     @classmethod
     def from_orm_with_labels(cls, car: "Car", lang: str = "cs") -> "CarOut":
@@ -84,8 +82,7 @@ class InvitationOut(BaseModelWithLabels, InvitationBase):
     created_at: datetime
     expires_at: datetime | None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
     @classmethod
     def from_orm_with_labels(
