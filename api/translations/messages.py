@@ -41,5 +41,13 @@ MESSAGES = {
         "cs": "Nemáte oprávnění k této pozvánce.",
         "en": "You are not authorized to manage this invitation."
     },
+    "invitation_not_found_or_expired": {
+        "cs": "Pozvánka nebyla nalezena nebo už vypršela.",
+        "en": "Invitation not found or has already expired."
+    },
+    "invitation_not_yours": {
+        "cs": "Tato pozvánka není určena pro váš účet.",
+        "en": "This invitation does not belong to your account."
+    },
 }
 # fmt: on
