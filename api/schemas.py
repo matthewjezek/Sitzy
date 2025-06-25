@@ -4,10 +4,11 @@ from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, StringConstraints
 
-from .enums import CarLayout
+from .enums import CarLayout, InvitationStatus
+from .utils.base_models import BaseModelWithLabels
 
 if TYPE_CHECKING:
-    from .models import Car
+    from .models import Car, Invitation
 
 
 class UserBase(BaseModel):
@@ -23,7 +24,7 @@ class UserLogin(BaseModel):
     password: str
 
 
-class UserOut(UserBase):
+class UserOut(BaseModelWithLabels, UserBase):
     id: UUID
     created_at: datetime
 
@@ -41,7 +42,7 @@ class CarCreate(CarBase):
     pass
 
 
-class CarOut(CarBase):
+class CarOut(BaseModelWithLabels, CarBase):
     id: UUID
     owner_id: UUID
     created_at: datetime
@@ -60,4 +61,40 @@ class CarOut(CarBase):
             layout=car.layout,
             date=car.date,
             layout_label=car.layout.get_label(lang),
+        )
+
+
+class InvitationBase(BaseModel):
+    invited_email: EmailStr
+
+
+class InvitationCreate(InvitationBase):
+    car_id: UUID
+
+
+class InvitationOut(BaseModelWithLabels, InvitationBase):
+    id: UUID
+    car_id: UUID
+    token: str
+    status: InvitationStatus
+    status_label: str
+    created_at: datetime
+    expires_at: datetime | None
+
+    class Config:
+        from_attributes = True
+
+    @classmethod
+    def from_orm_with_labels(
+        cls, inv: "Invitation", lang: str = "cs"
+    ) -> "InvitationOut":
+        return cls(
+            id=inv.id,
+            car_id=inv.car_id,
+            invited_email=inv.invited_email,
+            token=inv.token,
+            status=inv.status,
+            status_label=inv.status.get_label(lang),
+            created_at=inv.created_at,
+            expires_at=inv.expires_at,
         )
