@@ -1,9 +1,15 @@
-from fastapi import Request
+from typing import Awaitable, Callable
+
+from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
 
 class LanguageMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
+    async def dispatch(
+        self,
+        request: Request,
+        call_next: Callable[[Request], Awaitable[Response]],
+    ) -> Response:
         lang = (
             request.headers.get("accept-language")
             or request.cookies.get("lang")
