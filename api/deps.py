@@ -34,12 +34,13 @@ def get_current_user(
 
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: str = payload.get("sub")
-        if not user_id:
+        user_id = payload.get("sub")
+        if not isinstance(user_id, str):
             raise credentials_exception
         user_uuid = UUID(user_id)
     except (JWTError, ValueError):
         raise credentials_exception
+
 
     user = db.query(models.User).filter(models.User.id == user_uuid).first()
     if not user:
