@@ -1,5 +1,6 @@
 import os
 from datetime import datetime, timedelta, timezone
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from jose import jwt
@@ -32,7 +33,7 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 
-def create_access_token(data: dict, expires_delta: timedelta = None):
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=15))
     to_encode.update({"exp": expire})
@@ -60,7 +61,7 @@ def register(request: Request, user_in: UserCreate, db: Session = Depends(get_db
 @router.post("/login")
 def login(request: Request, user_in: UserLogin, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.email == user_in.email).first()
-    if not user or not verify_password(...):
+    if not user or not verify_password(user_in.password, user.hashed_password):
         raise HTTPException(
             status_code=401, detail=get_message("login_failed", request.state.lang)
         )
