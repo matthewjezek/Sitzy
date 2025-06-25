@@ -53,5 +53,21 @@ MESSAGES = {
         "cs": "Uživatel je již v tomto autě.",
         "en": "User is already in this car."
     },
+    "not_passenger": {
+        "cs": "Nejste pasažér v žádném autě.",
+        "en": "You are not a passenger in any car."
+    },
+    "seat_already_taken": {
+        "cs": "Toto místo je již obsazené.",
+        "en": "This seat is already taken."
+    },
+    "user_in_seat": {
+        "cs": "Již máte přiřazené místo.",
+        "en": "You already have an assigned seat."
+    },
+    "user_not_in_seat": {
+        "cs": "Nemáte přiřazené místo.",
+        "en": "You do not have an assigned seat."
+    },
 }
 # fmt: on
