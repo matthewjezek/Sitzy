@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from .models import Car, Invitation
 
 
+# === Uživatelská schémata ===
 class UserBase(BaseModel):
     email: EmailStr
 
@@ -32,6 +33,7 @@ class UserOut(BaseModelWithLabels, UserBase):
         from_attributes = True
 
 
+# === Auta ===
 class CarBase(BaseModel):
     name: str
     layout: CarLayout
@@ -46,7 +48,7 @@ class CarOut(BaseModelWithLabels, CarBase):
     id: UUID
     owner_id: UUID
     created_at: datetime
-    layout_label: str  # nový jazykově závislý atribut
+    layout_label: str
 
     class Config:
         from_attributes = True
@@ -64,6 +66,7 @@ class CarOut(BaseModelWithLabels, CarBase):
         )
 
 
+# === Pozvánky ===
 class InvitationBase(BaseModel):
     invited_email: EmailStr
 
