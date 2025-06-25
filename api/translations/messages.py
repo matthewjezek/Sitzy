@@ -25,5 +25,9 @@ MESSAGES = {
         "cs": "Nesprávné přihlašovací údaje",
         "en": "Incorrect login credentials"
     },
+    "invitation_exists": {
+        "cs": "Pozvánka pro tento e-mail už existuje.",
+        "en": "An invitation for this email already exists."
+    },
 }
 # fmt: on
