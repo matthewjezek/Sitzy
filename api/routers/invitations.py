@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from api.database import get_db
 from api.deps import get_current_user
 from api.enums import InvitationStatus
-from api.models import Car, Invitation, User
+from api.models import Car, Invitation, Passenger, User
 from api.schemas import InvitationOut, UserOut
 from api.translations.localization_utils import get_message
 
@@ -83,7 +83,17 @@ def accept_invitation(
 
     # Aktualizace stavu
     invitation.status = InvitationStatus.ACCEPTED
-    current_user.car = invitation.car_id
+    passenger = Passenger(user_id=current_user.id, car_id=invitation.car_id)
+    existing = (
+        db.query(Passenger)
+        .filter_by(user_id=current_user.id, car_id=invitation.car_id)
+        .first()
+    )
+    if existing:
+        raise HTTPException(
+            status_code=400, detail=get_message("user_in_car", request.state.lang)
+        )
+    db.add(passenger)
     db.commit()
     return UserOut.model_validate(current_user)
 
@@ -116,3 +126,23 @@ def reject_invitation(
     invitation.status = InvitationStatus.REJECTED
     db.commit()
     return {"message": get_message("invitation_rejected", request.state.lang)}
+
+
+# === Seznam mých pozvánek ===
+@router.get("/my", response_model=list[InvitationOut])
+def list_my_invitations(
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> list[InvitationOut]:
+    invitations = (
+        db.query(Invitation)
+        .filter(Invitation.invited_email == current_user.email)
+        .order_by(Invitation.created_at.desc())
+        .all()
+    )
+
+    return [
+        InvitationOut.from_orm_with_labels(inv, request.state.lang)
+        for inv in invitations
+    ]
