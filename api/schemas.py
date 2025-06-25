@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import TYPE_CHECKING, Annotated
+from typing import TYPE_CHECKING, Annotated, cast
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, EmailStr, StringConstraints
@@ -25,7 +25,7 @@ class UserLogin(BaseModel):
     password: str
 
 
-class UserOut(BaseModelWithLabels, UserBase):
+class UserOut(BaseModelWithLabels["UserOut"], UserBase):
     id: UUID
     created_at: datetime
 
@@ -43,7 +43,7 @@ class CarCreate(CarBase):
     pass
 
 
-class CarOut(BaseModelWithLabels, CarBase):
+class CarOut(BaseModelWithLabels["CarOut"], CarBase):
     id: UUID
     owner_id: UUID
     created_at: datetime
@@ -52,7 +52,8 @@ class CarOut(BaseModelWithLabels, CarBase):
     model_config = ConfigDict(from_attributes=True)
 
     @classmethod
-    def from_orm_with_labels(cls, car: "Car", lang: str = "cs") -> "CarOut":
+    def from_orm_with_labels(cls, car: object, lang: str = "cs") -> "CarOut":
+        car = cast("Car", car)
         return cls(
             id=car.id,
             owner_id=car.owner_id,
@@ -73,7 +74,7 @@ class InvitationCreate(InvitationBase):
     car_id: UUID
 
 
-class InvitationOut(BaseModelWithLabels, InvitationBase):
+class InvitationOut(BaseModelWithLabels["InvitationOut"], InvitationBase):
     id: UUID
     car_id: UUID
     token: str
@@ -85,9 +86,8 @@ class InvitationOut(BaseModelWithLabels, InvitationBase):
     model_config = ConfigDict(from_attributes=True)
 
     @classmethod
-    def from_orm_with_labels(
-        cls, inv: "Invitation", lang: str = "cs"
-    ) -> "InvitationOut":
+    def from_orm_with_labels(cls, inv: object, lang: str = "cs") -> "InvitationOut":
+        inv = cast("Invitation", inv)
         return cls(
             id=inv.id,
             car_id=inv.car_id,
