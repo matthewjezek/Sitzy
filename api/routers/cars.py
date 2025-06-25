@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from api import models
 from api.database import get_db
 from api.deps import get_current_user
-from api.models import Car, User
+from api.models import Car, Passenger, User
 from api.schemas import (
     CarBase,
     CarCreate,
@@ -174,3 +174,20 @@ def get_my_seat(
         raise HTTPException(status_code=404, detail="Nemáte přiřazené místo.")
 
     return SeatOut.model_validate(current_user.seat)
+
+
+# === Získání aut, kde je uživatel cestující ===
+@router.get("/as-passenger", response_model=list[CarOut])
+def get_passenger_cars(
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> list[CarOut]:
+    cars = (
+        db.query(Car)
+        .join(Passenger)
+        .filter(Passenger.user_id == current_user.id)
+        .order_by(Car.date.desc())
+        .all()
+    )
+    return [CarOut.from_orm_with_labels(car, request.state.lang) for car in cars]
