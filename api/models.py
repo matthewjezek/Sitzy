@@ -8,7 +8,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from .database import Base
-from .enums import CarLayout
+from .enums import CarLayout, InvitationStatus
 
 
 class User(Base):
@@ -37,3 +37,19 @@ class Car(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     owner = relationship("User", back_populates="car")
+    invitations = relationship("Invitation", back_populates="car", cascade="all, delete")
+
+
+
+class Invitation(Base):
+    __tablename__ = "invitations"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    car_id = Column(UUID(as_uuid=True), ForeignKey("cars.id"), nullable=False, index=True)
+    invited_email = Column(String, index=True, nullable=False)
+    token = Column(String, unique=True, nullable=False)
+    status = Column(SqlEnum(InvitationStatus, name="invitation_statuses"), nullable=False, default=InvitationStatus.PENDING)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    expires_at = Column(DateTime(timezone=True), nullable=True)
+
+    car = relationship("Car", back_populates="invitations")
