@@ -29,5 +29,17 @@ MESSAGES = {
         "cs": "Pozvánka pro tento e-mail už existuje.",
         "en": "An invitation for this email already exists."
     },
+    "invitation_not_found": {
+    "cs": "Pozvánka nebyla nalezena.",
+    "en": "Invitation not found."
+    },
+    "invitation_already_responded": {
+        "cs": "Pozvánka již byla vyřízena.",
+        "en": "Invitation has already been handled."
+    },
+    "not_car_owner": {
+        "cs": "Nemáte oprávnění k této pozvánce.",
+        "en": "You are not authorized to manage this invitation."
+    },
 }
 # fmt: on
