@@ -45,7 +45,9 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
 def register(request: Request, user_in: UserCreate, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.email == user_in.email).first()
     if user:
-        raise HTTPException(status_code=400, detail=get_message("email_registered", request.state.lang))
+        raise HTTPException(
+            status_code=400, detail=get_message("email_registered", request.state.lang)
+        )
 
     hashed_password = get_password_hash(user_in.password)
     new_user = models.User(email=user_in.email, hashed_password=hashed_password)
@@ -60,7 +62,9 @@ def register(request: Request, user_in: UserCreate, db: Session = Depends(get_db
 def login(request: Request, user_in: UserLogin, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.email == user_in.email).first()
     if not user or not verify_password(...):
-        raise HTTPException(status_code=401, detail=get_message("login_failed", request.state.lang))
+        raise HTTPException(
+            status_code=401, detail=get_message("login_failed", request.state.lang)
+        )
 
     token = create_access_token({"sub": str(user.id)})
     return {"access_token": token, "token_type": "bearer"}

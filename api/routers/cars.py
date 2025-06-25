@@ -22,7 +22,9 @@ def read_my_car(
 ):
     car = db.query(Car).filter(Car.owner_id == current_user.id).first()
     if not car:
-        raise HTTPException(status_code=404, detail=get_message("car_not_found", request.state.lang))
+        raise HTTPException(
+            status_code=404, detail=get_message("car_not_found", request.state.lang)
+        )
     return CarOut.from_orm_with_labels(car, lang=request.state.lang)
 
 
@@ -34,7 +36,9 @@ def create_car(
     current_user: models.User = Depends(get_current_user),
 ):
     if current_user.car:
-        raise HTTPException(status_code=400, detail=get_message("user_has_car", request.state.lang))
+        raise HTTPException(
+            status_code=400, detail=get_message("user_has_car", request.state.lang)
+        )
     new_car = models.Car(**car_in.model_dump(), owner_id=current_user.id)
     db.add(new_car)
     db.commit()
@@ -52,7 +56,9 @@ def change_car(
 ):
     car = db.query(models.Car).filter(models.Car.id == car_id).first()
     if not car or car.owner_id != current_user.id:
-        raise HTTPException(status_code=404, detail=get_message("car_not_yours", request.state.lang))
+        raise HTTPException(
+            status_code=404, detail=get_message("car_not_yours", request.state.lang)
+        )
 
     car.name = car_in.name
     car.layout = car_in.layout
@@ -72,7 +78,9 @@ def delete_car(
 ):
     car = db.query(models.Car).filter(models.Car.id == car_id).first()
     if not car or car.owner_id != current_user.id:
-        raise HTTPException(status_code=404, detail=get_message("car_not_yours", request.state.lang))
+        raise HTTPException(
+            status_code=404, detail=get_message("car_not_yours", request.state.lang)
+        )
 
     db.delete(car)
     db.commit()
