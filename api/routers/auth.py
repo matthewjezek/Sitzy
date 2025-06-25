@@ -1,16 +1,16 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
-from passlib.context import CryptContext
-from jose import jwt, JWTError
+import os
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
-from api import schemas, models, database
-from api.schemas import UserCreate, UserLogin, UserOut
-from api.deps import get_current_user
-from api.database import get_db
+from fastapi import APIRouter, Depends, HTTPException, status
+from jose import JWTError, jwt
+from passlib.context import CryptContext
+from sqlalchemy.orm import Session
 
-import os
+from api import database, models, schemas
+from api.database import get_db
+from api.deps import get_current_user
+from api.schemas import UserCreate, UserLogin, UserOut
 
 router = APIRouter()
 
@@ -27,8 +27,10 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 1 týden
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
+
 def get_password_hash(password):
     return pwd_context.hash(password)
+
 
 def create_access_token(data: dict, expires_delta: timedelta = None):
     to_encode = data.copy()

@@ -1,9 +1,11 @@
-from typing import Annotated
-from pydantic import BaseModel, EmailStr, StringConstraints
-from uuid import UUID
 from datetime import datetime
+from typing import Annotated
+from uuid import UUID
+
+from pydantic import BaseModel, EmailStr, StringConstraints
 
 from .enums import CarLayout
+
 
 class UserBase(BaseModel):
     email: EmailStr

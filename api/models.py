@@ -1,12 +1,15 @@
-from sqlalchemy import Column, String, DateTime, ForeignKey
-from sqlalchemy import Enum as SqlEnum
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.sql import func
-from sqlalchemy.orm import relationship
 import uuid
+
+from sqlalchemy import Column, DateTime
+from sqlalchemy import Enum as SqlEnum
+from sqlalchemy import ForeignKey, String
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 
 from .database import Base
 from .enums import CarLayout
+
 
 class User(Base):
     __tablename__ = "users"
@@ -16,14 +19,18 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    car = relationship("Car", back_populates="owner", uselist=False, cascade="all, delete")
+    car = relationship(
+        "Car", back_populates="owner", uselist=False, cascade="all, delete"
+    )
 
 
 class Car(Base):
     __tablename__ = "cars"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
-    owner_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), unique=True, nullable=False)
+    owner_id = Column(
+        UUID(as_uuid=True), ForeignKey("users.id"), unique=True, nullable=False
+    )
     name = Column(String, nullable=False)
     layout = Column(SqlEnum(CarLayout, name="car_layouts"), nullable=False)
     date = Column(DateTime(timezone=True), nullable=False)

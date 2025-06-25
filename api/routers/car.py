@@ -1,11 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
 from uuid import UUID
 
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+
 from api import models
-from api.schemas import CarBase, CarCreate, CarOut
-from api.deps import get_current_user
 from api.database import get_db
+from api.deps import get_current_user
+from api.schemas import CarBase, CarCreate, CarOut
 
 router = APIRouter()
 
@@ -23,7 +24,6 @@ def read_my_car(
 
 
 @router.post("/", response_model=CarOut)
-
 def create_car(
     car_in: CarCreate,
     db: Session = Depends(get_db),
@@ -48,7 +48,7 @@ def change_car(
     car = db.query(models.Car).filter(models.Car.id == car_id).first()
     if not car or car.owner_id != current_user.id:
         raise HTTPException(status_code=404, detail="Auto nenalezeno nebo není vaše.")
-    
+
     car.name = car_in.name
     car.layout = car_in.layout
     car.date = car_in.date
@@ -67,7 +67,7 @@ def delete_car(
     car = db.query(models.Car).filter(models.Car.id == car_id).first()
     if not car or car.owner_id != current_user.id:
         raise HTTPException(status_code=404, detail="Auto nenalezeno nebo není vaše.")
-    
+
     db.delete(car)
     db.commit()
     return
