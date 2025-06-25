@@ -8,7 +8,7 @@ from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .database import Base
-from .enums import CarLayout, InvitationStatus
+from .utils.enums import CarLayout, InvitationStatus
 
 
 class User(Base):

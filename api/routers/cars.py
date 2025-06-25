@@ -6,28 +6,38 @@ from sqlalchemy.orm import Session
 from api import models
 from api.database import get_db
 from api.deps import get_current_user
-from api.enums import InvitationStatus
 from api.models import Car, User
-from api.schemas import CarBase, CarCreate, CarOut, InvitationCreate, InvitationOut
+from api.schemas import (
+    CarBase,
+    CarCreate,
+    CarFullOut,
+    CarOut,
+    InvitationCreate,
+    InvitationOut,
+    SeatOut,
+    UserOut,
+)
 from api.translations.localization_utils import get_message
+from api.utils.enums import InvitationStatus
 from api.utils.security import generate_token
 
 router = APIRouter()
 
 
 # === Získání auta aktuálního uživatele ===
-@router.get("/me", response_model=CarOut)
+@router.get("/me", response_model=CarFullOut)
 def read_my_car(
     request: Request,
-    db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> CarOut:
-    car = db.query(Car).filter(Car.owner_id == current_user.id).first()
-    if not car:
-        raise HTTPException(
-            status_code=404, detail=get_message("car_not_found", request.state.lang)
-        )
-    return CarOut.from_orm_with_labels(car, lang=request.state.lang)
+    db: Session = Depends(get_db),
+) -> CarFullOut:
+    if not current_user.car:
+        raise HTTPException(status_code=404, detail="Uživatel zatím nemá auto.")
+
+    car = db.query(Car).filter(Car.id == current_user.car.id).first()
+    db.refresh(car)
+
+    return CarFullOut.from_orm_with_labels(car, lang=request.state.lang)
 
 
 # === Vytvoření nového auta ===
@@ -136,3 +146,31 @@ def create_invitation(
     db.refresh(invitation)
 
     return InvitationOut.from_orm_with_labels(invitation, lang=request.state.lang)
+
+
+# === Získání všech účastníků auta ===
+@router.get("/participants", response_model=list[UserOut])
+def list_participants(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> list[UserOut]:
+    if not current_user.car:
+        raise HTTPException(status_code=404, detail="Nemáte vlastní auto.")
+
+    car = current_user.car
+    participant_ids = [seat.user_id for seat in car.seats] + [car.owner_id]
+
+    users = db.query(User).filter(User.id.in_(participant_ids)).all()
+    return [UserOut.model_validate(u) for u in users]
+
+
+# === Moje místo ===
+@router.get("/seats/me", response_model=SeatOut)
+def get_my_seat(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> SeatOut:
+    if not current_user.seat:
+        raise HTTPException(status_code=404, detail="Nemáte přiřazené místo.")
+
+    return SeatOut.model_validate(current_user.seat)

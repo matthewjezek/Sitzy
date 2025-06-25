@@ -3,10 +3,10 @@ from sqlalchemy.orm import Session
 
 from api.database import get_db
 from api.deps import get_current_user
-from api.enums import InvitationStatus
 from api.models import Car, Invitation, Passenger, User
 from api.schemas import InvitationOut, UserOut
 from api.translations.localization_utils import get_message
+from api.utils.enums import InvitationStatus
 
 router = APIRouter(prefix="/invitations")
 
