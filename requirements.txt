@@ -19,7 +19,7 @@
     black
     flake8
     isort
-    mypy
+    mypy[types-python-jose, types-passlib]
     pytest
     httpx
     coverage
