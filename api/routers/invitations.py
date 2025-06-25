@@ -8,7 +8,7 @@ from api.schemas import InvitationOut, UserOut
 from api.translations.localization_utils import get_message
 from api.utils.enums import InvitationStatus
 
-router = APIRouter(prefix="/invitations")
+router = APIRouter()
 
 
 # === Zneplatnění pozvánky ===
