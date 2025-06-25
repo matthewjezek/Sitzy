@@ -8,8 +8,7 @@ from api.database import get_db
 from api.deps import get_current_user
 from api.enums import InvitationStatus
 from api.models import Car, User
-from api.schemas import (CarBase, CarCreate, CarOut, InvitationCreate,
-                         InvitationOut)
+from api.schemas import CarBase, CarCreate, CarOut, InvitationCreate, InvitationOut
 from api.translations.localization_utils import get_message
 from api.utils.security import generate_token
 
