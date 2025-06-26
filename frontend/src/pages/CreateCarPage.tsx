@@ -23,8 +23,12 @@ export default function CreateCarPage() {
         { headers: { Authorization: `Bearer ${token}` } }
       )
       navigate('/dashboard')
-    } catch (err) {
-      setError('Chyba při vytváření auta.')
+    } catch (err: any) {
+      if (axios.isAxiosError(err) && err.response?.status === 400) {
+        setError(err.response.data?.detail || 'Chyba při vytváření auta.')
+      } else {
+        setError('Chyba při vytváření auta.')
+      }
     }
   }
 
@@ -64,6 +68,7 @@ export default function CreateCarPage() {
           onChange={(e) => setDate(e.target.value)}
           required
         />
+        <label className="block text-gray-600 text-xs mb-2 -mt-2">Datum jízdy</label>
 
         <button
           type="submit"

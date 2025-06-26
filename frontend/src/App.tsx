@@ -5,6 +5,7 @@ import DashboardPage from './pages/DashboardPage'
 import SeatPage from './pages/SeatPage'
 import InvitationPage from './pages/InvitationPage'
 import CarPage from './pages/CarPage'
+import CreateCarPage from './pages/CreateCarPage'
 import Layout from './components/Layout'
 import ProtectedRoute from './components/ProtectedRoute'
 
@@ -22,6 +23,7 @@ function App() {
           <Route path="/seats" element={<SeatPage />} />
           <Route path="/invitations" element={<InvitationPage />} />
           <Route path="/car" element={<CarPage />} />
+          <Route path="/create-car" element={<CreateCarPage />} />
         </Route>
       </Routes>
     </Router>
