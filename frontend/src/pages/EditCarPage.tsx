@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
+import Layout from '../components/Layout'
 
 export default function EditCarPage() {
   const navigate = useNavigate()
@@ -48,47 +49,49 @@ export default function EditCarPage() {
   }
 
   return (
-    <div className="flex items-center justify-center h-screen bg-gray-100">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white p-8 rounded shadow-md w-full max-w-md space-y-4"
-      >
-        <h2 className="text-2xl font-bold mb-4 text-center">Úprava auta</h2>
-
-        {error && <div className="text-red-500 text-sm">{error}</div>}
-
-        <input
-          type="text"
-          placeholder="Název auta"
-          className="w-full p-2 border rounded"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <select
-          className="w-full p-2 border rounded"
-          value={layout}
-          onChange={(e) => setLayout(e.target.value as 'SEDAQ' | 'TRAPAQ' | 'PRAQ')}
+    <Layout>
+      <div className="flex items-center justify-center h-screen bg-gray-100">
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white p-8 rounded shadow-md w-full max-w-md space-y-4"
         >
-          <option value="SEDAQ">Sedan (4 místa)</option>
-          <option value="TRAPAQ">Kupé (2 místa)</option>
-          <option value="PRAQ">Minivan (7 míst)</option>
-        </select>
+          <h2 className="text-2xl font-bold mb-4 text-center">Úprava auta</h2>
 
-        <input
-          type="datetime-local"
-          className="w-full p-2 border rounded"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          required
-        />
+          {error && <div className="text-red-500 text-sm">{error}</div>}
 
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
-        >
-          Uložit změny
-        </button>
-      </form>
-    </div>
+          <input
+            type="text"
+            placeholder="Název auta"
+            className="w-full p-2 border rounded"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+          <select
+            className="w-full p-2 border rounded"
+            value={layout}
+            onChange={(e) => setLayout(e.target.value as 'SEDAQ' | 'TRAPAQ' | 'PRAQ')}
+          >
+            <option value="SEDAQ">Sedan (4 místa)</option>
+            <option value="TRAPAQ">Kupé (2 místa)</option>
+            <option value="PRAQ">Minivan (7 míst)</option>
+          </select>
+
+          <input
+            type="datetime-local"
+            className="w-full p-2 border rounded"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            required
+          />
+
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+          >
+            Uložit změny
+          </button>
+        </form>
+      </div>
+    </Layout>
   )
 }
