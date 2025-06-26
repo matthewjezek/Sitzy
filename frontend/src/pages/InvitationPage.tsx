@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import axios from 'axios'
-import Layout from '../components/Layout'
 
 export default function InvitationPage() {
   const [email, setEmail] = useState('')
@@ -35,7 +34,6 @@ export default function InvitationPage() {
   }
 
     return (
-      <Layout>
       <div className="flex items-center justify-center h-screen bg-gray-100">
       <form
         onSubmit={handleInvite}
@@ -69,6 +67,5 @@ export default function InvitationPage() {
         </p>
       </form>
     </div>
-    </Layout>
   )
 }

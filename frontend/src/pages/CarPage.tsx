@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
-import Layout from '../components/Layout'
 
 export default function CarPage() {
   const navigate = useNavigate()
@@ -33,19 +32,15 @@ export default function CarPage() {
 
   if (error)
     return (
-      <Layout>
-        <div className="text-red-500 text-center mt-4">{error}</div>
-      </Layout>
+      <div className="text-red-500 text-center mt-4">{error}</div>
     )
   if (!car)
     return (
-      <Layout>
-        <div className="text-center mt-4">Načítání...</div>
-      </Layout>
+      <div className="text-center mt-4">Načítání...</div>
     )
 
   return (
-    <Layout>
+    <>
       <h1 className="text-2xl font-bold mb-4">Moje auto</h1>
       <div className="bg-white shadow rounded p-4 mb-4">
         <p><strong>Název:</strong> {car?.name}</p>
@@ -73,6 +68,6 @@ export default function CarPage() {
           Smazat auto
         </button>
       </div>
-    </Layout>
+    </>
   )
 }

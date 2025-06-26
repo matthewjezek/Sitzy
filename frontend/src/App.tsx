@@ -6,6 +6,7 @@ import SeatPage from './pages/SeatPage'
 import InvitationPage from './pages/InvitationPage'
 import CarPage from './pages/CarPage'
 import Layout from './components/Layout'
+import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
   return (
@@ -16,7 +17,7 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
 
         {/* Stránky pod layoutem */}
-        <Route element={<Layout />}>
+        <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/seats" element={<SeatPage />} />
           <Route path="/invitations" element={<InvitationPage />} />
