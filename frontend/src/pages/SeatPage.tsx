@@ -51,11 +51,19 @@ export default function SeatPage() {
       })
       setSeats(res.data)
       setNotFound(false)
+      setError('')
     } catch (err: any) {
-      if (axios.isAxiosError(err) && err.response?.status === 404) {
-        setNotFound(true)
+      if (axios.isAxiosError(err)) {
+        if (err.response?.status === 404 || err.response?.status === 400) {
+          setNotFound(true)
+          setError('')
+        } else {
+          setError('Nepodařilo se načíst seznam míst. (' + (err.response?.status || 'chyba') + ')')
+          setNotFound(false)
+        }
       } else {
-        setError('Nepodařilo se načíst seznam míst.')
+        setError('Nepodařilo se načíst seznam míst. (neznámá chyba)')
+        setNotFound(false)
       }
     } finally {
       setLoading(false)
@@ -79,15 +87,13 @@ export default function SeatPage() {
   }
 
   // UX fallbacky
-  if (notFound)
+  if (notFound || error)
     return (
-      <div className="text-center mt-4 text-gray-600">
-        <h2 className="text-xl font-semibold mb-2">Žádná místa nejsou k dispozici</h2>
-        <p className="mb-4">Zatím nejsou k dispozici žádná místa k výběru.</p>
+      <div className="text-center mt-8 text-gray-600">
+        <h2 className="text-xl font-semibold mb-2">Nejste přihlášen(a) k žádné jízdě</h2>
+        <p className="mb-4">Aktuálně nemáte žádné místo v autě jako spolujezdec. Pokud chcete jet s někým, přijměte pozvánku nebo počkejte na přidělení místa.</p>
       </div>
     )
-  if (error)
-    return <div className="text-red-500 text-center mt-4">{error}</div>
   if (loading || !layout)
     return <div className="text-center mt-4">Načítání...</div>
 
@@ -200,7 +206,7 @@ export default function SeatPage() {
   return (
     <div className="max-w-2xl mx-auto p-4">
       <ToastContainer />
-      <h1 className="text-2xl font-bold mb-4">Výběr místa</h1>
+      <h1 className="text-2xl font-bold mb-4">Jízdy</h1>
       <div className="flex flex-col items-center">
         <div className="bg-gray-200 rounded-lg p-6 flex flex-col items-center">
           {renderSeats()}

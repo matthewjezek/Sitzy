@@ -13,7 +13,7 @@ export default function Navigation() {
           </li>
           <li>
             <Link to="/seats" className="hover:underline">
-              Místa
+              Jízdy
             </Link>
           </li>
           <li>

@@ -68,11 +68,12 @@ export default function LoginPage() {
         >
           Přihlásit se
         </button>
-        <div className="text-center mt-2">
+        <p className="text-center text-sm">
+          Nemáš ještě účet?{' '}
           <Link to="/register" className="text-blue-600 hover:underline">
-            Nemáte účet? Zaregistrujte se
+            Zaregistruj se
           </Link>
-        </div>
+        </p>
       </form>
     </div>
   )
