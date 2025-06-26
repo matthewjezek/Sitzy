@@ -3,10 +3,6 @@ import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 
 function SeatLayoutVisual({ seats, layout }: { seats: any[]; layout: string }) {
-  if (!Array.isArray(seats) || seats.length === 0) {
-    return <div className="text-gray-500">Žádná místa nejsou k dispozici.</div>;
-  }
-
   // Normalize layout to backend enum
   const normalizeLayout = (layout: string) => {
     if (!layout) return '';
@@ -18,6 +14,12 @@ function SeatLayoutVisual({ seats, layout }: { seats: any[]; layout: string }) {
   };
   const normLayout = normalizeLayout(layout);
 
+  // Najdi seat pro každou pozici
+  const seatByPosition: Record<number, any> = {};
+  (seats || []).forEach(seat => {
+    seatByPosition[seat.position] = seat;
+  });
+
   // Helper for seat style
   const seatStyle = (isDriver: boolean, occupied: boolean) =>
     `w-14 h-16 rounded-xl flex flex-col items-center justify-center border-2 shadow-md m-1 text-xs
@@ -25,68 +27,100 @@ function SeatLayoutVisual({ seats, layout }: { seats: any[]; layout: string }) {
     ${occupied ? 'bg-blue-400 border-blue-700 text-white' : 'bg-white border-gray-300 text-gray-700'}
     `;
 
-  function SeatShape({ seat, isDriver }: { seat: any; isDriver?: boolean }) {
+  function SeatShape({ seat, position, isDriver }: { seat: any; position: number; isDriver?: boolean }) {
     return (
       <div
-        className={seatStyle(!!isDriver, !!seat.user_name)}
+        className={seatStyle(!!isDriver, !!seat?.user_name)}
         style={{ position: 'relative' }}
         title={isDriver ? 'Řidič' : undefined}
       >
         {isDriver && (
           <span style={{ position: 'absolute', top: 2, left: 2, fontSize: 14, color: '#b59f00' }} title="Řidič">🛞</span>
         )}
-        <span className="font-bold mb-1">{seat.position_label}</span>
+        <span className="font-bold mb-1">{seat?.position_label || `#${position}`}</span>
         <span className="truncate w-full text-center">
-          {seat.user_name ? seat.user_name : <span className="text-gray-400">volné</span>}
+          {seat?.user_name ? seat.user_name : <span className="text-gray-400">volné</span>}
         </span>
       </div>
     );
   }
 
+  // Vykresli podle layoutu
   if (normLayout === 'sedaq') {
-    // Sedan: 2 front, 3 back
     return (
-      <div className="flex flex-col items-center">
-        <div className="flex flex-row justify-center mb-4 gap-8">
-          <SeatShape seat={seats[0]} isDriver={true} />
-          <SeatShape seat={seats[1]} />
+      <>
+        <div className="flex flex-col items-center">
+          <div className="flex flex-row justify-center mb-4 gap-8">
+            <SeatShape seat={seatByPosition[1]} position={1} isDriver={true} />
+            <SeatShape seat={seatByPosition[2]} position={2} />
+          </div>
+          <div className="flex flex-row justify-center gap-6">
+            <SeatShape seat={seatByPosition[3]} position={3} />
+            <SeatShape seat={seatByPosition[4]} position={4} />
+            <SeatShape seat={seatByPosition[5]} position={5} />
+          </div>
         </div>
-        <div className="flex flex-row justify-center gap-6">
-          <SeatShape seat={seats[2]} />
-          <SeatShape seat={seats[3]} />
-          <SeatShape seat={seats[4]} />
-        </div>
-      </div>
+        <CarSilhouette />
+      </>
     );
   } else if (normLayout === 'trapaq') {
-    // Kupé: 2 seats (front only)
     return (
-      <div className="flex flex-row justify-center gap-8">
-        <SeatShape seat={seats[0]} isDriver={true} />
-        <SeatShape seat={seats[1]} />
-      </div>
+      <>
+        <div className="flex flex-row justify-center gap-8">
+          <SeatShape seat={seatByPosition[1]} position={1} isDriver={true} />
+          <SeatShape seat={seatByPosition[2]} position={2} />
+        </div>
+        <CarSilhouette />
+      </>
     );
   } else if (normLayout === 'praq') {
-    // Minivan: 2 front, 3 middle, 2 back
     return (
-      <div className="flex flex-col items-center">
-        <div className="flex flex-row justify-center mb-4 gap-8">
-          <SeatShape seat={seats[0]} isDriver={true} />
-          <SeatShape seat={seats[1]} />
+      <>
+        <div className="flex flex-col items-center">
+          <div className="flex flex-row justify-center mb-4 gap-8">
+            <SeatShape seat={seatByPosition[1]} position={1} isDriver={true} />
+            <SeatShape seat={seatByPosition[2]} position={2} />
+          </div>
+          <div className="flex flex-row justify-center mb-4 gap-6">
+            <SeatShape seat={seatByPosition[3]} position={3} />
+            <SeatShape seat={seatByPosition[4]} position={4} />
+            <SeatShape seat={seatByPosition[5]} position={5} />
+          </div>
+          <div className="flex flex-row justify-center gap-10">
+            <SeatShape seat={seatByPosition[6]} position={6} />
+            <SeatShape seat={seatByPosition[7]} position={7} />
+          </div>
         </div>
-        <div className="flex flex-row justify-center mb-4 gap-6">
-          <SeatShape seat={seats[2]} />
-          <SeatShape seat={seats[3]} />
-          <SeatShape seat={seats[4]} />
-        </div>
-        <div className="flex flex-row justify-center gap-10">
-          <SeatShape seat={seats[5]} />
-          <SeatShape seat={seats[6]} />
-        </div>
-      </div>
+        <CarSilhouette />
+      </>
     );
   } else {
     return <div>Neznámý typ rozložení auta.</div>;
+  }
+
+  // SVG silueta vozu pod sedačky
+  function CarSilhouette() {
+    return (
+      <div className="flex justify-center mt-10 mb-2">
+        <svg width="240" height="80" viewBox="0 0 240 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {/* Karoserie auta */}
+          <rect x="30" y="15" width="180" height="50" rx="28" fill="#b0b0b0" stroke="#888" strokeWidth="2" />
+          {/* Kabina */}
+          <rect x="85" y="25" width="70" height="30" rx="12" fill="#eaeaea" stroke="#aaa" strokeWidth="1.5" />
+          {/* Kola */}
+          <ellipse cx="45" cy="20" rx="12" ry="7" fill="#444" />
+          <ellipse cx="45" cy="60" rx="12" ry="7" fill="#444" />
+          <ellipse cx="195" cy="20" rx="12" ry="7" fill="#444" />
+          <ellipse cx="195" cy="60" rx="12" ry="7" fill="#444" />
+          {/* Přední světla */}
+          <ellipse cx="32" cy="25" rx="4" ry="2" fill="#ffe066" />
+          <ellipse cx="32" cy="55" rx="4" ry="2" fill="#ffe066" />
+          {/* Zadní světla */}
+          <ellipse cx="208" cy="25" rx="4" ry="2" fill="#ff7675" />
+          <ellipse cx="208" cy="55" rx="4" ry="2" fill="#ff7675" />
+        </svg>
+      </div>
+    );
   }
 }
 
