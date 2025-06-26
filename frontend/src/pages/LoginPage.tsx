@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import axios from 'axios'
 
 export default function LoginPage() {
@@ -15,8 +15,12 @@ export default function LoginPage() {
         email,
         password,
       })
-      localStorage.setItem('token', res.data.access_token)
-      navigate('/dashboard')
+      if (res.data && res.data.access_token) {
+        localStorage.setItem('token', res.data.access_token)
+        navigate('/dashboard')
+      } else {
+        setError('Chyba při přihlašování. Zkuste to prosím znovu.')
+      }
     } catch (err) {
       setError('Neplatné přihlašovací údaje')
     }
@@ -58,9 +62,9 @@ export default function LoginPage() {
         </button>
         <p className="text-center text-sm">
           Nemáš účet?{' '}
-          <a href="/register" className="text-blue-600 hover:underline">
+          <Link to="/register" className="text-blue-600 hover:underline">
             Zaregistruj se
-          </a>
+          </Link>
         </p>
       </form>
     </div>

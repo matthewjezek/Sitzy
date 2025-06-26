@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import axios from 'axios'
 
 export default function RegisterPage() {
@@ -16,8 +16,13 @@ export default function RegisterPage() {
         password,
       })
       navigate('/login')
-    } catch (err) {
-      setError('Registrace selhala. Zkus to znovu.')
+    } catch (err: any) {
+      console.error('Registration error:', err)
+      if (err.response && err.response.data && err.response.data.message) {
+        setError(`Registrace selhala: ${err.response.data.message}`)
+      } else {
+        setError('Registrace selhala. Zkus to znovu.')
+      }
     }
   }
 
@@ -53,13 +58,13 @@ export default function RegisterPage() {
           type="submit"
           className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
         >
-          Zaregistrovat se
+          Registrovat se
         </button>
         <p className="text-center text-sm">
           Máš už účet?{' '}
-          <a href="/login" className="text-blue-600 hover:underline">
+          <Link to="/login" className="text-blue-600 hover:underline">
             Přihlaš se
-          </a>
+          </Link>
         </p>
       </form>
     </div>
