@@ -31,6 +31,7 @@ cd sitzy
 npm install
 npm run dev
 ```
+
 ---
 
 # 🗺️ Sitzy
