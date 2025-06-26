@@ -6,8 +6,16 @@ export default function CreateCarPage() {
   const navigate = useNavigate()
   const [name, setName] = useState('')
   const [layout, setLayout] = useState('SEDAN')
-  const [date, setDate] = useState('')
+  // Výchozí hodnota: dnešní datum s časem 00:00
+  const today = new Date()
+  const yyyy = today.getFullYear()
+  const mm = String(today.getMonth() + 1).padStart(2, '0')
+  const dd = String(today.getDate()).padStart(2, '0')
+  const defaultDate = `${yyyy}-${mm}-${dd}T00:00`
+  const [date, setDate] = useState(defaultDate)
   const [error, setError] = useState('')
+
+  const minDate = `${yyyy}-${mm}-${dd}T00:00`
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -18,7 +26,7 @@ export default function CreateCarPage() {
         return
       }
       await axios.post(
-        'http://localhost:8000/cars/create-car',
+        'http://localhost:8000/cars/',
         { name, layout, date },
         { headers: { Authorization: `Bearer ${token}` } }
       )
@@ -61,14 +69,18 @@ export default function CreateCarPage() {
           <option value="MINIVAN">Minivan (7 míst)</option>
         </select>
 
+        <label htmlFor="date" className="block text-gray-700 font-semibold mb-1">Kdy pojedete?</label>
         <input
+          id="date"
           type="datetime-local"
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded mb-4"
           value={date}
+          min={minDate}
           onChange={(e) => setDate(e.target.value)}
+          step="1"
           required
         />
-        <label className="block text-gray-600 text-xs mb-2 -mt-2">Datum jízdy</label>
+        <div className="text-xs text-gray-500 mb-2">Výchozí čas je 00:00, můžete změnit.</div>
 
         <button
           type="submit"
