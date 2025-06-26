@@ -10,20 +10,31 @@ export default function InvitationPage() {
     e.preventDefault()
     try {
       const token = localStorage.getItem('token')
-      await axios.post(
-        'http://localhost:8000/cars/invite',
-        { invited_email: email },
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
-      setSuccess('Pozvánka úspěšně odeslána')
-      setEmail('')
-    } catch (err) {
+      if (!token) {
+      setError('Chybí autentizační token. Přihlaste se prosím znovu.')
+      setSuccess('')
+      return
+    }
+    await axios.post(
+      'http://localhost:8000/cars/invite',
+      { invited_email: email },
+      { headers: { Authorization: `Bearer ${token}` } }
+    )
+    setSuccess('Pozvánka úspěšně odeslána')
+    setError('')
+    setEmail('')
+  } catch (err) {
+    setSuccess('')
+    if (axios.isAxiosError(err) && err.response && err.response.data && err.response.data.detail) {
+      setError(err.response.data.detail)
+    } else {
       setError('Chyba při odesílání pozvánky')
+    }
     }
   }
 
-  return (
-    <div className="flex items-center justify-center h-screen bg-gray-100">
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-100">
       <form
         onSubmit={handleInvite}
         className="bg-white p-8 rounded shadow-md w-full max-w-md space-y-4"

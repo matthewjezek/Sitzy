@@ -5,7 +5,7 @@ import axios from 'axios'
 export default function CreateCarPage() {
   const navigate = useNavigate()
   const [name, setName] = useState('')
-  const [layout, setLayout] = useState('SEDAQ')
+  const [layout, setLayout] = useState('SEDAN')
   const [date, setDate] = useState('')
   const [error, setError] = useState('')
 
@@ -13,6 +13,10 @@ export default function CreateCarPage() {
     e.preventDefault()
     try {
       const token = localStorage.getItem('token')
+      if (!token) {
+        setError('Nejste přihlášeni. Přihlaste se prosím znovu.')
+        return
+      }
       await axios.post(
         'http://localhost:8000/cars/create-car',
         { name, layout, date },
@@ -48,9 +52,9 @@ export default function CreateCarPage() {
           value={layout}
           onChange={(e) => setLayout(e.target.value)}
         >
-          <option value="SEDAQ">Sedan (4 místa)</option>
-          <option value="TRAPAQ">Kupé (2 místa)</option>
-          <option value="PRAQ">Minivan (7 míst)</option>
+          <option value="SEDAN">Sedan (4 místa)</option>
+          <option value="COUPE">Kupé (2 místa)</option>
+          <option value="MINIVAN">Minivan (7 míst)</option>
         </select>
 
         <input

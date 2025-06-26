@@ -11,15 +11,24 @@ export default function RegisterPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      await axios.post('http://localhost:8000/auth/register', {
-        email,
-        password,
-      })
+      await axios.post(
+        'http://localhost:8000/auth/register',
+        {
+          email,
+          password,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          withCredentials: true, // pokud backend používá cookies/sessions
+        }
+      )
       navigate('/login')
     } catch (err: any) {
       console.error('Registration error:', err)
-      if (err.response && err.response.data && err.response.data.message) {
-        setError(`Registrace selhala: ${err.response.data.message}`)
+      if (err.response && err.response.data && err.response.data.detail) {
+        setError(`Registrace selhala: ${err.response.data.detail}`)
       } else {
         setError('Registrace selhala. Zkus to znovu.')
       }

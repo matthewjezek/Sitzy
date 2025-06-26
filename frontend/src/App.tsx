@@ -9,6 +9,7 @@ import InvitationPage from './pages/InvitationPage'
 import SeatPage from './pages/SeatPage'
 import CreateCarPage from './pages/CreateCarPage'
 import EditCarPage from './pages/EditCarPage'
+import InvitePage from './pages/InvitePage'
 
 export default function App() {
   return (
@@ -23,6 +24,8 @@ export default function App() {
         <Route path="/car/edit" element={<EditCarPage />} />
         <Route path="/invitations" element={<InvitationPage />} />
         <Route path="/seats" element={<SeatPage />} />
+        <Route path="/invite" element={<InvitePage />} />
+
       </Routes>
     </BrowserRouter>
   )

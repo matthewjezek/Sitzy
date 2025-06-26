@@ -8,6 +8,7 @@ export default function EditCarPage() {
   const [layout, setLayout] = useState('SEDAQ')
   const [date, setDate] = useState('')
   const [error, setError] = useState('')
+  const [carId, setCarId] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchCar = async () => {
@@ -19,8 +20,9 @@ export default function EditCarPage() {
         setName(res.data.name)
         setLayout(res.data.layout)
         setDate(res.data.date.slice(0, 16)) // ISO datetime format trim
-      } catch {
-        setError('Nepodařilo se načíst data auta.')
+        setCarId(res.data.id)
+      } catch (err: any) {
+        setError('Nepodařilo se načíst data auta. ' + (err?.message || ''))
       }
     }
     fetchCar()
@@ -30,17 +32,18 @@ export default function EditCarPage() {
     e.preventDefault()
     try {
       const token = localStorage.getItem('token')
-      const res = await axios.get('http://localhost:8000/cars/me', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      if (!carId) {
+        setError('ID auta nebylo načteno.')
+        return
+      }
       await axios.patch(
-        `http://localhost:8000/cars/${res.data.id}`,
+        `http://localhost:8000/cars/${carId}`,
         { name, layout, date },
         { headers: { Authorization: `Bearer ${token}` } }
       )
       navigate('/dashboard')
-    } catch (err) {
-      setError('Chyba při úpravě auta.')
+    } catch (err: any) {
+      setError('Chyba při úpravě auta. ' + (err?.message || ''))
     }
   }
 
@@ -60,13 +63,11 @@ export default function EditCarPage() {
           className="w-full p-2 border rounded"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          required
         />
-
         <select
           className="w-full p-2 border rounded"
           value={layout}
-          onChange={(e) => setLayout(e.target.value)}
+          onChange={(e) => setLayout(e.target.value as 'SEDAQ' | 'TRAPAQ' | 'PRAQ')}
         >
           <option value="SEDAQ">Sedan (4 místa)</option>
           <option value="TRAPAQ">Kupé (2 místa)</option>
