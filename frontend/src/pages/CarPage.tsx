@@ -14,6 +14,7 @@ export default function CarPage() {
 
   const [car, setCar] = useState<Car | null>(null)
   const [error, setError] = useState('')
+  const [notFound, setNotFound] = useState(false)
 
   useEffect(() => {
     const fetchCar = async () => {
@@ -23,13 +24,31 @@ export default function CarPage() {
           headers: { Authorization: `Bearer ${token}` },
         })
         setCar(res.data)
-      } catch (err) {
-        setError('Nepodařilo se načíst auto.')
+        setNotFound(false)
+      } catch (err: any) {
+        if (axios.isAxiosError(err) && err.response?.status === 404) {
+          setNotFound(true)
+        } else {
+          setError('Nepodařilo se načíst auto.')
+        }
       }
     }
     fetchCar()
   }, [])
 
+  if (notFound)
+    return (
+      <div className="text-center mt-4 text-gray-600">
+        <h2 className="text-xl font-semibold mb-2">Nemáte žádné auto</h2>
+        <p className="mb-4">Zatím nemáte žádné auto přiřazené k účtu.</p>
+        <button
+          onClick={() => navigate('/create-car')}
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        >
+          Vytvořit auto
+        </button>
+      </div>
+    )
   if (error)
     return (
       <div className="text-red-500 text-center mt-4">{error}</div>
