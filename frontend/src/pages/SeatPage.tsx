@@ -93,66 +93,88 @@ export default function SeatPage() {
 
   // Interaktivní vizualizace sedaček podle layoutu
   function renderSeats() {
-    if (layout === 'SEDAN') {
-      // 2 vpředu, 3 vzadu
+    // Helper to render a seat with custom style
+    const seatStyle = (isDriver: boolean, occupied: boolean, selected: boolean) =>
+      `w-12 h-16 rounded-xl flex items-center justify-center border-2 shadow-md m-1
+      ${isDriver ? 'bg-yellow-200 border-yellow-500' : ''}
+      ${occupied ? 'bg-gray-400 border-gray-500 text-gray-700 cursor-not-allowed' :
+        selected ? 'bg-blue-500 border-blue-700 text-white' :
+        'bg-white border-gray-300 hover:bg-blue-100 hover:border-blue-400'}
+      `;
+
+    // Helper to render a seat (rectangle)
+    function SeatShape({ seat, selected, onSelect, isDriver }: { seat: Seat, selected: number | null, onSelect: (pos: number) => void, isDriver?: boolean }) {
       return (
-        <>
-          <div className="grid grid-cols-2 gap-6 mb-4">
-            {seats.slice(0, 2).map((seat) => (
-              <SeatButton key={seat.id} seat={seat} selected={selected} onSelect={handleChooseSeat} label="Předek" />
-            ))}
+        <button
+          disabled={seat.occupied}
+          onClick={() => onSelect(seat.position)}
+          className={seatStyle(!!isDriver, seat.occupied, selected === seat.position)}
+          style={{ position: 'relative' }}
+          title={isDriver ? 'Řidič' : undefined}
+        >
+          {isDriver && (
+            <span style={{ position: 'absolute', top: 2, left: 2, fontSize: 14, color: '#b59f00' }} title="Řidič">🛞</span>
+          )}
+          <span style={{ fontWeight: 600 }}>{seat.position}</span>
+        </button>
+      );
+    }
+
+    if (layout === 'SEDAN') {
+      // 2 front (driver left), 3 back
+      return (
+        <div className="flex flex-col items-center">
+          <div className="flex flex-row justify-center mb-6 gap-8">
+            <SeatShape seat={seats[0]} selected={selected} onSelect={handleChooseSeat} isDriver={true} />
+            <SeatShape seat={seats[1]} selected={selected} onSelect={handleChooseSeat} />
           </div>
-          <div className="grid grid-cols-3 gap-6">
-            {seats.slice(2, 5).map((seat) => (
-              <SeatButton key={seat.id} seat={seat} selected={selected} onSelect={handleChooseSeat} label="Zadek" />
-            ))}
+          <div className="flex flex-row justify-center gap-6">
+            <SeatShape seat={seats[2]} selected={selected} onSelect={handleChooseSeat} />
+            <SeatShape seat={seats[3]} selected={selected} onSelect={handleChooseSeat} />
+            <SeatShape seat={seats[4]} selected={selected} onSelect={handleChooseSeat} />
           </div>
-        </>
+        </div>
       )
     } else if (layout === 'SUV') {
-      // 2 vpředu, 3 uprostřed, 2 vzadu
+      // 2 front, 3 middle, 2 back
       return (
-        <>
-          <div className="grid grid-cols-2 gap-6 mb-4">
-            {seats.slice(0, 2).map((seat) => (
-              <SeatButton key={seat.id} seat={seat} selected={selected} onSelect={handleChooseSeat} label="Předek" />
-            ))}
+        <div className="flex flex-col items-center">
+          <div className="flex flex-row justify-center mb-6 gap-8">
+            <SeatShape seat={seats[0]} selected={selected} onSelect={handleChooseSeat} isDriver={true} />
+            <SeatShape seat={seats[1]} selected={selected} onSelect={handleChooseSeat} />
           </div>
-          <div className="grid grid-cols-3 gap-6 mb-4">
-            {seats.slice(2, 5).map((seat) => (
-              <SeatButton key={seat.id} seat={seat} selected={selected} onSelect={handleChooseSeat} label="Střed" />
-            ))}
+          <div className="flex flex-row justify-center mb-6 gap-6">
+            <SeatShape seat={seats[2]} selected={selected} onSelect={handleChooseSeat} />
+            <SeatShape seat={seats[3]} selected={selected} onSelect={handleChooseSeat} />
+            <SeatShape seat={seats[4]} selected={selected} onSelect={handleChooseSeat} />
           </div>
-          <div className="grid grid-cols-2 gap-6">
-            {seats.slice(5, 7).map((seat) => (
-              <SeatButton key={seat.id} seat={seat} selected={selected} onSelect={handleChooseSeat} label="Zadek" />
-            ))}
+          <div className="flex flex-row justify-center gap-10">
+            <SeatShape seat={seats[5]} selected={selected} onSelect={handleChooseSeat} />
+            <SeatShape seat={seats[6]} selected={selected} onSelect={handleChooseSeat} />
           </div>
-        </>
+        </div>
       )
     } else if (layout === 'MINIVAN') {
-      // 2 vpředu, 3 uprostřed, 3 vzadu
+      // 2 front, 3 middle, 3 back
       return (
-        <>
-          <div className="grid grid-cols-2 gap-6 mb-4">
-            {seats.slice(0, 2).map((seat) => (
-              <SeatButton key={seat.id} seat={seat} selected={selected} onSelect={handleChooseSeat} label="Předek" />
-            ))}
+        <div className="flex flex-col items-center">
+          <div className="flex flex-row justify-center mb-6 gap-8">
+            <SeatShape seat={seats[0]} selected={selected} onSelect={handleChooseSeat} isDriver={true} />
+            <SeatShape seat={seats[1]} selected={selected} onSelect={handleChooseSeat} />
           </div>
-          <div className="grid grid-cols-3 gap-6 mb-4">
-            {seats.slice(2, 5).map((seat) => (
-              <SeatButton key={seat.id} seat={seat} selected={selected} onSelect={handleChooseSeat} label="Střed" />
-            ))}
+          <div className="flex flex-row justify-center mb-6 gap-6">
+            <SeatShape seat={seats[2]} selected={selected} onSelect={handleChooseSeat} />
+            <SeatShape seat={seats[3]} selected={selected} onSelect={handleChooseSeat} />
+            <SeatShape seat={seats[4]} selected={selected} onSelect={handleChooseSeat} />
           </div>
-          <div className="grid grid-cols-3 gap-6">
-            {seats.slice(5, 8).map((seat) => (
-              <SeatButton key={seat.id} seat={seat} selected={selected} onSelect={handleChooseSeat} label="Zadek" />
-            ))}
+          <div className="flex flex-row justify-center gap-6">
+            <SeatShape seat={seats[5]} selected={selected} onSelect={handleChooseSeat} />
+            <SeatShape seat={seats[6]} selected={selected} onSelect={handleChooseSeat} />
+            <SeatShape seat={seats[7]} selected={selected} onSelect={handleChooseSeat} />
           </div>
-        </>
+        </div>
       )
     } else {
-      // fallback
       return <div>Neznámý typ rozložení auta.</div>
     }
   }
@@ -167,27 +189,5 @@ export default function SeatPage() {
         </div>
       </div>
     </div>
-  )
-}
-
-function SeatButton({ seat, selected, onSelect, label }: {
-  seat: Seat
-  selected: number | null
-  onSelect: (pos: number) => void
-  label: string
-}) {
-  return (
-    <button
-      disabled={seat.occupied}
-      onClick={() => onSelect(seat.position)}
-      className={`w-16 h-16 rounded-lg flex flex-col items-center justify-center border-2 text-sm font-semibold
-        ${seat.occupied ? 'bg-gray-400 border-gray-500 text-gray-700 cursor-not-allowed' :
-          selected === seat.position ? 'bg-blue-500 border-blue-700 text-white' :
-          'bg-white border-gray-300 hover:bg-blue-100 hover:border-blue-400'}
-      `}
-    >
-      <span>{label}</span>
-      <span>{seat.position}</span>
-    </button>
   )
 }
