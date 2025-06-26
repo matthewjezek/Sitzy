@@ -6,17 +6,17 @@ import { isAxiosError } from 'axios'
 export default function CreateCarPage() {
   const navigate = useNavigate()
   const [name, setName] = useState('')
-  const [layout, setLayout] = useState('SEDAN')
-  // Výchozí hodnota: dnešní datum s časem 00:00
+  const [layout, setLayout] = useState('sedaq')
   const today = new Date()
   const yyyy = today.getFullYear()
   const mm = String(today.getMonth() + 1).padStart(2, '0')
   const dd = String(today.getDate()).padStart(2, '0')
-  const defaultDate = `${yyyy}-${mm}-${dd}T00:00`
+  const defaultDate = `${yyyy}-${mm}-${dd}`
   const [date, setDate] = useState(defaultDate)
+  const [time, setTime] = useState('00:00')
   const [error, setError] = useState('')
 
-  const minDate = `${yyyy}-${mm}-${dd}T00:00`
+  const minDate = `${yyyy}-${mm}-${dd}`
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -26,15 +26,17 @@ export default function CreateCarPage() {
         setError('Nejste přihlášeni. Přihlaste se prosím znovu.')
         return
       }
+      // Sestav datetime ve formátu YYYY-MM-DDTHH:mm:ss+00:00 (UTC)
+      let dateWithSeconds = `${date}T${time}:00Z` // Z na konci znamená UTC
       await axios.post(
         'http://localhost:8000/cars/',
-        { name, layout, date },
+        { name, layout, date: dateWithSeconds },
         { headers: { Authorization: `Bearer ${token}` } }
       )
       navigate('/dashboard')
     } catch (err: any) {
-      if (isAxiosError(err) && err.response?.status === 400) {
-        setError(err.response.data?.detail || 'Chyba při vytváření auta.')
+      if (isAxiosError(err)) {
+        setError(JSON.stringify(err.response?.data) || 'Chyba při vytváření auta.')
       } else {
         setError('Chyba při vytváření auta.')
       }
@@ -65,22 +67,31 @@ export default function CreateCarPage() {
           value={layout}
           onChange={(e) => setLayout(e.target.value)}
         >
-          <option value="SEDAN">Sedan (4 místa)</option>
-          <option value="COUPE">Kupé (2 místa)</option>
-          <option value="MINIVAN">Minivan (7 míst)</option>
+          <option value="sedaq">Sedan (4 místa)</option>
+          <option value="trapaq">Kupé (2 místa)</option>
+          <option value="praq">Minivan (7 míst)</option>
         </select>
 
         <label htmlFor="date" className="block text-gray-700 font-semibold mb-1">Kdy pojedete?</label>
-        <input
-          id="date"
-          type="datetime-local"
-          className="w-full p-2 border rounded mb-4"
-          value={date}
-          min={minDate}
-          onChange={(e) => setDate(e.target.value)}
-          step="1"
-          required
-        />
+        <div className="flex gap-2 mb-4">
+          <input
+            id="date"
+            type="date"
+            className="w-full p-2 border rounded"
+            value={date}
+            min={minDate}
+            onChange={(e) => setDate(e.target.value)}
+            required
+          />
+          <input
+            id="time"
+            type="time"
+            className="w-full p-2 border rounded"
+            value={time}
+            onChange={(e) => setTime(e.target.value)}
+            required
+          />
+        </div>
         <div className="text-xs text-gray-500 mb-2">Výchozí čas je 00:00, můžete změnit.</div>
 
         <button
