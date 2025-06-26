@@ -106,11 +106,13 @@ class SeatBase(BaseModel):
     position: int
 
 
+# === Sedadla ===
 class SeatOut(BaseModelWithLabels["SeatOut"]):
     car_id: UUID
     user_id: UUID | None
     position: int
     position_label: str
+    user_name: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -122,6 +124,7 @@ class SeatOut(BaseModelWithLabels["SeatOut"]):
             user_id=seat.user_id,
             position=seat.position,
             position_label=get_position_label(seat.position, seat.car.layout, lang),
+            user_name=seat.user.email if seat.user else None,
         )
 
 
