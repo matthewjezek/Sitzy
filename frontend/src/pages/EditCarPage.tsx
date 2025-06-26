@@ -5,7 +5,7 @@ import axios from 'axios'
 export default function EditCarPage() {
   const navigate = useNavigate()
   const [name, setName] = useState('')
-  const [layout, setLayout] = useState('SEDAQ')
+  const [layout, setLayout] = useState('sedaq')
   const [date, setDate] = useState('')
   const [error, setError] = useState('')
   const [carId, setCarId] = useState<string | null>(null)
@@ -67,11 +67,11 @@ export default function EditCarPage() {
         <select
           className="w-full p-2 border rounded"
           value={layout}
-          onChange={(e) => setLayout(e.target.value as 'SEDAQ' | 'TRAPAQ' | 'PRAQ')}
+          onChange={(e) => setLayout(e.target.value)}
         >
-          <option value="SEDAQ">Sedan (4 místa)</option>
-          <option value="TRAPAQ">Kupé (2 místa)</option>
-          <option value="PRAQ">Minivan (7 míst)</option>
+          <option value="sedaq">Sedan (4 místa)</option>
+          <option value="trapaq">Kupé (2 místa)</option>
+          <option value="praq">Minivan (7 míst)</option>
         </select>
 
         <input

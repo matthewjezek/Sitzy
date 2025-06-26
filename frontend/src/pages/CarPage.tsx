@@ -67,7 +67,7 @@ export default function CarPage() {
         <p>
           <strong>Datum jízdy:</strong>{' '}
           {car.date && !isNaN(new Date(car.date).getTime())
-            ? new Date(car.date).toLocaleString()
+            ? new Date(car.date).toLocaleString('cs-CZ', { timeZone: 'UTC', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
             : 'Neznámé datum'}
         </p>
         <button

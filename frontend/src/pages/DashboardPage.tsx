@@ -3,6 +3,21 @@ import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 
 function SeatLayoutVisual({ seats, layout }: { seats: any[]; layout: string }) {
+  if (!Array.isArray(seats) || seats.length === 0) {
+    return <div className="text-gray-500">Žádná místa nejsou k dispozici.</div>;
+  }
+
+  // Normalize layout to backend enum
+  const normalizeLayout = (layout: string) => {
+    if (!layout) return '';
+    const l = layout.toLowerCase();
+    if (l.startsWith('sedan') || l === 'sedaq') return 'sedaq';
+    if (l.startsWith('kup') || l === 'trapaq') return 'trapaq';
+    if (l.startsWith('mini') || l === 'praq') return 'praq';
+    return l;
+  };
+  const normLayout = normalizeLayout(layout);
+
   // Helper for seat style
   const seatStyle = (isDriver: boolean, occupied: boolean) =>
     `w-14 h-16 rounded-xl flex flex-col items-center justify-center border-2 shadow-md m-1 text-xs
@@ -28,7 +43,7 @@ function SeatLayoutVisual({ seats, layout }: { seats: any[]; layout: string }) {
     );
   }
 
-  if (layout === 'SEDAQ') {
+  if (normLayout === 'sedaq') {
     // Sedan: 2 front, 3 back
     return (
       <div className="flex flex-col items-center">
@@ -43,7 +58,7 @@ function SeatLayoutVisual({ seats, layout }: { seats: any[]; layout: string }) {
         </div>
       </div>
     );
-  } else if (layout === 'TRAPAQ') {
+  } else if (normLayout === 'trapaq') {
     // Kupé: 2 seats (front only)
     return (
       <div className="flex flex-row justify-center gap-8">
@@ -51,7 +66,7 @@ function SeatLayoutVisual({ seats, layout }: { seats: any[]; layout: string }) {
         <SeatShape seat={seats[1]} />
       </div>
     );
-  } else if (layout === 'PRAQ') {
+  } else if (normLayout === 'praq') {
     // Minivan: 2 front, 3 middle, 2 back
     return (
       <div className="flex flex-col items-center">

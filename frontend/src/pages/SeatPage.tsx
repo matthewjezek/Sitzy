@@ -120,7 +120,7 @@ export default function SeatPage() {
       );
     }
 
-    if (layout === 'SEDAN') {
+    if (layout === 'sedaq') {
       // 2 front (driver left), 3 back
       return (
         <div className="flex flex-col items-center">
@@ -135,7 +135,15 @@ export default function SeatPage() {
           </div>
         </div>
       )
-    } else if (layout === 'SUV') {
+    } else if (layout === 'trapaq') {
+      // 2 front (kupé)
+      return (
+        <div className="flex flex-row justify-center gap-8">
+          <SeatShape seat={seats[0]} selected={selected} onSelect={handleChooseSeat} isDriver={true} />
+          <SeatShape seat={seats[1]} selected={selected} onSelect={handleChooseSeat} />
+        </div>
+      )
+    } else if (layout === 'praq') {
       // 2 front, 3 middle, 2 back
       return (
         <div className="flex flex-col items-center">
@@ -151,26 +159,6 @@ export default function SeatPage() {
           <div className="flex flex-row justify-center gap-10">
             <SeatShape seat={seats[5]} selected={selected} onSelect={handleChooseSeat} />
             <SeatShape seat={seats[6]} selected={selected} onSelect={handleChooseSeat} />
-          </div>
-        </div>
-      )
-    } else if (layout === 'MINIVAN') {
-      // 2 front, 3 middle, 3 back
-      return (
-        <div className="flex flex-col items-center">
-          <div className="flex flex-row justify-center mb-6 gap-8">
-            <SeatShape seat={seats[0]} selected={selected} onSelect={handleChooseSeat} isDriver={true} />
-            <SeatShape seat={seats[1]} selected={selected} onSelect={handleChooseSeat} />
-          </div>
-          <div className="flex flex-row justify-center mb-6 gap-6">
-            <SeatShape seat={seats[2]} selected={selected} onSelect={handleChooseSeat} />
-            <SeatShape seat={seats[3]} selected={selected} onSelect={handleChooseSeat} />
-            <SeatShape seat={seats[4]} selected={selected} onSelect={handleChooseSeat} />
-          </div>
-          <div className="flex flex-row justify-center gap-6">
-            <SeatShape seat={seats[5]} selected={selected} onSelect={handleChooseSeat} />
-            <SeatShape seat={seats[6]} selected={selected} onSelect={handleChooseSeat} />
-            <SeatShape seat={seats[7]} selected={selected} onSelect={handleChooseSeat} />
           </div>
         </div>
       )
