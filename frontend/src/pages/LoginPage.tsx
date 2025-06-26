@@ -1,12 +1,15 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useLocation } from 'react-router-dom'
 import axios from 'axios'
 
 export default function LoginPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+
+  const expired = new URLSearchParams(location.search).get('expired')
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -34,11 +37,16 @@ export default function LoginPage() {
       >
         <h2 className="text-2xl font-bold mb-4 text-center">Přihlášení</h2>
 
+        {expired && (
+          <div className="text-red-500 text-sm mb-2 text-center">
+            Vaše přihlášení vypršelo. Přihlaste se prosím znovu.
+          </div>
+        )}
         {error && <div className="text-red-500 text-sm">{error}</div>}
 
         <input
           type="email"
-          placeholder="Email"
+          placeholder="E-mail"
           className="w-full p-2 border rounded"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -60,12 +68,11 @@ export default function LoginPage() {
         >
           Přihlásit se
         </button>
-        <p className="text-center text-sm">
-          Nemáš účet?{' '}
+        <div className="text-center mt-2">
           <Link to="/register" className="text-blue-600 hover:underline">
-            Zaregistruj se
+            Nemáte účet? Zaregistrujte se
           </Link>
-        </p>
+        </div>
       </form>
     </div>
   )

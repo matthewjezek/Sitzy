@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import axios from '../api/axios'
+import { isAxiosError } from 'axios'
 
 export default function CreateCarPage() {
   const navigate = useNavigate()
@@ -32,7 +33,7 @@ export default function CreateCarPage() {
       )
       navigate('/dashboard')
     } catch (err: any) {
-      if (axios.isAxiosError(err) && err.response?.status === 400) {
+      if (isAxiosError(err) && err.response?.status === 400) {
         setError(err.response.data?.detail || 'Chyba při vytváření auta.')
       } else {
         setError('Chyba při vytváření auta.')
