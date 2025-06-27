@@ -8,6 +8,7 @@ import CarPage from './pages/CarPage'
 import CreateCarPage from './pages/CreateCarPage'
 import Layout from './components/Layout'
 import ProtectedRoute from './components/ProtectedRoute'
+import InvitePage from "./pages/InvitePage";
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
           <Route path="/invitations" element={<InvitationListPage />} />
           <Route path="/car" element={<CarPage />} />
           <Route path="/create-car" element={<CreateCarPage />} />
+          <Route path="/invite" element={<InvitePage />} />
         </Route>
       </Routes>
     </Router>
