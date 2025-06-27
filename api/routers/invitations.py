@@ -76,9 +76,7 @@ def accept_invitation(
             status_code=403, detail="User is not the owner of this car."
         )
     if current_user.car is not None:
-        raise HTTPException(
-            status_code=400, detail="User already has a car."
-        )
+        raise HTTPException(status_code=400, detail="User already has a car.")
 
     # Aktualizace stavu
     invitation.status = InvitationStatus.ACCEPTED
@@ -89,9 +87,7 @@ def accept_invitation(
         .first()
     )
     if existing:
-        raise HTTPException(
-            status_code=400, detail="User is already in the car."
-        )
+        raise HTTPException(status_code=400, detail="User is already in the car.")
     db.add(passenger)
     db.commit()
     return UserOut.model_validate(current_user)
@@ -141,10 +137,7 @@ def list_my_invitations(
         .all()
     )
 
-    return [
-        InvitationOut.from_orm_with_labels(inv)
-        for inv in invitations
-    ]
+    return [InvitationOut.from_orm_with_labels(inv) for inv in invitations]
 
 
 # === Získání pozvánek aktuálního uživatele ===
@@ -160,7 +153,4 @@ def get_received_invitations(
         .order_by(Invitation.created_at.desc())
         .all()
     )
-    return [
-        InvitationOut.from_orm_with_labels(inv)
-        for inv in invitations
-    ]
+    return [InvitationOut.from_orm_with_labels(inv) for inv in invitations]

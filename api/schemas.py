@@ -47,7 +47,6 @@ class CarOut(BaseModelWithLabels["CarOut"], CarBase):
     id: UUID
     owner_id: UUID
     created_at: datetime
-    layout_label: str
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -78,7 +77,6 @@ class InvitationOut(BaseModelWithLabels["InvitationOut"], InvitationBase):
     car_id: UUID
     token: str
     status: InvitationStatus
-    status_label: str
     created_at: datetime
     expires_at: datetime | None
 
@@ -107,7 +105,6 @@ class SeatOut(BaseModelWithLabels["SeatOut"]):
     car_id: UUID
     user_id: UUID | None
     position: int
-    position_label: str
     user_name: str | None = None
 
     model_config = ConfigDict(from_attributes=True)

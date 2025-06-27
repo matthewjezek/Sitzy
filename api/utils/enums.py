@@ -6,6 +6,7 @@ class CarLayout(str, Enum):
     TRAPAQ = "Coupé (2 seats)"
     PRAQ = "Minivan (7 seats)"
 
+
 class InvitationStatus(str, Enum):
     PENDING = "Pending"
     ACCEPTED = "Accepted"

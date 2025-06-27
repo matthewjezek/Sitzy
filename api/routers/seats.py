@@ -17,9 +17,7 @@ def get_seats(
     current_user: User = Depends(get_current_user),
 ) -> list[SeatOut]:
     if not current_user.passenger_entries:
-        raise HTTPException(
-            status_code=400, detail="User is not a passenger"
-        )
+        raise HTTPException(status_code=400, detail="User is not a passenger")
 
     car_id = current_user.passenger_entries[0].car_id
     seats = db.query(Seat).filter_by(car_id=car_id).all()
@@ -35,9 +33,7 @@ def choose_seat(
     current_user: User = Depends(get_current_user),
 ) -> SeatOut:
     if not current_user.passenger_entries:
-        raise HTTPException(
-            status_code=400, detail="User is not a passenger"
-        )
+        raise HTTPException(status_code=400, detail="User is not a passenger")
 
     car_id = current_user.passenger_entries[0].car_id
 

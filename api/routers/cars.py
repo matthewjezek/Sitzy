@@ -40,7 +40,10 @@ def read_my_car(
 
 
 # === Vytvoření nového auta ===
-@router.post("/", response_model=CarOut, )
+@router.post(
+    "/",
+    response_model=CarOut,
+)
 def create_car(
     request: Request,
     car_in: CarCreate,
@@ -48,9 +51,7 @@ def create_car(
     current_user: models.User = Depends(get_current_user),
 ) -> CarOut:
     if current_user.car:
-        raise HTTPException(
-            status_code=400, detail="User already has a car."
-        )
+        raise HTTPException(status_code=400, detail="User already has a car.")
     new_car = models.Car(**car_in.model_dump(), owner_id=current_user.id)
     db.add(new_car)
     db.commit()

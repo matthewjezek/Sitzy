@@ -26,9 +26,7 @@ def register(
 ) -> UserOut:
     user = db.query(models.User).filter(models.User.email == user_in.email).first()
     if user:
-        raise HTTPException(
-            status_code=400, detail="Email is already registered."
-        )
+        raise HTTPException(status_code=400, detail="Email is already registered.")
 
     hashed_password = get_password_hash(user_in.password)
     new_user = models.User(email=user_in.email, hashed_password=hashed_password)
@@ -45,9 +43,7 @@ def login(
 ) -> dict[str, Any]:
     user = db.query(models.User).filter(models.User.email == user_in.email).first()
     if not user or not verify_password(user_in.password, user.hashed_password):
-        raise HTTPException(
-            status_code=401, detail="Login failed."
-        )
+        raise HTTPException(status_code=401, detail="Login failed.")
 
     token = create_access_token(
         {"sub": str(user.id)},
