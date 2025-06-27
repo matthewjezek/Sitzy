@@ -49,7 +49,7 @@ def get_invitation(
             status_code=404,
             detail="Invitation not found.",
         )
-    return InvitationOut.from_orm_with_labels(invitation, request.state.lang)
+    return InvitationOut.from_orm_with_labels(invitation)
 
 
 # === Přijetí pozvánky ===
@@ -142,7 +142,7 @@ def list_my_invitations(
     )
 
     return [
-        InvitationOut.from_orm_with_labels(inv, request.state.lang)
+        InvitationOut.from_orm_with_labels(inv)
         for inv in invitations
     ]
 
@@ -161,6 +161,6 @@ def get_received_invitations(
         .all()
     )
     return [
-        InvitationOut.from_orm_with_labels(inv, request.state.lang)
+        InvitationOut.from_orm_with_labels(inv)
         for inv in invitations
     ]

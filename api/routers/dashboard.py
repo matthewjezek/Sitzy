@@ -16,16 +16,14 @@ def get_dashboard(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> DashboardOut:
-    lang = request.state.lang
-
     # Auto, které vlastním
     owned_car = None
     if current_user.car:
-        owned_car = CarOut.from_orm_with_labels(current_user.car, lang)
+        owned_car = CarOut.from_orm_with_labels(current_user.car)
 
     # Auta, kam jsem pozván jako pasažér
     cars_as_passenger = [
-        CarOut.from_orm_with_labels(p.car, lang) for p in current_user.passenger_entries
+        CarOut.from_orm_with_labels(p.car) for p in current_user.passenger_entries
     ]
 
     # Čekající pozvánky
@@ -38,7 +36,7 @@ def get_dashboard(
         .all()
     )
     invitations_out = [
-        InvitationOut.from_orm_with_labels(inv, lang) for inv in pending_invitations
+        InvitationOut.from_orm_with_labels(inv) for inv in pending_invitations
     ]
 
     return DashboardOut(

@@ -36,7 +36,7 @@ def read_my_car(
     car = db.query(Car).filter(Car.id == current_user.car.id).first()
     db.refresh(car)
 
-    return CarFullOut.from_orm_with_labels(car, lang=request.state.lang)
+    return CarFullOut.from_orm_with_labels(car)
 
 
 # === Vytvoření nového auta ===
@@ -55,7 +55,7 @@ def create_car(
     db.add(new_car)
     db.commit()
     db.refresh(new_car)
-    return CarOut.from_orm_with_labels(new_car, lang=request.state.lang)
+    return CarOut.from_orm_with_labels(new_car)
 
 
 # === Úpravy auta ===
@@ -79,7 +79,7 @@ def change_car(
 
     db.commit()
     db.refresh(car)
-    return CarOut.from_orm_with_labels(car, lang=request.state.lang)
+    return CarOut.from_orm_with_labels(car)
 
 
 # === Smazání auta ===
@@ -144,7 +144,7 @@ def create_invitation(
     db.commit()
     db.refresh(invitation)
 
-    return InvitationOut.from_orm_with_labels(invitation, lang=request.state.lang)
+    return InvitationOut.from_orm_with_labels(invitation)
 
 
 # === Získání všech účastníků auta ===
@@ -189,4 +189,4 @@ def get_passenger_cars(
         .order_by(Car.date.desc())
         .all()
     )
-    return [CarOut.from_orm_with_labels(car, request.state.lang) for car in cars]
+    return [CarOut.from_orm_with_labels(car) for car in cars]

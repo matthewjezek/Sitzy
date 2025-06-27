@@ -4,8 +4,6 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, EmailStr, StringConstraints
 
-from api.translations.localization_utils import get_position_label
-
 from .utils.base_models import BaseModelWithLabels
 from .utils.enums import CarLayout, InvitationStatus
 
@@ -54,7 +52,7 @@ class CarOut(BaseModelWithLabels["CarOut"], CarBase):
     model_config = ConfigDict(from_attributes=True)
 
     @classmethod
-    def from_orm_with_labels(cls, car: object, lang: str = "cs") -> "CarOut":
+    def from_orm_with_labels(cls, car: object) -> "CarOut":
         car = cast("Car", car)
         return cls(
             id=car.id,
@@ -63,7 +61,6 @@ class CarOut(BaseModelWithLabels["CarOut"], CarBase):
             name=car.name,
             layout=car.layout,
             date=car.date,
-            layout_label=car.layout.get_label(lang),
         )
 
 
@@ -88,7 +85,7 @@ class InvitationOut(BaseModelWithLabels["InvitationOut"], InvitationBase):
     model_config = ConfigDict(from_attributes=True)
 
     @classmethod
-    def from_orm_with_labels(cls, inv: object, lang: str = "cs") -> "InvitationOut":
+    def from_orm_with_labels(cls, inv: object) -> "InvitationOut":
         inv = cast("Invitation", inv)
         return cls(
             id=inv.id,
@@ -96,7 +93,6 @@ class InvitationOut(BaseModelWithLabels["InvitationOut"], InvitationBase):
             invited_email=inv.invited_email,
             token=inv.token,
             status=inv.status,
-            status_label=inv.status.get_label(lang),
             created_at=inv.created_at,
             expires_at=inv.expires_at,
         )
@@ -117,13 +113,12 @@ class SeatOut(BaseModelWithLabels["SeatOut"]):
     model_config = ConfigDict(from_attributes=True)
 
     @classmethod
-    def from_orm_with_labels(cls, seat: object, lang: str = "cs") -> "SeatOut":
+    def from_orm_with_labels(cls, seat: object) -> "SeatOut":
         seat = cast("Seat", seat)
         return cls(
             car_id=seat.car_id,
             user_id=seat.user_id,
             position=seat.position,
-            position_label=get_position_label(seat.position, seat.car.layout, lang),
             user_name=seat.user.email if seat.user else None,
         )
 
@@ -136,7 +131,7 @@ class CarFullOut(CarOut):
     model_config = ConfigDict(from_attributes=True)
 
     @classmethod
-    def from_orm_with_labels(cls, car: object, lang: str = "cs") -> "CarFullOut":
+    def from_orm_with_labels(cls, car: object) -> "CarFullOut":
         car = cast("Car", car)
         return cls(
             id=car.id,
@@ -144,12 +139,11 @@ class CarFullOut(CarOut):
             created_at=car.created_at,
             name=car.name,
             layout=car.layout,
-            layout_label=car.layout.get_label(lang),
             date=car.date,
             invitations=[
-                InvitationOut.from_orm_with_labels(inv, lang) for inv in car.invitations
+                InvitationOut.from_orm_with_labels(inv) for inv in car.invitations
             ],
-            seats=[SeatOut.from_orm_with_labels(seat, lang) for seat in car.seats],
+            seats=[SeatOut.from_orm_with_labels(seat) for seat in car.seats],
         )
 
 

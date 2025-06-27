@@ -116,4 +116,4 @@ def change_seat(
     current_seat.position = seat_in.position
     db.commit()
     db.refresh(current_seat)
-    return SeatOut.from_orm_with_labels(current_seat, request.state.lang)
+    return SeatOut.from_orm_with_labels(current_seat)
