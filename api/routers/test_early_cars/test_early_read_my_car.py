@@ -75,16 +75,6 @@ def mock_db():
 
 
 @pytest.fixture
-def patch_get_message():
-    """
-    Fixture to patch get_message in the correct namespace.
-    """
-    with patch("api.routers.cars.get_message") as mock_get_message:
-        mock_get_message.side_effect = lambda key, lang="cs": f"{key}_{lang}"
-        yield mock_get_message
-
-
-@pytest.fixture
 def patch_carout_from_orm_with_labels():
     """
     Fixture to patch CarOut.from_orm_with_labels in the correct namespace.
@@ -102,7 +92,6 @@ class TestReadMyCar:
         mock_user,
         mock_car,
         mock_db,
-        patch_get_message,
         patch_carout_from_orm_with_labels,
     ):
         """
@@ -127,7 +116,6 @@ class TestReadMyCar:
         mock_user,
         mock_car,
         mock_db,
-        patch_get_message,
         patch_carout_from_orm_with_labels,
     ):
         """
@@ -151,7 +139,6 @@ class TestReadMyCar:
         mock_request,
         mock_user,
         mock_db,
-        patch_get_message,
         patch_carout_from_orm_with_labels,
     ):
         """
@@ -165,7 +152,6 @@ class TestReadMyCar:
             read_my_car(req, db, user)
 
         assert exc_info.value.status_code == 404
-        patch_get_message.assert_called_once_with("car_not_found", "cs")
         assert exc_info.value.detail == "car_not_found_cs"
 
     @edge
@@ -174,7 +160,6 @@ class TestReadMyCar:
         mock_request,
         mock_user,
         mock_db,
-        patch_get_message,
         patch_carout_from_orm_with_labels,
     ):
         """
@@ -187,12 +172,11 @@ class TestReadMyCar:
         with pytest.raises(HTTPException) as exc_info:
             read_my_car(req, db, user)
 
-        patch_get_message.assert_called_once_with("car_not_found", "fr")
         assert exc_info.value.detail == "car_not_found_fr"
 
     @edge
     def test_carout_from_orm_with_labels_returns_unexpected(
-        self, mock_request, mock_user, mock_car, mock_db, patch_get_message
+        self, mock_request, mock_user, mock_car, mock_db, patch_carout_from_orm_with_labels
     ):
         """
         Test that the function handles CarOut.from_orm_with_labels returning an unexpected value.
@@ -213,7 +197,6 @@ class TestReadMyCar:
         mock_user,
         mock_car,
         mock_db,
-        patch_get_message,
         patch_carout_from_orm_with_labels,
     ):
         """

@@ -5,7 +5,6 @@ from api.database import get_db
 from api.deps import get_current_user
 from api.models import Car, Invitation, Passenger, User
 from api.schemas import InvitationOut, UserOut
-from api.translations.localization_utils import get_message
 from api.utils.enums import InvitationStatus
 
 router = APIRouter()
@@ -26,13 +25,13 @@ def cancel_invitation(
     if not invitation:
         raise HTTPException(
             status_code=404,
-            detail=get_message("invitation_not_found", request.state.lang),
+            detail="Invitation not found.",
         )
 
     if invitation.car.owner_id != current_user.id:
         raise HTTPException(
             status_code=403,
-            detail=get_message("not_car_owner", request.state.lang),
+            detail="User is not the owner of this car.",
         )
 
     db.delete(invitation)
@@ -48,7 +47,7 @@ def get_invitation(
     if not invitation:
         raise HTTPException(
             status_code=404,
-            detail=get_message("invitation_not_found", request.state.lang),
+            detail="Invitation not found.",
         )
     return InvitationOut.from_orm_with_labels(invitation, request.state.lang)
 
@@ -65,20 +64,20 @@ def accept_invitation(
     if not invitation:
         raise HTTPException(
             status_code=404,
-            detail=get_message("invitation_not_found", request.state.lang),
+            detail="Invitation not found.",
         )
     if invitation.status != InvitationStatus.PENDING:
         raise HTTPException(
             status_code=400,
-            detail=get_message("invitation_already_responded", request.state.lang),
+            detail="Invitation has already been processed.",
         )
     if invitation.invited_email.lower() != current_user.email.lower():
         raise HTTPException(
-            status_code=403, detail=get_message("not_car_owner", request.state.lang)
+            status_code=403, detail="User is not the owner of this car."
         )
     if current_user.car is not None:
         raise HTTPException(
-            status_code=400, detail=get_message("user_has_car", request.state.lang)
+            status_code=400, detail="User already has a car."
         )
 
     # Aktualizace stavu
@@ -91,7 +90,7 @@ def accept_invitation(
     )
     if existing:
         raise HTTPException(
-            status_code=400, detail=get_message("user_in_car", request.state.lang)
+            status_code=400, detail="User is already in the car."
         )
     db.add(passenger)
     db.commit()
@@ -110,22 +109,22 @@ def reject_invitation(
     if not invitation:
         raise HTTPException(
             status_code=404,
-            detail=get_message("invitation_not_found", request.state.lang),
+            detail="Invitation not found.",
         )
     if invitation.status != InvitationStatus.PENDING:
         raise HTTPException(
             status_code=400,
-            detail=get_message("invitation_already_responded", request.state.lang),
+            detail="Invitation has already been processed.",
         )
     if invitation.invited_email.lower() != current_user.email.lower():
         raise HTTPException(
-            status_code=403, detail=get_message("not_car_owner", request.state.lang)
+            status_code=403, detail="User is not the owner of this car."
         )
 
     # Odmítnutí
     invitation.status = InvitationStatus.REJECTED
     db.commit()
-    return {"message": get_message("invitation_rejected", request.state.lang)}
+    return {"detail": "Invitation has been successfully rejected."}
 
 
 # === Seznam mých pozvánek ===

@@ -1,10 +1,10 @@
 import os
 
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-
-from api.middleware.language import LanguageMiddleware
+from fastapi.responses import JSONResponse
 
 # Načtení proměnných z .env
 load_dotenv()
@@ -24,7 +24,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.add_middleware(LanguageMiddleware)
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    # Můžeš si výstup upravit dle libosti, třeba jen první chybu nebo vše jako string
+    error_messages = [f"{err['loc'][-1]}: {err['msg']}" for err in exc.errors()]
+    return JSONResponse(
+        status_code=422,
+        content={"detail": "; ".join(error_messages)}  # nebo {"detail": error_messages} pro pole
+    )
 
 # Import routerů
 from api.routers import auth, cars, invitations, seats  # noqa: E402

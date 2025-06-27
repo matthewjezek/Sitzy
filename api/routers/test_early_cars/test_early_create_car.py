@@ -71,10 +71,6 @@ def mock_new_car():
 @pytest.fixture(autouse=True)
 def mock_dependencies(monkeypatch, mock_new_car):
     """Auto-used fixture to patch external dependencies."""
-    # Patch get_message
-    monkeypatch.setattr(
-        "api.routers.cars.get_message", lambda key, lang="cs": f"msg:{key}:{lang}"
-    )
     # Patch CarOut.from_orm_with_labels
     carout_mock = MagicMock(return_value="carout_obj")
     monkeypatch.setattr("api.routers.cars.CarOut.from_orm_with_labels", carout_mock)

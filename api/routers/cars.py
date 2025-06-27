@@ -17,7 +17,6 @@ from api.schemas import (
     SeatOut,
     UserOut,
 )
-from api.translations.localization_utils import get_message
 from api.utils.enums import InvitationStatus
 from api.utils.security import generate_token
 
@@ -32,7 +31,7 @@ def read_my_car(
     db: Session = Depends(get_db),
 ) -> CarFullOut:
     if not current_user.car:
-        raise HTTPException(status_code=404, detail="Uživatel zatím nemá auto.")
+        raise HTTPException(status_code=404, detail="User has no car.")
 
     car = db.query(Car).filter(Car.id == current_user.car.id).first()
     db.refresh(car)
@@ -41,7 +40,7 @@ def read_my_car(
 
 
 # === Vytvoření nového auta ===
-@router.post("/", response_model=CarOut)
+@router.post("/", response_model=CarOut, )
 def create_car(
     request: Request,
     car_in: CarCreate,
@@ -50,7 +49,7 @@ def create_car(
 ) -> CarOut:
     if current_user.car:
         raise HTTPException(
-            status_code=400, detail=get_message("user_has_car", request.state.lang)
+            status_code=400, detail="User already has a car."
         )
     new_car = models.Car(**car_in.model_dump(), owner_id=current_user.id)
     db.add(new_car)
@@ -71,7 +70,7 @@ def change_car(
     car = db.query(models.Car).filter(models.Car.id == car_id).first()
     if not car or car.owner_id != current_user.id:
         raise HTTPException(
-            status_code=404, detail=get_message("car_not_yours", request.state.lang)
+            status_code=404, detail="Car not found or does not belong to you."
         )
 
     car.name = car_in.name
@@ -94,7 +93,7 @@ def delete_car(
     car = db.query(models.Car).filter(models.Car.id == car_id).first()
     if not car or car.owner_id != current_user.id:
         raise HTTPException(
-            status_code=404, detail=get_message("car_not_yours", request.state.lang)
+            status_code=404, detail="Car not found or does not belong to you."
         )
 
     db.delete(car)
@@ -114,7 +113,7 @@ def create_invitation(
     car = db.query(models.Car).filter(models.Car.id == car_id).first()
     if not car or car.owner_id != current_user.id:
         raise HTTPException(
-            status_code=403, detail=get_message("car_not_yours", request.state.lang)
+            status_code=403, detail="Car not found or does not belong to you."
         )
 
     existing = (
@@ -129,7 +128,7 @@ def create_invitation(
 
     if existing:
         raise HTTPException(
-            status_code=400, detail=get_message("invitation_exists", request.state.lang)
+            status_code=400, detail="Invitation has already been sent to this email."
         )
 
     token = generate_token()
@@ -155,7 +154,7 @@ def list_participants(
     current_user: User = Depends(get_current_user),
 ) -> list[UserOut]:
     if not current_user.car:
-        raise HTTPException(status_code=404, detail="Nemáte vlastní auto.")
+        raise HTTPException(status_code=404, detail="User has no car.")
 
     car = current_user.car
     participant_ids = [seat.user_id for seat in car.seats] + [car.owner_id]
@@ -171,7 +170,7 @@ def get_my_seat(
     current_user: User = Depends(get_current_user),
 ) -> SeatOut:
     if not current_user.seat:
-        raise HTTPException(status_code=404, detail="Nemáte přiřazené místo.")
+        raise HTTPException(status_code=404, detail="User has no assigned seat.")
 
     return SeatOut.model_validate(current_user.seat)
 

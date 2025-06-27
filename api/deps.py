@@ -8,7 +8,6 @@ from sqlalchemy.orm import Session
 
 from api.database import get_db
 from api.models import User
-from api.translations.localization_utils import get_message
 
 # JWT nastavení
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret")
@@ -28,7 +27,7 @@ def get_current_user(
 
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail=get_message("invalid_token", request.state.lang),
+        detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
 

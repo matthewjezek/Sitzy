@@ -9,7 +9,6 @@ from api import models
 from api.database import get_db
 from api.deps import get_current_user
 from api.schemas import UserCreate, UserLogin, UserOut
-from api.translations.localization_utils import get_message
 from api.utils.security import create_access_token, get_password_hash, verify_password
 
 router = APIRouter()
@@ -28,7 +27,7 @@ def register(
     user = db.query(models.User).filter(models.User.email == user_in.email).first()
     if user:
         raise HTTPException(
-            status_code=400, detail=get_message("email_registered", request.state.lang)
+            status_code=400, detail="Email is already registered."
         )
 
     hashed_password = get_password_hash(user_in.password)
@@ -47,7 +46,7 @@ def login(
     user = db.query(models.User).filter(models.User.email == user_in.email).first()
     if not user or not verify_password(user_in.password, user.hashed_password):
         raise HTTPException(
-            status_code=401, detail=get_message("login_failed", request.state.lang)
+            status_code=401, detail="Login failed."
         )
 
     token = create_access_token(

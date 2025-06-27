@@ -5,7 +5,6 @@ from api.database import get_db
 from api.deps import get_current_user
 from api.models import Seat, User
 from api.schemas import SeatBase, SeatOut
-from api.translations.localization_utils import get_message
 
 router = APIRouter()
 
@@ -19,7 +18,7 @@ def get_seats(
 ) -> list[SeatOut]:
     if not current_user.passenger_entries:
         raise HTTPException(
-            status_code=400, detail=get_message("not_passenger", request.state.lang)
+            status_code=400, detail="User is not a passenger"
         )
 
     car_id = current_user.passenger_entries[0].car_id
@@ -37,7 +36,7 @@ def choose_seat(
 ) -> SeatOut:
     if not current_user.passenger_entries:
         raise HTTPException(
-            status_code=400, detail=get_message("not_passenger", request.state.lang)
+            status_code=400, detail="User is not a passenger"
         )
 
     car_id = current_user.passenger_entries[0].car_id
@@ -48,13 +47,13 @@ def choose_seat(
     if existing_seat:
         raise HTTPException(
             status_code=400,
-            detail=get_message("seat_already_taken", request.state.lang),
+            detail="Seat already taken",
         )
 
     if current_user.seat:
         raise HTTPException(
             status_code=400,
-            detail=get_message("seat_already_taken", request.state.lang),
+            detail="Seat already taken",
         )
 
     new_seat = Seat(car_id=car_id, user_id=current_user.id, position=seat_in.position)
@@ -75,7 +74,7 @@ def leave_seat(
     if not seat:
         raise HTTPException(
             status_code=404,
-            detail=get_message("no_seat_found", request.state.lang),
+            detail="No seat found",
         )
 
     db.delete(seat)
@@ -93,14 +92,14 @@ def change_seat(
     if not current_user.seat:
         raise HTTPException(
             status_code=400,
-            detail=get_message("no_seat_to_change", request.state.lang),
+            detail="No seat to change",
         )
 
     current_seat = current_user.seat
     if current_seat.position == seat_in.position:
         raise HTTPException(
             status_code=400,
-            detail=get_message("already_on_this_seat", request.state.lang),
+            detail="Already on this seat",
         )
 
     existing = (
@@ -111,7 +110,7 @@ def change_seat(
     if existing:
         raise HTTPException(
             status_code=400,
-            detail=get_message("seat_already_taken", request.state.lang),
+            detail="Seat already taken",
         )
 
     current_seat.position = seat_in.position
