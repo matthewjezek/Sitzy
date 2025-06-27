@@ -50,7 +50,7 @@ def login(
         )
 
     token = create_access_token(
-        {"sub": str(user.id)}, secret_key=SECRET_KEY, algorithm=ALGORITHM
+        {"sub": str(user.id)}, expires_delta=ACCESS_TOKEN_EXPIRE_MINUTES, secret_key=SECRET_KEY, algorithm=ALGORITHM
     )
     return {"access_token": token, "token_type": "bearer"}
 
