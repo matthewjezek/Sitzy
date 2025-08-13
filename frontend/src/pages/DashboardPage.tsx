@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 
 function SeatLayoutVisual({ seats, layout }: { seats: any[]; layout: string }) {
   // Normalize layout to backend enum

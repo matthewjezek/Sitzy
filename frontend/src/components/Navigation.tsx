@@ -1,5 +1,4 @@
-import { useNavigate } from 'react-router-dom'
-import { FaCar } from 'react-icons/fa6';
+import { useNavigate } from 'react-router'
 
 
 const Button = () => {
@@ -8,12 +7,14 @@ const Button = () => {
     <div className="navigation">
       {/* Levá skupina tlačítek */}
       <div className="flex items-center gap-2">
-        <button className="nav-button hover:bg-gray-100 h-9 px-3 group">
+        <button className="nav-button gap-0 group overflow-hidden transition-all duration-300 ease-in hover:gap-2">
           <svg className="lucide lucide-arrow-left" stroke="currentColor" fill="none" viewBox="0 0 24 24" height={22} width={22}>
             <path d="m12 19-7-7 7-7" />
             <path d="M19 12H5" />
           </svg>
-          <span className="origin-left scale-0 transition-transform group-hover:scale-100">Zpět</span>
+          <span className="whitespace-nowrap max-w-0 overflow-hidden transition-all duration-300 ease-in group-hover:max-w-[100px]">
+            Zpět
+          </span>
         </button>
 
         <button className="nav-button hover:bg-gray-100 hover:text-cyan-400"
@@ -32,7 +33,7 @@ const Button = () => {
           <svg className="lucide lucide-car-seat text-blue-400 dark:text-blue-600" stroke="currentColor" fill="none" viewBox="0 0 24 24" height={22} width={22}>
             <rect x="7" y="6" width="10" height="8" rx="3" />
             <rect x="5" y="14" width="14" height="7" rx="2" />
-            <path d="M7 6v-1a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1" />
+            <path d="M9 6v-1a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v1" />
           </svg>
           Jízdy
         </button>
@@ -46,9 +47,21 @@ const Button = () => {
           Pozvánky
         </button>
 
-        <button className="nav-button hover:bg-gray-100 hover:text-orange-400"
-          onClick={() => navigate('/car')}>
-          <FaCar size={18} className="text-amber-500 dark:text-amber-600" />
+        <button
+          className="nav-button hover:bg-gray-100 hover:text-orange-400"
+          onClick={() => navigate('/car')}
+        >
+          <svg className="text-amber-500 dark:text-amber-600" stroke="currentColor" fill="none" viewBox="0 0 24 24" height={22} width={22}>
+            <rect x="2" y="10" width="20" height="9" rx="2" />
+
+            <path d="m20.772 10.156-1.368-4.105A2.995 2.995 0 0 0 16.559 4H7.441a2.995 2.995 0 0 0-2.845 2.051l-1.368 4.105A2.003" />
+
+            <circle cx="6" cy="14.5" r="1.5" />
+            <circle cx="18" cy="14.5" r="1.5" />
+            
+            <rect x="3" y="19" width="3" height="3" rx="1" />
+            <rect x="18" y="19" width="3" height="3" rx="1" />
+          </svg>
           Moje auto
         </button>
       </div>
@@ -60,7 +73,7 @@ const Button = () => {
             localStorage.removeItem('token')
             window.location.href = '/login'
           }}>
-          <svg className="lucide lucide-log-out text-red-400 dark:text-red-600" stroke="currentColor" fill="none" viewBox="0 0 24 24" height={22} width={22}>
+          <svg className="text-red-400 dark:text-red-600" stroke="currentColor" fill="none" viewBox="0 0 24 24" height={22} width={22}>
             <path d="M9 21H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3" />
             <path d="M16 17l5-5-5-5" />
             <path d="M21 12H9" />
