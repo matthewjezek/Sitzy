@@ -9,6 +9,7 @@ import CreateCarPage from './pages/CreateCarPage'
 import Layout from './components/Layout'
 import ProtectedRoute from './components/ProtectedRoute'
 import InvitePage from "./pages/InvitePage";
+import PageNotFound from './pages/PageNotFound'
 
 function App() {
   return (
@@ -16,6 +17,8 @@ function App() {
       <Routes>
         {/* Přesměrování rootu na dashboard */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        {/* Stránka pro 404 */}
+        <Route path="*" element={<PageNotFound />} />
         {/* Veřejné stránky */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
