@@ -7,7 +7,14 @@ import { toast } from 'react-toastify'
 
 export default function CarPage() {
   const navigate = useNavigate()
-  const [car, setCar] = useState<any>(null)
+  interface Car {
+    id: number;
+    name: string;
+    date?: string;
+    layout_label?: string;
+    // Add other fields as needed
+  }
+  const [car, setCar] = useState<Car | null>(null)
   const [error, setError] = useState('')
   const [notFound, setNotFound] = useState(false)
   const axios = axiosInstance()
@@ -30,18 +37,20 @@ export default function CarPage() {
       }
     }
     fetchCar()
-  }, [])
+  }, [axios])
 
   if (notFound)
     return (
-      <div className='flex justify-center items-center h-screen'>
+      <div className='flex justify-center-safe items-center h-screen'>
         <div className="w-80 bg-white rounded-lg shadow-md transform hover:scale-105 transition-transform duration-300 ease-in-out">
           <img className="w-full h-60 object-cover rounded-t-lg" alt="Card Image" src="src/assets/karec.svg" />
           <div className="p-4">
             <h2 className="text-xl font-semibold">Kam pojedeme?</h2>
             <p className="text-gray-600">Přijměte pozvánku nebo naplánujte vlastní jízdu.</p>
             <div className="flex justify-between items-center mt-4">
-              <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400">Learn More</button>
+              <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+              onClick={() => navigate('/create-car')}>
+                Learn More</button>
             </div>
           </div>
         </div>

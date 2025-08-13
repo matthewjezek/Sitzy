@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import axios from 'axios'
+import { toast } from 'react-toastify'
 
 export default function EditCarPage() {
   const navigate = useNavigate()
@@ -21,8 +22,16 @@ export default function EditCarPage() {
         setLayout(res.data.layout)
         setDate(res.data.date.slice(0, 16)) // ISO datetime format trim
         setCarId(res.data.id)
-      } catch (err: any) {
-        setError('Nepodařilo se načíst data auta. ' + (err?.message || ''))
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError('Nepodařilo se načíst data auta. ' + err.message);
+          console.error(err);
+          toast.error('Chyba načtení auta.');
+        } else {
+          setError('Nepodařilo se načíst data auta.');
+          console.error(err);
+          toast.error('Chyba načtení auta.');
+        }
       }
     }
     fetchCar()
@@ -42,13 +51,21 @@ export default function EditCarPage() {
         { headers: { Authorization: `Bearer ${token}` } }
       )
       navigate('/dashboard')
-    } catch (err: any) {
-      setError('Chyba při úpravě auta. ' + (err?.message || ''))
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError('Chyba při úpravě auta. ' + err.message);
+        console.error(err);
+        toast.error('Chyba úpravy auta.');
+      } else {
+        setError('Chyba při úpravě auta.');
+        console.error(err);
+        toast.error('Chyba úpravy auta.');
+      }
     }
   }
 
   return (
-    <div className="flex items-center justify-center h-screen bg-gray-100">
+    <div className="flex items-center justify-center h-screen">
       <form
         onSubmit={handleSubmit}
         className="bg-white p-8 rounded shadow-md w-full max-w-md space-y-4"

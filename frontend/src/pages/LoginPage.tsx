@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router'
 import axios from 'axios'
+import { toast } from 'react-toastify'
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -25,12 +26,13 @@ export default function LoginPage() {
         setError('Chyba při přihlašování. Zkuste to prosím znovu.')
       }
     } catch (err) {
-      setError('Neplatné přihlašovací údaje')
+      console.error(err);
+      toast.error('Chyba přihlášení.');
     }
   }
 
   return (
-    <div className="flex items-center justify-center h-screen bg-gray-100">
+    <div className="flex justify-center-safe items-center h-fit mt-32">
       <form
         onSubmit={handleLogin}
         className="bg-white p-8 rounded shadow-md w-full max-w-md space-y-4"

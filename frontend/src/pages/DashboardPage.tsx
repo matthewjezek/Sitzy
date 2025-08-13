@@ -2,7 +2,12 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { useNavigate } from 'react-router'
 
-function SeatLayoutVisual({ seats, layout }: { seats: any[]; layout: string }) {
+interface Seat {
+  position: number;
+  position_label?: string;
+  user_name?: string;
+}
+function SeatLayoutVisual({ seats, layout }: { seats: Seat[]; layout: string }) {
   // Normalize layout to backend enum
   const normalizeLayout = (layout: string) => {
     if (!layout) return '';
@@ -15,7 +20,7 @@ function SeatLayoutVisual({ seats, layout }: { seats: any[]; layout: string }) {
   const normLayout = normalizeLayout(layout);
 
   // Najdi seat pro každou pozici
-  const seatByPosition: Record<number, any> = {};
+  const seatByPosition: Record<number, Seat | undefined> = {};
   (seats || []).forEach(seat => {
     seatByPosition[seat.position] = seat;
   });
@@ -27,7 +32,7 @@ function SeatLayoutVisual({ seats, layout }: { seats: any[]; layout: string }) {
     ${occupied ? 'bg-blue-400 border-blue-700 text-white' : 'bg-white border-gray-300 text-gray-700'}
     `;
 
-  function SeatShape({ seat, position, isDriver }: { seat: any; position: number; isDriver?: boolean }) {
+  function SeatShape({ seat, position, isDriver }: { seat: Seat | undefined; position: number; isDriver?: boolean }) {
     return (
       <div
         className={seatStyle(!!isDriver, !!seat?.user_name)}
@@ -126,7 +131,20 @@ function SeatLayoutVisual({ seats, layout }: { seats: any[]; layout: string }) {
 
 export default function DashboardPage() {
   const [user, setUser] = useState<{ email: string } | null>(null)
-  const [car, setCar] = useState<any>(null)
+  interface Invitation {
+    id: number;
+    invited_email: string;
+    status_label: string;
+  }
+  interface Car {
+    id: number;
+    name: string;
+    date: string;
+    layout_label: string;
+    invitations: Invitation[];
+    seats: Seat[];
+  }
+  const [car, setCar] = useState<Car | null>(null)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -175,7 +193,7 @@ export default function DashboardPage() {
             <h3 className="text-lg font-semibold text-blue-600 mb-2">Pozvánky:</h3>
             <ul className="list-disc list-inside ml-4">
               {car.invitations.length > 0 ? (
-                car.invitations.map((invitation: any) => (
+                car.invitations.map((invitation: Invitation) => (
                   <li key={invitation.id} className="mb-1">
                     <span className="font-mono text-gray-800">{invitation.invited_email}</span> – <span className="font-semibold text-gray-700">{invitation.status_label}</span>
                   </li>

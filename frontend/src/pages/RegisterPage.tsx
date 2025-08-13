@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import axios from 'axios'
+import { toast } from 'react-toastify'
 
 export default function RegisterPage() {
   const navigate = useNavigate()
@@ -25,18 +26,21 @@ export default function RegisterPage() {
         }
       )
       navigate('/login')
-    } catch (err: any) {
-      console.error('Registration error:', err)
-      if (err.response && err.response.data && err.response.data.detail) {
-        setError(`Registrace selhala: ${err.response.data.detail}`)
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err) && err.response?.data?.detail) {
+        setError(`Registrace selhala: ${err.response.data.detail}`);
+        console.error('Registration error:', err);
+        toast.error('Chyba registrace.');
       } else {
-        setError('Registrace selhala. Zkus to znovu.')
+        setError('Registrace selhala. Zkus to znovu.');
+        console.error('Registration error:', err);
+        toast.error('Chyba registrace.');
       }
     }
   }
 
   return (
-    <div className="flex items-center justify-center h-screen bg-gray-100">
+    <div className="flex justify-center-safe items-center h-fit mt-32">
       <form
         onSubmit={handleRegister}
         className="bg-white p-8 rounded shadow-md w-full max-w-md space-y-4"

@@ -36,15 +36,16 @@ export default function InvitePage() {
       )
       toast.success('Pozvánka úspěšně odeslána.')
       setEmail('')
-    } catch (err: any) {
-      setError('Nepodařilo se odeslat pozvánku.')
+    } catch (err: unknown) {
+      console.error(err)
+      setError('Nepodařilo se odeslat pozvánku.' + (err instanceof Error ? ' ' + err.message : ''))
       toast.error('Chyba při odesílání pozvánky.')
     }
   }
 
   if (hasCar === false) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-100">
+      <div className="flex items-center justify-center h-screen">
         <div className="bg-white p-8 rounded shadow-md w-full max-w-md space-y-4 text-center">
           <h2 className="text-2xl font-bold mb-2">Nemáte žádné auto</h2>
           <p className="mb-4">Pro odeslání pozvánky musíte nejprve vytvořit auto.</p>

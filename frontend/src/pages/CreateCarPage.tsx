@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import axiosInstance from '../api/axios'
 import { isAxiosError } from 'axios'
+import { toast } from 'react-toastify'
 
 export default function CreateCarPage() {
   const navigate = useNavigate()
@@ -28,24 +29,28 @@ export default function CreateCarPage() {
         return
       }
       // Sestav datetime ve formátu YYYY-MM-DDTHH:mm:ss+00:00 (UTC)
-      let dateWithSeconds = `${date}T${time}:00Z` // Z na konci znamená UTC
+      const dateWithSeconds = `${date}T${time}:00Z` // Z na konci znamená UTC
       await axios.post(
         'http://localhost:8000/cars/',
         { name, layout, date: dateWithSeconds },
         { headers: { Authorization: `Bearer ${token}` } }
       )
       navigate('/dashboard')
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (isAxiosError(err)) {
-        setError(JSON.stringify(err.response?.data) || 'Chyba při vytváření auta.')
+        setError(JSON.stringify(err.response?.data) || 'Chyba při vytváření auta.');
+        console.error(err);
+        toast.error('Chyba vytvoření auta.');
       } else {
-        setError('Chyba při vytváření auta.')
+        setError('Chyba při vytváření auta.');
+        console.error(err);
+        toast.error('Chyba vytvoření auta.');
       }
     }
   }
 
   return (
-    <div className="flex items-center justify-center h-screen bg-gray-100">
+    <div className="flex items-center justify-center h-screen">
       <form
         onSubmit={handleSubmit}
         className="bg-white p-8 rounded shadow-md w-full max-w-md space-y-4"

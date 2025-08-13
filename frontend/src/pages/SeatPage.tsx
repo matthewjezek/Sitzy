@@ -52,18 +52,22 @@ export default function SeatPage() {
       setSeats(res.data)
       setNotFound(false)
       setError('')
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
         if (err.response?.status === 404 || err.response?.status === 400) {
           setNotFound(true)
           setError('')
         } else {
-          setError('Nepodařilo se načíst seznam míst. (' + (err.response?.status || 'chyba') + ')')
-          setNotFound(false)
+          setError('Nepodařilo se načíst seznam míst. (' + (err.response?.status || 'chyba') + ')');
+          setNotFound(false);
+          console.error(err);
+          toast.error('Chyba načtení míst.');
         }
       } else {
-        setError('Nepodařilo se načíst seznam míst. (neznámá chyba)')
-        setNotFound(false)
+        setError('Nepodařilo se načíst seznam míst. (neznámá chyba)');
+        setNotFound(false);
+        console.error(err);
+        toast.error('Chyba načtení míst.');
       }
     } finally {
       setLoading(false)
@@ -82,6 +86,7 @@ export default function SeatPage() {
       setSelected(position)
       fetchSeats()
     } catch (err) {
+      console.error(err);
       toast.error('Výběr místa selhal.')
     }
   }

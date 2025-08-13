@@ -23,7 +23,6 @@ export default function InvitationListPage() {
 
   useEffect(() => {
     fetchInvitations()
-    // eslint-disable-next-line
   }, [])
 
   const fetchInvitations = async () => {
@@ -35,8 +34,10 @@ export default function InvitationListPage() {
         headers: { Authorization: `Bearer ${token}` },
       })
       setInvitations(res.data)
-    } catch (err: any) {
-      setError('Nepodařilo se načíst pozvánky.')
+    } catch (err: unknown) {
+      setError('Nepodařilo se načíst pozvánky.' + (err instanceof Error ? ' ' + err.message : ''));
+      console.error(err);
+      toast.error('Chyba načtení pozvánek.');
     } finally {
       setLoading(false)
     }
