@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, Link, useLocation } from 'react-router'
+import { useNavigate, useLocation } from 'react-router'
 import axios from 'axios'
 
 export default function LoginPage() {
@@ -70,9 +70,9 @@ export default function LoginPage() {
         </button>
         <p className="text-center text-sm">
           Nemáš ještě účet?{' '}
-          <Link to="/register" className="text-blue-600 hover:underline">
+          <button onClick={() => navigate('/register')} className="text-blue-600 hover:underline cursor-pointer">
             Zaregistruj se
-          </Link>
+          </button>
         </p>
       </form>
     </div>
