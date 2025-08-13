@@ -3,6 +3,7 @@ import axiosInstance from '../api/axios'
 import { useNavigate } from 'react-router'
 import { isAxiosError } from 'axios'
 import { FiEdit, FiTrash } from 'react-icons/fi'
+import { toast } from 'react-toastify'
 
 export default function CarPage() {
   const navigate = useNavigate()
@@ -20,11 +21,6 @@ export default function CarPage() {
         })
         setCar(res.data)
         setNotFound(false)
-        // if (isAxiosError(err) && err.response?.status === 404) {
-        //   setNotFound(true)
-        // } else {
-        //   setError('Nepodařilo se načíst auto.')
-        // }
       } catch (err) {
         if (isAxiosError(err) && err.response?.status === 404) {
           setNotFound(true)
@@ -96,6 +92,8 @@ export default function CarPage() {
                   { headers: { Authorization: `Bearer ${token}` } })
                 navigate('/dashboard')
               } catch (err) {
+                console.error('Chyba při mazání auta:', err)
+                toast.error('Nepodařilo se smazat auto.')
                 setError('Nepodařilo se smazat auto.')
               }
             }}
