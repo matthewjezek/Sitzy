@@ -9,8 +9,8 @@ interface LayoutProps {
 export default function Layout({ children }: LayoutProps) {
     return (
         <div>
-            <Navigation />
             <main>
+                <Navigation />
                 {children ?? <Outlet />}
             </main>
         </div>
