@@ -7,7 +7,8 @@ const Button = () => {
     <div className="navigation">
       {/* Levá skupina tlačítek */}
       <div className="flex items-center gap-2">
-        <button className="nav-button gap-0 group overflow-hidden transition-all duration-300 ease-in hover:gap-2">
+        <button className="nav-button gap-0 group overflow-hidden transition-all duration-300 ease-in hover:gap-2"
+          onClick={() => navigate(-1)}>
           <svg className="lucide lucide-arrow-left" stroke="currentColor" fill="none" viewBox="0 0 24 24" height={22} width={22}>
             <path d="m12 19-7-7 7-7" />
             <path d="M19 12H5" />
