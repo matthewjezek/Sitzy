@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { useNavigate } from "react-router"
 
-const axiosInstance = () => {
+const AxiosInstance = () => {
   const navigate = useNavigate()
   const token = localStorage.getItem('token')
   const instance = axios.create({
@@ -32,4 +32,4 @@ const axiosInstance = () => {
   )
   return instance
 }
-export default axiosInstance
+export default AxiosInstance
