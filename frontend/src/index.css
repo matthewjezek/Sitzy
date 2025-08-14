@@ -88,6 +88,10 @@
   color: #155dfc;
 }
 
+.radio-input:checked + .radio-tile .radio-description {
+  color: #155efcab;
+}
+
 .radio-input:focus + .radio-tile {
   border-color: #155dfc;
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1), 0 0 0 4px #b5c9fc;
@@ -161,4 +165,11 @@
   position: absolute;
   white-space: nowrap;
   width: 1px;
+}
+
+.radio-description {
+  color: #a1a1a1;
+  transition: 0.375s ease;
+  text-align: center;
+  font-size: 12px;
 }
