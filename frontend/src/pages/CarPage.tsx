@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import RideStatus from '../components/RideStatus'
 import axiosInstance from '../api/axios'
 import { useNavigate } from 'react-router'
 import { isAxiosError } from 'axios'
@@ -77,6 +78,7 @@ export default function CarPage() {
                 ? new Date(car.date).toLocaleString('cs-CZ', { timeZone: 'UTC', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
                 : 'Neznámé datum'}
             </span>
+            <RideStatus date={car.date} />
           </div>
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-gray-700 mt-1">
             <span className="font-medium">Rozložení:</span>
