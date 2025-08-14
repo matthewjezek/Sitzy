@@ -50,7 +50,7 @@ export default function CarPage() {
             <div className="flex justify-between items-center mt-4">
               <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400"
               onClick={() => navigate('/create-car')}>
-                Learn More</button>
+                Naplánovat jízdu</button>
             </div>
           </div>
         </div>
