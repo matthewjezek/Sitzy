@@ -10,8 +10,21 @@ function getStatus(date?: string): { label: string; color: string } {
   if (isNaN(rideDate.getTime())) return { label: 'Neplatné datum', color: 'gray' };
   const now = new Date();
   if (rideDate < now) {
-    return { label: 'Jízda proběhla', color: 'red' };
-  } else {
+    if (Math.floor((now.getTime() - rideDate.getTime()) / 1000 / 60 / 60) < 2)
+    {
+        return { label: 'Jízda právě probíhá', color: 'yellow' };
+    }
+    else if (Math.floor((now.getTime() - rideDate.getTime()) / 1000 / 60 / 60 / 24) < 1)
+    {
+        return { label: 'Jízda proběhla před ' + Math.floor((now.getTime() - rideDate.getTime()) / 1000 / 60 / 60) + ' hodinami', color: 'red' };
+    }
+    else
+    {
+        return { label: 'Jízda proběhla před ' + Math.floor((now.getTime() - rideDate.getTime()) / 1000 / 60 / 60 / 24) + ' dny', color: 'red' };
+    }
+  }
+  else
+  {
     return { label: 'Jízda čeká', color: 'green' };
   }
 }
