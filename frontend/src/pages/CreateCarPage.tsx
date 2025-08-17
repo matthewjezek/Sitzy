@@ -28,8 +28,8 @@ export default function CreateCarPage() {
         setError('Nejste přihlášeni. Přihlaste se prosím znovu.')
         return
       }
-      // Sestav datetime ve formátu YYYY-MM-DDTHH:mm:ss+00:00 (UTC)
-      const dateWithSeconds = `${date}T${time}:00Z` // Z na konci znamená UTC
+      const localDate = new Date(`${date}T${time}`); // lokální čas
+      const dateWithSeconds = localDate.toISOString(); // UTC ISO string
       await axios.post(
         'http://localhost:8000/cars/',
         { name, layout, date: dateWithSeconds },
