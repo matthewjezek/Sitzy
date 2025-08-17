@@ -3,13 +3,15 @@ import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import DashboardPage from './pages/DashboardPage'
 import SeatPage from './pages/SeatPage'
-import InvitationListPage from './pages/InvitationListPage'
+import InvitationListPage from './pages/InvitePage'
 import CarPage from './pages/CarPage'
 import CreateCarPage from './pages/CreateCarPage'
 import Layout from './components/Layout'
 import ProtectedRoute from './components/ProtectedRoute'
-import InvitePage from "./pages/InvitePage";
+import InvitePage from "./pages/CreateInvitePage";
 import PageNotFound from './pages/PageNotFound'
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   return (
@@ -33,6 +35,7 @@ function App() {
           <Route path="/invite" element={<InvitePage />} />
         </Route>
       </Routes>
+      <ToastContainer position="bottom-left" autoClose={3000} hideProgressBar pauseOnHover draggable theme="colored" />
     </Router>
   )
 }
