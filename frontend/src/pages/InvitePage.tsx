@@ -22,6 +22,7 @@ export default function InvitationListPage() {
   const [error, setError] = useState('')
   const navigate = useNavigate()
   const axios = instance
+  const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 
   useEffect(() => {
     fetchInvitations()
@@ -93,8 +94,8 @@ export default function InvitationListPage() {
               <div className="font-semibold">Pozvánka do auta</div>
               <div className="text-sm text-gray-600">E-mail: <span className="font-mono">{inv.invited_email}</span></div>
               <div className="text-sm text-gray-600">Stav: <span className="font-semibold">{inv.status_label}</span></div>
-              <div className="text-xs text-gray-400">Vytvořeno: {new Date(inv.created_at).toLocaleString()}</div>
-              {inv.expires_at && <div className="text-xs text-gray-400">Platnost do: {new Date(inv.expires_at).toLocaleString()}</div>}
+              <div className="text-xs text-gray-400">Vytvořeno: {new Date(inv.created_at).toLocaleString('cs-CZ', { timeZone: localTimezone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</div>
+              {inv.expires_at && <div className="text-xs text-gray-400">Platnost do: {new Date(inv.expires_at).toLocaleString('cs-CZ', { timeZone: localTimezone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</div>}
             </div>
             <div className="flex flex-row gap-2 mt-2 md:mt-0 md:ml-4">
               {inv.status === 'PENDING' && (
