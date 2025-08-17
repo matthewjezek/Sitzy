@@ -2,7 +2,7 @@ import styled from 'styled-components';
 
 const Loader = () => {
   return (
-    <StyledWrapper>
+    <StyledWrapper className="flex items-center justify-center h-fit">
       <div className="three-body">
         <div className="three-body__dot" />
         <div className="three-body__dot" />
