@@ -24,7 +24,7 @@ router = APIRouter()
 
 
 # === Získání auta aktuálního uživatele ===
-@router.get("/me", response_model=CarFullOut)
+@router.get("/my", response_model=CarFullOut)
 def read_my_car(
     request: Request,
     current_user: User = Depends(get_current_user),
@@ -165,7 +165,7 @@ def list_participants(
 
 
 # === Moje místo ===
-@router.get("/seats/me", response_model=SeatOut)
+@router.get("/seats/my", response_model=SeatOut)
 def get_my_seat(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
