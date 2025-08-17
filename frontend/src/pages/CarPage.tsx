@@ -53,7 +53,7 @@ export default function CarPage() {
 
   if (loading && !notFound) {
     return (
-      <div className="text-center mt-4">Načítání...</div>
+      <Loader />
     )
   }
   if (error) return <div className="text-red-500 text-center mt-4">{error}</div>

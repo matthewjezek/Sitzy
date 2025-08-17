@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { isAxiosError } from 'axios'
+import Loader from '../components/Loader'
 
 interface Invitation {
   id: string
@@ -75,7 +76,7 @@ export default function InvitationListPage() {
     }
   }
 
-  if (loading) return <div className="text-center mt-8">Načítání...</div>
+  if (loading) return <Loader />
   if (!loading && invitations.length === 0) {
     return (
       <div className="text-center mt-8 text-gray-600">
