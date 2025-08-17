@@ -14,7 +14,7 @@ export default function InvitePage() {
   const checkCar = useCallback(async () => {
     try {
       const token = localStorage.getItem('token')
-      const res = await axios.get('http://localhost:8000/cars/me', {
+      const res = await axios.get('http://localhost:8000/cars/my', {
         headers: { Authorization: `Bearer ${token}` },
       })
       setHasCar(!!res.data)
