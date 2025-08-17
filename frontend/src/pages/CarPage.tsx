@@ -14,7 +14,7 @@ export default function CarPage() {
     id: number;
     name: string;
     date?: string;
-    layout_label?: string;
+    layout: string;
     // Add other fields as needed
   }
   const [car, setCar] = useState<Car | null>(null)
@@ -75,7 +75,9 @@ export default function CarPage() {
             </div>
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-gray-700 mt-1">
               <span className="font-medium">Rozložení:</span>
-              <span className="bg-gray-100 px-2 py-1 rounded text-gray-800 font-mono">{car.layout_label}</span>
+              <span className="bg-gray-100 px-2 py-1 rounded text-gray-800 font-mono">
+                {car.layout ? car.layout : 'Neznámé rozložení'}
+              </span>
             </div>
           </div>
           <div className="flex items-center justify-between">
