@@ -3,6 +3,7 @@ import { isAxiosError } from "axios";
 import instance from '../api/axios'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import Loader from '../components/Loader';
 
 interface Seat {
   id: number
@@ -19,7 +20,7 @@ function useCarLayout() {
     const fetchCar = async () => {
       try {
         const token = localStorage.getItem('token')
-        const res = await axios.get('http://localhost:8000/cars/me', {
+        const res = await axios.get('http://localhost:8000/cars/my', {
           headers: { Authorization: `Bearer ${token}` },
         })
         setLayout(res.data.layout_label)
@@ -70,7 +71,6 @@ export default function SeatPage() {
     } finally {
       setLoading(false)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -103,7 +103,7 @@ export default function SeatPage() {
       </div>
     )
   if (loading || !layout)
-    return <div className="text-center mt-4">Načítání...</div>
+    return <Loader />
 
   // Interaktivní vizualizace sedaček podle layoutu
   function renderSeats() {
