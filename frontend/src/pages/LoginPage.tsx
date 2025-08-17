@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router'
-import axios from 'axios'
+import instance from '../api/axios'
 import { toast } from 'react-toastify'
 
 export default function LoginPage() {
   const navigate = useNavigate()
+  const axios = instance
   const location = useLocation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')

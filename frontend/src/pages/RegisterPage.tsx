@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import axios from 'axios'
+import { isAxiosError } from 'axios'
+import instance from '../api/axios'
 import { toast } from 'react-toastify'
 
 export default function RegisterPage() {
   const navigate = useNavigate()
+  const axios = instance
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -27,7 +29,7 @@ export default function RegisterPage() {
       )
       navigate('/login')
     } catch (err: unknown) {
-      if (axios.isAxiosError(err) && err.response?.data?.detail) {
+      if (isAxiosError(err) && err.response?.data?.detail) {
         setError(`Registrace selhala: ${err.response.data.detail}`);
         console.error('Registration error:', err);
         toast.error('Chyba registrace.');

@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
-import axios from 'axios'
+import instance from '../api/axios'
 import { toast } from 'react-toastify'
 
 export default function EditCarPage() {
   const navigate = useNavigate()
+  const axios = instance
   const [name, setName] = useState('')
   const [layout, setLayout] = useState('sedaq')
   const [date, setDate] = useState('')

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import axiosInstance from '../api/axios'
+import instance from '../api/axios'
 import { isAxiosError } from 'axios'
 import { toast } from 'react-toastify'
 
@@ -18,7 +18,7 @@ export default function CreateCarPage() {
   const [error, setError] = useState('')
 
   const minDate = `${yyyy}-${mm}-${dd}`
-  const axios = axiosInstance()
+  const axios = instance
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

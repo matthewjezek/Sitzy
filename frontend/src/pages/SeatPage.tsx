@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import axios from 'axios'
-import { toast, ToastContainer } from 'react-toastify'
+import { isAxiosError } from "axios";
+import instance from '../api/axios'
+import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
 interface Seat {
@@ -9,6 +10,7 @@ interface Seat {
   occupied: boolean
   user?: string
 }
+const axios = instance
 
 // Přidáme hook pro zjištění layoutu auta
 function useCarLayout() {
@@ -53,7 +55,7 @@ export default function SeatPage() {
       setNotFound(false)
       setError('')
     } catch (err: unknown) {
-      if (axios.isAxiosError(err)) {
+      if (isAxiosError(err)) {
         if (err.response?.status === 404 || err.response?.status === 400) {
           setNotFound(true)
           setError('')
@@ -210,7 +212,6 @@ export default function SeatPage() {
 
   return (
     <div className="max-w-2xl mx-auto p-4">
-      <ToastContainer />
       <h1 className="text-2xl font-bold mb-4">Jízdy</h1>
       <div className="flex flex-col items-center">
         <div className="bg-gray-200 rounded-lg p-6 flex flex-col items-center">
