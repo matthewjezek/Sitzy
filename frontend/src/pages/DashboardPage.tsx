@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react'
 import RideStatus from '../components/RideStatus'
 import instance from '../api/axios'
 import { useNavigate } from 'react-router'
+import Loader from '../components/Loader';
 
 interface Seat {
   position: number;
   position_label?: string;
   user_name?: string;
 }
+
 function SeatLayoutVisual({ seats, layout }: { seats: Seat[]; layout: string }) {
   const normalizeLayout = (layout: string) => {
     if (!layout) return '';
@@ -129,25 +131,31 @@ function SeatLayoutVisual({ seats, layout }: { seats: Seat[]; layout: string }) 
   }
 }
 
+interface Invitation {
+  id: number;
+  invited_email: string;
+  status_label: string;
+}
+
+interface Car {
+  id: number;
+  name: string;
+  date: string;
+  layout_label: string;
+  invitations: Invitation[];
+  seats: Seat[];
+}
+
 export default function DashboardPage() {
   const [user, setUser] = useState<{ email: string } | null>(null)
-  interface Invitation {
-    id: number;
-    invited_email: string;
-    status_label: string;
-  }
-  interface Car {
-    id: number;
-    name: string;
-    date: string;
-    layout_label: string;
-    invitations: Invitation[];
-    seats: Seat[];
-  }
   const [car, setCar] = useState<Car | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [userNotFound, setUserNotFound] = useState(false)
+  const [carNotFound, setCarNotFound] = useState(false)
   const navigate = useNavigate()
   const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 
+  // `instance` and `localStorage` are stable and do not change between renders, so it's safe to only include `navigate` in the dependency array.
   useEffect(() => {
     const axios = instance
     const token = localStorage.getItem('token')
@@ -156,26 +164,40 @@ export default function DashboardPage() {
       return
     }
 
-    axios
-      .get('http://localhost:8000/auth/me', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => setUser(res.data))
-      .catch(() => navigate('/login'))
-
-    axios
-      .get('http://localhost:8000/cars/me', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => setCar(res.data))
-      .catch(() => setCar(null))
+    setLoading(true);
+    Promise.all([
+      axios
+        .get('http://localhost:8000/auth/me', {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((res: { data: { email: string } | null }) => {
+          setUser(res.data);
+          setUserNotFound(false);
+        })
+        .catch(() => navigate('/login')),
+      axios
+        .get('http://localhost:8000/cars/my', {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((res: { data: Car | null }) => {
+          setCar(res.data);
+          setCarNotFound(false);
+        })
+        .catch(() => setCar(null))
+    ]).finally(() => {
+      setLoading(false)
+    })
   }, [navigate])
+
+  if (loading && !userNotFound && !carNotFound) {
+    return <Loader />
+  }
 
   return (
     <div className="max-w-2xl mx-auto p-6 space-y-6">
       {user && <h1 className="text-3xl font-bold mb-4 text-blue-800">Vítej, {user.email}!</h1>}
 
-      {car ? (
+      {car && !loading ? (
         <div className="bg-white rounded-xl shadow-lg p-6 space-y-6 border border-gray-200">
           <div className="border-b pb-4 mb-4">
             <h2 className="text-2xl font-semibold text-blue-700 mb-2">Tvé auto: <span className="text-gray-800">{car.name}</span></h2>
