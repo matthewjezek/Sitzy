@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import instance from '../api/axios'
 import { useNavigate } from 'react-router'
 import { toast } from 'react-toastify'
@@ -24,11 +24,7 @@ export default function InvitationListPage() {
   const axios = instance
   const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 
-  useEffect(() => {
-    fetchInvitations()
-  }, [])
-
-  const fetchInvitations = async () => {
+  const fetchInvitations = useCallback(async () => {
     setLoading(true)
     setError('')
     try {
@@ -46,7 +42,12 @@ export default function InvitationListPage() {
     } finally {
       setLoading(false)
     }
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    fetchInvitations()
+  }, [fetchInvitations])
 
   const handleAccept = async (token: string) => {
     try {

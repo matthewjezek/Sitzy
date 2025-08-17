@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import instance from '../api/axios'
 import { toast } from 'react-toastify'
@@ -12,9 +12,8 @@ export default function EditCarPage() {
   const [error, setError] = useState('')
   const [carId, setCarId] = useState<string | null>(null)
 
-  useEffect(() => {
-    const fetchCar = async () => {
-      try {
+  const fetchCar = useCallback(async () => {
+    try {
         const token = localStorage.getItem('token')
         const res = await axios.get('http://localhost:8000/cars/me', {
           headers: { Authorization: `Bearer ${token}` },
@@ -34,9 +33,12 @@ export default function EditCarPage() {
           toast.error('Chyba načtení auta.');
         }
       }
-    }
-    fetchCar()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useEffect(() => {
+    fetchCar()
+  }, [fetchCar])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

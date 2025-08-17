@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import RideStatus from '../components/RideStatus'
 import instance from '../api/axios'
 import { useNavigate } from 'react-router'
@@ -22,11 +22,7 @@ export default function CarPage() {
   const axios = instance
   const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 
-  useEffect(() => {
-    fetchCar()
-  }, [])
-
-  const fetchCar = async () => {
+  const fetchCar = useCallback(async () => {
     setLoading(true)
     setError('')
     try {
@@ -45,7 +41,12 @@ export default function CarPage() {
     } finally {
       setLoading(false)
     }
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    fetchCar()
+  }, [fetchCar])
 
   if (loading && !notFound) {
     return (

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import instance from '../api/axios'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -11,20 +11,22 @@ export default function InvitePage() {
   const navigate = useNavigate()
   const axios = instance
 
-  useEffect(() => {
-    const checkCar = async () => {
-      try {
-        const token = localStorage.getItem('token')
-        const res = await axios.get('http://localhost:8000/cars/me', {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        setHasCar(!!res.data)
-      } catch {
-        setHasCar(false)
-      }
+  const checkCar = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token')
+      const res = await axios.get('http://localhost:8000/cars/me', {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      setHasCar(!!res.data)
+    } catch {
+      setHasCar(false)
     }
-    checkCar()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useEffect(() => {
+    checkCar()
+  }, [checkCar])
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault()

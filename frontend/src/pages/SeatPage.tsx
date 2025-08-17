@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { isAxiosError } from "axios";
 import instance from '../api/axios'
 import { toast } from 'react-toastify'
@@ -40,11 +40,7 @@ export default function SeatPage() {
   const [loading, setLoading] = useState(true)
   const layout = useCarLayout()
 
-  useEffect(() => {
-    fetchSeats()
-  }, [])
-
-  const fetchSeats = async () => {
+  const fetchSeats = useCallback(async () => {
     setLoading(true)
     try {
       const token = localStorage.getItem('token')
@@ -74,7 +70,12 @@ export default function SeatPage() {
     } finally {
       setLoading(false)
     }
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    fetchSeats()
+  }, [fetchSeats])
 
   const handleChooseSeat = async (position: number) => {
     try {
