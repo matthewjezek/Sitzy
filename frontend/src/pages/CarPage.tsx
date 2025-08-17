@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import RideStatus from '../components/RideStatus'
-import axiosInstance from '../api/axios'
+import instance from '../api/axios'
 import { useNavigate } from 'react-router'
 import { isAxiosError } from 'axios'
 import { FiEdit, FiTrash } from 'react-icons/fi'
@@ -18,7 +18,8 @@ export default function CarPage() {
   const [car, setCar] = useState<Car | null>(null)
   const [error, setError] = useState('')
   const [notFound, setNotFound] = useState(false)
-  const axios = axiosInstance()
+  const axios = instance
+  const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 
   useEffect(() => {
     const fetchCar = async () => {
@@ -38,7 +39,7 @@ export default function CarPage() {
       }
     }
     fetchCar()
-  }, [axios])
+  }, [])
 
   if (notFound)
     return (
@@ -75,7 +76,7 @@ export default function CarPage() {
             <span className="font-medium">Datum jízdy:</span>
             <span className="bg-blue-50 px-2 py-1 rounded text-blue-900 font-mono">
               {car.date && !isNaN(new Date(car.date).getTime())
-                ? new Date(car.date).toLocaleString('cs-CZ', { timeZone: 'UTC', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+                ? new Date(car.date).toLocaleString('cs-CZ', { timeZone: localTimezone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'  })
                 : 'Neznámé datum'}
             </span>
             <RideStatus date={car.date} />
