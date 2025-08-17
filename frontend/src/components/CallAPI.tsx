@@ -1,25 +1,22 @@
-import axios from 'axios';
+import instance from '../api/axios';
+import { useNavigate } from 'react-router';
 
 export default function CallAPI<T>(url: string, method: 'GET' | 'POST' | 'PUT' | 'DELETE', data?: unknown): Promise<T> {
-  const token = localStorage.getItem('token');
-  const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
-  return axios({
+  const navigate = useNavigate();
+  return instance({
     url,
     method,
-    headers,
     data,
   })
     .then(response => response.data)
     .catch(error => {
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          throw new Error(`API error: ${error.response.status} - ${error.response.statusText}`);
-        } else {
-          throw new Error(`Network error: ${error.message}`);
-        }
-      } else {
-        throw new Error('An unexpected error occurred');
+      if (error.response && error.response.status === 401) {
+        navigate('/login?expired=1');
+        return Promise.reject(new Error('Unauthorized'));
       }
+      if (error.message) {
+        return Promise.reject(new Error(error.message));
+      }
+      return Promise.reject(new Error('An unexpected error occurred'));
     });
 }
