@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import RideStatus from '../components/RideStatus'
-import axios from 'axios'
+import instance from '../api/axios'
 import { useNavigate } from 'react-router'
 
 interface Seat {
@@ -9,7 +9,6 @@ interface Seat {
   user_name?: string;
 }
 function SeatLayoutVisual({ seats, layout }: { seats: Seat[]; layout: string }) {
-  // Normalize layout to backend enum
   const normalizeLayout = (layout: string) => {
     if (!layout) return '';
     const l = layout.toLowerCase();
@@ -147,8 +146,10 @@ export default function DashboardPage() {
   }
   const [car, setCar] = useState<Car | null>(null)
   const navigate = useNavigate()
+  const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 
   useEffect(() => {
+    const axios = instance
     const token = localStorage.getItem('token')
     if (!token) {
       navigate('/login')
@@ -181,7 +182,7 @@ export default function DashboardPage() {
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-gray-700">
               <span className="font-medium">Datum jízdy:</span>
               <span className="bg-blue-50 px-2 py-1 rounded text-blue-900 font-mono">
-                {new Date(car.date).toLocaleString('cs-CZ', { timeZone: 'UTC', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                {new Date(car.date).toLocaleString('cs-CZ', { timeZone: localTimezone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'  })}
               </span>
               <RideStatus date={car.date} />
             </div>
