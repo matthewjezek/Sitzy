@@ -49,7 +49,7 @@ export default function InvitePage() {
   if (hasCar === false) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="bg-white p-8 rounded shadow-md w-full max-w-md space-y-4 text-center">
+        <div className="p-8 rounded shadow-md w-full max-w-md space-y-4 text-center">
           <h2 className="text-2xl font-bold mb-2">Nemáte žádné auto</h2>
           <p className="mb-4">Pro odeslání pozvánky musíte nejprve vytvořit auto.</p>
           <button
@@ -64,11 +64,11 @@ export default function InvitePage() {
   }
 
   if (hasCar === null) {
-    return <div className="flex items-center justify-center h-screen bg-gray-100">Načítání...</div>
+    return <div className="flex items-center justify-center h-screen">Načítání...</div>
   }
 
   return (
-    <div className="flex items-center justify-center h-screen bg-gray-100">
+    <div className="flex items-center justify-center h-screen ">
       <form
         onSubmit={handleInvite}
         className="bg-white p-8 rounded shadow-md w-full max-w-md space-y-4"
