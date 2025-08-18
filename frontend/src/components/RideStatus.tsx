@@ -18,6 +18,10 @@ function getStatus(date?: string): { label: string; color: string } {
     {
         return { label: 'Jízda proběhla před ' + Math.floor((now.getTime() - rideDate.getTime()) / 1000 / 60 / 60) + ' hodinami', color: 'red' };
     }
+    else if (Math.floor((now.getTime() - rideDate.getTime()) / 1000 / 60 / 60 / 24) === 1)
+    {
+        return { label: 'Jízda proběhla před ' + Math.floor((now.getTime() - rideDate.getTime()) / 1000 / 60 / 60 / 24) + ' dnem', color: 'red' };
+    }
     else
     {
         return { label: 'Jízda proběhla před ' + Math.floor((now.getTime() - rideDate.getTime()) / 1000 / 60 / 60 / 24) + ' dny', color: 'red' };
