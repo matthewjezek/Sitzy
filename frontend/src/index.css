@@ -51,6 +51,14 @@
     left: 1rem;
     right: 1rem;
   }
+
+  .bg-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+
+  .bg-gradient:dark {
+    background: linear-gradient(135deg, #4c51bf 0%, #6f2c91 100%);
+  }
 }
 
 .radio-inputs {
