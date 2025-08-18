@@ -7,15 +7,17 @@ import { FiEdit, FiTrash } from 'react-icons/fi'
 import { toast } from 'react-toastify'
 import karecImg from '../assets/karec.svg'
 import Loader from '../components/Loader'
+import { SeatRenderer, type SeatData } from '../components/SeatRenderer'
 
 export default function CarPage() {
   const navigate = useNavigate()
   interface Car {
     id: number;
+    owner_id: string;
     name: string;
     date?: string;
     layout: string;
-    // Add other fields as needed
+    seats: SeatData[];
   }
   const [car, setCar] = useState<Car | null>(null)
   const [error, setError] = useState('')
@@ -73,11 +75,21 @@ export default function CarPage() {
               </span>
               <RideStatus date={car.date} />
             </div>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-gray-700 mt-1">
-              <span className="font-medium">Rozložení:</span>
-              <span className="bg-gray-100 px-2 py-1 rounded text-gray-800 font-mono">
-                {car.layout ? car.layout : 'Neznámé rozložení'}
-              </span>
+            <div className="flex flex-col gap-2 text-gray-700 mt-4">
+              <SeatRenderer
+              layout={car.layout || 'Neznámé rozložení'}
+              seats={
+                car.seats
+                ? car.seats.map((seat, idx) => ({
+                  position: seat.position ?? idx + 1,
+                  user_name: seat.user_name ?? '',
+                  occupied: !!seat.user_name,
+                  }))
+                : []
+              }
+              ownerName={car.owner_id || 'Neznámý řidič'}
+              mode="display"
+              />
             </div>
           </div>
           <div className="flex items-center justify-between">
