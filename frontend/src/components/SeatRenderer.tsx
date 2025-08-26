@@ -4,6 +4,7 @@ import sedanSvg from '../assets/sedan.svg';
 import coupeSvg from '../assets/coupe.svg';
 import minivanSvg from '../assets/minivan.svg';
 import seatSvg from '../assets/seat.svg';
+import Loader from './Loader';
 
 // TODO: Změnit popisek "klikněte pro výběr", když se používá
 // display mode, spinner než se načte layout a přidat jména?
@@ -34,6 +35,43 @@ export const SeatState = {
 } as const;
 
 export type SeatStateType = typeof SeatState[keyof typeof SeatState];
+
+// Pomocná funkce: slovní popis pozice sedadla dle layoutu
+export function getSeatPositionLabel(layout: string, position: number): string {
+  const l = (layout || '').toLowerCase();
+  switch (l) {
+    case 'sedaq':
+    case 'sedan (4 seats)':
+      switch (position) {
+        case 1: return 'levé přední';
+        case 2: return 'pravé přední';
+        case 3: return 'levé zadní';
+        case 4: return 'pravé zadní';
+        default: return `pozice ${position}`;
+      }
+    case 'trapaq':
+    case 'coupé (2 seats)':
+      switch (position) {
+        case 1: return 'levé';
+        case 2: return 'pravé';
+        default: return `pozice ${position}`;
+      }
+    case 'praq':
+    case 'minivan (7 seats)':
+      switch (position) {
+        case 1: return 'levé přední';
+        case 2: return 'pravé přední';
+        case 3: return 'střední levé';
+        case 4: return 'střední prostřední';
+        case 5: return 'střední pravé';
+        case 6: return 'levé zadní';
+        case 7: return 'pravé zadní';
+        default: return `pozice ${position}`;
+      }
+    default:
+      return `pozice ${position}`;
+  }
+}
 
 // Styled komponenty
 const SeatRendererContainer = styled.div`
@@ -151,7 +189,7 @@ const SeatNumber = styled.span`
 const DriverIcon = styled.span`
   position: absolute;
   top: 12px;
-  right: middle;
+  right: 12px;
   font-size: 12px;
   color: #d69e2e;
   line-height: 1;
@@ -179,6 +217,46 @@ export const SeatRenderer: React.FC<SeatRendererProps> = ({
 }) => {
   // Normalizace layoutu
   const normalizedLayout = layout.toLowerCase();
+  
+  // Přednačtení obrázků a stav načtení
+  const carMeta = React.useMemo(() => {
+    switch (normalizedLayout) {
+      case 'sedaq':
+      case 'sedan (4 seats)':
+        return { carSvgSrc: sedanSvg, altText: 'Sedan', maxSeats: 4 } as const;
+      case 'trapaq':
+      case 'coupé (2 seats)':
+        return { carSvgSrc: coupeSvg, altText: 'Kupé', maxSeats: 2 } as const;
+      case 'praq':
+      case 'minivan (7 seats)':
+        return { carSvgSrc: minivanSvg, altText: 'Minivan', maxSeats: 7 } as const;
+      default:
+        return { carSvgSrc: sedanSvg, altText: 'Vozidlo', maxSeats: 4 } as const;
+    }
+  }, [normalizedLayout]);
+
+  const [carLoaded, setCarLoaded] = React.useState(false);
+  const [seatLoaded, setSeatLoaded] = React.useState(false);
+
+  // Přednačtení assets – při změně layoutu znovu načti auto; sedadlo stačí jednou
+  React.useEffect(() => {
+    let canceled = false;
+    setCarLoaded(false);
+
+    const imgCar = new Image();
+    imgCar.onload = () => { if (!canceled) setCarLoaded(true); };
+    imgCar.onerror = () => { if (!canceled) setCarLoaded(true); }; // fallback, ať UI neuvízne
+    imgCar.src = carMeta.carSvgSrc;
+
+    if (!seatLoaded) {
+      const imgSeat = new Image();
+      imgSeat.onload = () => { if (!canceled) setSeatLoaded(true); };
+      imgSeat.onerror = () => { if (!canceled) setSeatLoaded(true); };
+      imgSeat.src = seatSvg;
+    }
+
+    return () => { canceled = true; };
+  }, [carMeta.carSvgSrc, seatLoaded]);
   
   // Mapa sedadel podle pozice
   const seatByPosition = React.useMemo(() => {
@@ -292,35 +370,7 @@ export const SeatRenderer: React.FC<SeatRendererProps> = ({
 
   // Renderování vozidla s sedadly jako overlay
   const renderCarWithSeats = () => {
-    let carSvgSrc = '';
-    let altText = '';
-    let maxSeats = 4;
-    
-    switch (normalizedLayout) {
-      case 'sedaq':
-      case 'sedan (4 seats)':
-        carSvgSrc = sedanSvg;
-        altText = 'Sedan';
-        maxSeats = 4;
-        break;
-      case 'trapaq':
-      case 'coupé (2 seats)':
-        carSvgSrc = coupeSvg;
-        altText = 'Kupé';
-        maxSeats = 2;
-        break;
-      case 'praq':
-      case 'minivan (7 seats)':
-        carSvgSrc = minivanSvg;
-        altText = 'Minivan';
-        maxSeats = 7;
-        break;
-      default:
-        carSvgSrc = sedanSvg;
-        altText = 'Vozidlo';
-        maxSeats = 4;
-        break;
-    }
+    const { carSvgSrc, altText, maxSeats } = carMeta;
 
     return (
       <div>
@@ -339,6 +389,16 @@ export const SeatRenderer: React.FC<SeatRendererProps> = ({
       </div>
     );
   };
+
+  const ready = carLoaded && seatLoaded;
+
+  if (!ready) {
+    return (
+      <SeatRendererContainer className={className}>
+        <Loader />
+      </SeatRendererContainer>
+    );
+  }
 
   return (
     <SeatRendererContainer className={className}>
