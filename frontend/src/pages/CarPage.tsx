@@ -95,7 +95,7 @@ export default function CarPage() {
           <div className="flex items-center justify-between">
             <button
               onClick={() => navigate('/invite')}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              className="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600"
             >
               Pozvat řidiče
             </button>
@@ -138,7 +138,7 @@ export default function CarPage() {
               <h2 className="text-xl font-semibold">Kam pojedeme?</h2>
               <p className="text-gray-600">Přijměte pozvánku nebo naplánujte vlastní jízdu.</p>
               <div className="flex justify-between items-center mt-4">
-                <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+                <button className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-400"
                   onClick={() => navigate('/create-car')}>
                   Naplánovat jízdu</button>
               </div>

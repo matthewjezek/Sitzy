@@ -29,9 +29,9 @@ const Button = () => {
           Dashboard
         </button>
 
-        <button className="nav-button hover:bg-gray-100 hover:text-blue-400"
+        <button className="nav-button hover:bg-gray-100 hover:text-indigo-400"
           onClick={() => navigate('/seats')}>
-          <svg className="lucide lucide-car-seat text-blue-400 dark:text-blue-600" stroke="currentColor" fill="none" viewBox="0 0 24 24" height={22} width={22}>
+          <svg className="lucide lucide-car-seat text-indigo-400 dark:text-indigo-500" stroke="currentColor" fill="none" viewBox="0 0 24 24" height={22} width={22}>
             <rect x="7" y="6" width="10" height="8" rx="3" />
             <rect x="5" y="14" width="14" height="7" rx="2" />
             <path d="M9 6v-1a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v1" />

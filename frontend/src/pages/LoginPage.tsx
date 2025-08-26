@@ -50,7 +50,7 @@ export default function LoginPage() {
         <input
           type="email"
           placeholder="E-mail"
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded focus:outline-2 focus:outline-indigo-500"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -59,7 +59,7 @@ export default function LoginPage() {
         <input
           type="password"
           placeholder="Heslo"
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded focus:outline-2 focus:outline-indigo-500"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
@@ -67,13 +67,13 @@ export default function LoginPage() {
 
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+          className="w-full bg-indigo-500 text-white py-2 rounded hover:bg-indigo-600 transition"
         >
           Přihlásit se
         </button>
         <p className="text-center text-sm">
           Nemáš ještě účet?{' '}
-          <button onClick={() => navigate('/register')} className="text-blue-600 hover:underline cursor-pointer">
+          <button onClick={() => navigate('/register')} className="text-indigo-600 hover:underline cursor-pointer">
             Zaregistruj se
           </button>
         </p>
