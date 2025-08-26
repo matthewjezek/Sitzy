@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import SeatRenderer from '../components/SeatRenderer';
+import SeatRenderer, { getSeatPositionLabel } from '../components/SeatRenderer';
 import type { SeatData } from '../components/SeatRenderer';
 
 export default function SeatPositionTest() {
@@ -102,6 +102,11 @@ export default function SeatPositionTest() {
                 color: '#374151'
               }}>
                 Vybrané: {selectedSeats.sedan || 'žádné'}
+                {selectedSeats.sedan && (
+                  <span style={{ color: '#6b7280', marginLeft: '0.5rem', fontWeight: 500 }}>
+                    ({getSeatPositionLabel('SEDAQ', selectedSeats.sedan)})
+                  </span>
+                )}
               </div>
             </div>
             
@@ -157,6 +162,11 @@ export default function SeatPositionTest() {
                 color: '#374151'
               }}>
                 Vybrané: {selectedSeats.coupe || 'žádné'}
+                {selectedSeats.coupe && (
+                  <span style={{ color: '#6b7280', marginLeft: '0.5rem', fontWeight: 500 }}>
+                    ({getSeatPositionLabel('TRAPAQ', selectedSeats.coupe)})
+                  </span>
+                )}
               </div>
             </div>
             
@@ -212,6 +222,11 @@ export default function SeatPositionTest() {
                 color: '#374151'
               }}>
                 Vybrané: {selectedSeats.minivan || 'žádné'}
+                {selectedSeats.minivan && (
+                  <span style={{ color: '#6b7280', marginLeft: '0.5rem', fontWeight: 500 }}>
+                    ({getSeatPositionLabel('PRAQ', selectedSeats.minivan)})
+                  </span>
+                )}
               </div>
             </div>
             
@@ -328,9 +343,12 @@ export default function SeatPositionTest() {
               ℹ️ Aktuální stav:
             </h4>
             <p style={{ fontSize: '0.9rem', color: '#6b7280', margin: 0 }}>
-              <strong>Sedan:</strong> {selectedSeats.sedan || 'žádné'} | 
-              <strong> Kupé:</strong> {selectedSeats.coupe || 'žádné'} | 
+              <strong>Sedan:</strong> {selectedSeats.sedan || 'žádné'}
+              {selectedSeats.sedan && ` (${getSeatPositionLabel('SEDAQ', selectedSeats.sedan)})`} |
+              <strong> Kupé:</strong> {selectedSeats.coupe || 'žádné'}
+              {selectedSeats.coupe && ` (${getSeatPositionLabel('TRAPAQ', selectedSeats.coupe)})`} |
               <strong> Minivan:</strong> {selectedSeats.minivan || 'žádné'}
+              {selectedSeats.minivan && ` (${getSeatPositionLabel('PRAQ', selectedSeats.minivan)})`}
             </p>
           </div>
         </div>
