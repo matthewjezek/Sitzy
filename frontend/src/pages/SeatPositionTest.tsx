@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import SeatRenderer, { getSeatPositionLabel } from '../components/SeatRenderer';
+import SeatRenderer from '../components/SeatRenderer';
 import type { SeatData } from '../components/SeatRenderer';
+import { getSeatPositionLabel } from '../utils/seatUtils';
 
 export default function SeatPositionTest() {
   const [selectedSeats, setSelectedSeats] = useState<{
