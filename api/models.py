@@ -5,10 +5,15 @@ from sqlalchemy import DateTime
 from sqlalchemy import Enum as SqlEnum
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 from .database import Base
 from .utils.enums import CarLayout, InvitationStatus
+
+
+# Deklarativní základna pro modely
+class Base(DeclarativeBase):
+    pass
 
 
 class User(Base):

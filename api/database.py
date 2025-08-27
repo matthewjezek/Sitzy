@@ -3,7 +3,7 @@ from collections.abc import Generator
 
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
-from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
+from sqlalchemy.orm import Session, sessionmaker
 
 # Načtení proměnných z .env
 load_dotenv()
@@ -18,11 +18,6 @@ engine = create_engine(DATABASE_URL, echo=True, future=True)
 
 # Session factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-
-# Deklarativní základna pro modely
-class Base(DeclarativeBase):
-    pass
 
 
 # Funkce pro získání databázové relace
