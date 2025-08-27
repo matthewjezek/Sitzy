@@ -78,7 +78,7 @@ class InvitationOut(BaseModelWithLabels["InvitationOut"], InvitationBase):
     token: str
     status: InvitationStatus
     created_at: datetime
-    expires_at: datetime | None
+    expires_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
 
