@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from api import models
 from api.database import get_db
 from api.deps import get_current_user
-from api.models import Car, Passenger, User
+from api.models import Car, Invitation, Passenger, User
 from api.schemas import (
     CarBase,
     CarCreate,
@@ -146,6 +146,25 @@ def create_invitation(
     db.refresh(invitation)
 
     return InvitationOut.from_orm_with_labels(invitation)
+
+
+# === Seznam odeslaných pozvánek ===
+@router.get("{car_id}/invitations", response_model=list[InvitationOut])
+def list_sent_invitations(
+    car_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> list[InvitationOut]:
+    car = (
+        db.query(Car).filter(Car.id == car_id, Car.owner_id == current_user.id).first()
+    )
+    if not car:
+        raise HTTPException(
+            status_code=404, detail="Car not found or does not belong to you."
+        )
+
+    invitations = db.query(Invitation).filter(Invitation.car_id == car.id).all()
+    return [InvitationOut.from_orm_with_labels(inv) for inv in invitations]
 
 
 # === Získání všech účastníků auta ===
