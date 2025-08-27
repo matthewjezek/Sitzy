@@ -32,9 +32,7 @@ async def validation_exception_handler(
     error_messages = [f"{err['loc'][-1]}: {err['msg']}" for err in exc.errors()]
     return JSONResponse(
         status_code=422,
-        content={
-            "detail": "; ".join(error_messages)
-        },
+        content={"detail": "; ".join(error_messages)},
     )
 
 
