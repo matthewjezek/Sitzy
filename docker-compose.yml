@@ -1,8 +1,7 @@
-version: "3.9"
-
 services:
   db:
     image: postgres:15
+    container_name: sitzy-db
     restart: always
     environment:
       POSTGRES_DB: sitzy
@@ -13,13 +12,18 @@ services:
     ports:
       - "5432:5432"
 
-  # volitelně: můžeš později přidat i api:
-  # api:
-  #   build: ./api
-  #   ports:
-  #     - "8000:8000"
-  #   depends_on:
-  #     - db
+  api:
+    build: ./api
+    container_name: sitzy-api
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+    volumes:
+      - ./api:/app
 
 volumes:
   pgdata:
