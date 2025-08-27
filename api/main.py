@@ -29,13 +29,12 @@ app.add_middleware(
 async def validation_exception_handler(
     request: Request, exc: RequestValidationError
 ) -> JSONResponse:
-    # Můžeš si výstup upravit dle libosti, třeba jen první chybu nebo vše jako string
     error_messages = [f"{err['loc'][-1]}: {err['msg']}" for err in exc.errors()]
     return JSONResponse(
         status_code=422,
         content={
             "detail": "; ".join(error_messages)
-        },  # nebo {"detail": error_messages} pro pole
+        },
     )
 
 
