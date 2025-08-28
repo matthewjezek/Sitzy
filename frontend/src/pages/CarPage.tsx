@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router'
 import { isAxiosError } from 'axios'
 import { FiEdit, FiTrash } from 'react-icons/fi'
 import { toast } from 'react-toastify'
-import karecImg from '../assets/karec.svg'
+import OverheadSvg from '../components/OverheadSvg'
 import Loader from '../components/Loader'
 import { SeatRenderer, type SeatData } from '../components/SeatRenderer'
 
@@ -23,7 +23,6 @@ export default function CarPage() {
   const [error, setError] = useState('')
   const [notFound, setNotFound] = useState(false)
   const [loading, setLoading] = useState(true)
-  const [imageLoaded, setImageLoaded] = useState(false);
   const axios = instance
   const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 
@@ -124,16 +123,9 @@ export default function CarPage() {
       ) : (
         <div className='flex justify-center items-center h-screen'>
           <div className="w-80 bg-white rounded-lg shadow-md transform hover:scale-105 transition-transform duration-300 ease-in-out">
-            {!imageLoaded && (
-              <Loader />
-            )}
-            <img
-              className="w-full h-60 object-cover rounded-t-lg"
-              alt="Card Image"
-              src={karecImg}
-              style={{ display: imageLoaded ? 'block' : 'none' }}
-              onLoad={() => setImageLoaded(true)}
-            />
+            <div className="w-full h-60 flex items-center rounded-t-lg overflow-hidden">
+              <OverheadSvg />
+            </div>
             <div className="p-4">
               <h2 className="text-xl font-semibold">Kam pojedeme?</h2>
               <p className="text-gray-600">Přijměte pozvánku nebo naplánujte vlastní jízdu.</p>
