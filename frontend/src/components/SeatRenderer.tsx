@@ -6,8 +6,7 @@ import minivanSvg from '../assets/minivan.svg';
 import seatSvg from '../assets/seat.svg';
 import Loader from './Loader';
 
-// TODO: Změnit popisek "klikněte pro výběr", když se používá
-// display mode, spinner než se načte layout a přidat jména?
+// TODO: přidat jména?
 
 export interface SeatData {
   position: number;
