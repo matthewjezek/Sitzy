@@ -55,7 +55,7 @@ const CarContainer = styled.div`
 `;
 
 const CarImage = styled.img`
-  width: 300px;
+  width: max-w-[300px];
   height: auto;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
   opacity: 0.9;
