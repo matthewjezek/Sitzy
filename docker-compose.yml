@@ -2,7 +2,7 @@ services:
   db:
     image: postgres:15
     container_name: sitzy-db
-    restart: always
+    restart: unless-stopped
     environment:
       POSTGRES_DB: sitzy
       POSTGRES_USER: postgres
