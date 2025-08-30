@@ -10,7 +10,9 @@ export default function Layout({ children }: LayoutProps) {
     return (
         <div>
             <main>
-                <Navigation />
+                <div className="h-16">
+                    <Navigation />
+                </div>    
                 {children ?? <Outlet />}
             </main>
         </div>
