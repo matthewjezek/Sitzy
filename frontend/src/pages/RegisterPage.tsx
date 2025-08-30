@@ -42,12 +42,12 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex justify-center-safe items-center h-fit mt-32">
+    <div className="flex justify-center-safe items-center h-full mt-32 p-6">
       <form
         onSubmit={handleRegister}
-        className="bg-white p-8 rounded shadow-md w-full max-w-md space-y-4"
+        className="bg-gray-100 rounded-3xl shadow-xl border border-indigo-100 p-8 space-y-4 max-w-md"
       >
-        <h2 className="text-2xl font-bold mb-4 text-center">Registrace</h2>
+        <h2 className="text-2xl font-semibold mb-4 text-center">Registrace</h2>
 
         {error && <div className="text-red-500 text-sm">{error}</div>}
 
@@ -69,12 +69,15 @@ export default function RegisterPage() {
           required
         />
 
-        <button
-          type="submit"
-          className="w-full bg-indigo-500 text-white py-2 rounded hover:bg-indigo-600 transition"
-        >
-          Registrovat se
-        </button>
+        <div className="flex justify-center">
+          <button
+            type="submit"
+            className="primary-button w-4/6"
+          >
+            Registrovat se
+          </button>
+        </div>
+
         <p className="text-center text-sm">
           Máš už účet?{' '}
           <button onClick={() => navigate('/login')} className="text-indigo-600 hover:underline cursor-pointer">

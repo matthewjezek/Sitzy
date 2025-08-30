@@ -33,12 +33,12 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex justify-center-safe items-center h-fit mt-32">
+    <div className="flex justify-center items-center h-full mt-32 p-6">
       <form
         onSubmit={handleLogin}
-        className="bg-white p-8 rounded shadow-md w-full max-w-md space-y-4"
+        className="bg-gray-100 rounded-3xl shadow-xl border border-indigo-100 p-8 space-y-4 max-w-md"
       >
-        <h2 className="text-2xl font-bold mb-4 text-center">Přihlášení</h2>
+        <h2 className="text-2xl font-semibold mb-4 text-center">Přihlášení</h2>
 
         {expired && (
           <div className="text-red-500 text-sm mb-2 text-center">
@@ -65,12 +65,15 @@ export default function LoginPage() {
           required
         />
 
-        <button
-          type="submit"
-          className="w-full bg-indigo-500 text-white py-2 rounded hover:bg-indigo-600 transition"
-        >
-          Přihlásit se
-        </button>
+        <div className="flex justify-center">
+          <button
+            type="submit"
+            className="primary-button w-4/6"
+          >
+            Přihlásit se
+          </button>
+        </div>
+
         <p className="text-center text-sm">
           Nemáš ještě účet?{' '}
           <button onClick={() => navigate('/register')} className="text-indigo-600 hover:underline cursor-pointer">
