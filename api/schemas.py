@@ -66,15 +66,18 @@ class CarOut(BaseModelWithLabels["CarOut"], CarBase):
 # === Pozvánky ===
 class InvitationBase(BaseModel):
     invited_email: EmailStr
+    car_id: UUID
+    created_at: datetime
 
 
 class InvitationCreate(InvitationBase):
-    car_id: UUID
+    status: InvitationStatus = InvitationStatus.PENDING
 
 
 class InvitationOut(BaseModelWithLabels["InvitationOut"], InvitationBase):
     id: UUID
     car_id: UUID
+    invited_email: EmailStr
     token: str
     status: InvitationStatus
     created_at: datetime
