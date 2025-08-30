@@ -123,6 +123,7 @@ def create_invitation(
             models.Invitation.car_id == car.id,
             models.Invitation.invited_email == invitation_in.invited_email,
             models.Invitation.status == InvitationStatus.PENDING,
+            models.Invitation.created_at == invitation_in.created_at,
         )
         .first()
     )
@@ -137,8 +138,9 @@ def create_invitation(
     invitation = models.Invitation(
         car_id=car.id,
         invited_email=invitation_in.invited_email,
+        created_at=invitation_in.created_at,
         token=token,
-        status=InvitationStatus.PENDING,
+        status=invitation_in.status,
     )
 
     db.add(invitation)
