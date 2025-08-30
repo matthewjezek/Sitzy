@@ -42,7 +42,7 @@ const SeatRendererContainer = styled.div`
   align-items: center;
   gap: 1rem;
   padding: 1.5rem;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  // background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   border-radius: 1rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 `;
@@ -81,9 +81,9 @@ const SeatButton = styled.button<{
   left: ${props => props.$left}%;
   transform: translate(-50%, -50%);
   pointer-events: auto;
-  
-  width: 5.5rem;
-  height: 6.6rem;
+
+  width: 29.33%;   // cca 5.5rem/300px = 29.33%
+  height: 35.2%;  // cca 6.6rem/300px = 35.2%
   border: none;
   background: none;
   padding: 0;
@@ -150,9 +150,9 @@ const SeatNumber = styled.span`
 
 const DriverIcon = styled.span`
   position: absolute;
-  top: 12px;
-  right: 12px;
-  font-size: 12px;
+  top: 22%;
+  right: 12%;
+  font-size: 14px;
   color: #d69e2e;
   line-height: 1;
   text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
