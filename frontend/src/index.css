@@ -95,16 +95,21 @@
     top: 50%;
     transform: translate(-50%, -50%);
     background-color: #f5f5f5;
-    text-align: left;
+    text-align: center;
     border-radius: 0.5rem;
-    max-width: 290px;
+    width: 90%;
+    max-width: 450px;
     box-shadow:
       0 20px 25px -5px rgba(0, 0, 0, 0.1),
       0 10px 10px -5px rgba(0, 0, 0, 0.04);
   }
 
+  .dialog-card::backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+
   .dialog-header {
-    padding: 1.25rem 1rem 1rem 1rem;
+    padding: 1.15rem;
     background-color: #f5f5f5;
   }
 
@@ -127,13 +132,64 @@
     height: 1.5rem;
   }
 
+  .dialog-warning-image {
+    display: flex;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #fef3c7;
+    flex-shrink: 0;
+    justify-content: center;
+    align-items: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 9999px;
+  }
+
+  .dialog-warning-image svg {
+    color: #d97706;
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .dialog-success-image {
+    display: flex;
+    margin-bottom: 1rem;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #d1fae5;
+    flex-shrink: 0;
+    justify-content: center;
+    align-items: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 9999px;
+    animation: animate .6s linear alternate-reverse infinite;
+    transition: .6s ease;
+  }
+
+  @keyframes animate {
+    from {
+      transform: scale(1);
+    }
+
+    to {
+      transform: scale(1.09);
+    }
+  }
+
+  .dialog-success-image svg {
+    color: #059669;
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
   .dialog-content {
     margin-top: 0.75rem;
     text-align: center;
   }
 
   .dialog-title {
-    color: #111827;
+    color: #312e81;
     font-size: 1rem;
     font-weight: 600;
     line-height: 1.5rem;
@@ -148,7 +204,7 @@
 
   .dialog-actions {
     margin: 0.75rem 1rem;
-    background-color: #f9fafb;
+    background-color: #f5f5f5;
   }
 
   .dialog-proceed-danger-button {
@@ -231,7 +287,7 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 0.75rem;
-    border-radius: 0.75rem;
+    border-radius: 0.5rem;
     font-size: 0.875rem;
     font-weight: 500;
     border: 1px solid;
@@ -426,4 +482,282 @@
   transition: 0.375s ease;
   text-align: center;
   font-size: 12px;
+}
+
+/* ========================================
+ * 5. PAGE LAYOUT COMPONENTS
+ * ======================================== */
+
+/* Hlavní kontejner pro celé stránky - centruje obsah */
+.page-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  min-height: 100dvh;
+}
+
+/* Omezuje šířku obsahu stránky */
+.page-content {
+  width: 100%;
+  max-width: 80rem; /* max-w-5xl */
+}
+
+/* ========================================
+ * 6. CARD COMPONENTS
+ * ======================================== */
+
+/* Hlavní karta pro obsah stránky - bílé pozadí, zakulacené rohy */
+.main-card {
+  background-color: white;
+  border-radius: 1.5rem; /* rounded-3xl */
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); /* shadow-xl */
+  border: 1px solid #e0e7ff; /* border-indigo-100 */
+  overflow: hidden;
+}
+
+/* Header karty s indigo gradientem */
+.main-card-header {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  padding: 2rem;
+  color: white;
+}
+
+/* Tělo karty s bílým pozadím */
+.main-card-body {
+  padding: 2rem;
+}
+
+/* Informační karta - světle indigo pozadí pro méně důležité info */
+.info-card {
+  background-color: #eef2ff; /* indigo-50 */
+  border-radius: 1rem; /* rounded-2xl */
+  padding: 1.5rem;
+  border: 1px solid #e0e7ff; /* border-indigo-100 */
+}
+
+/* Header info karty s ikonou */
+.info-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+/* Ikona v info kartě */
+.info-card-icon {
+  background-color: #6366f1; /* indigo-500 */
+  border-radius: 0.75rem;
+  padding: 0.5rem;
+  color: white;
+}
+
+/* Nadpis info karty */
+.info-card-title {
+  font-size: 1.125rem; /* text-lg */
+  font-weight: 600;
+  color: #312e81; /* indigo-900 */
+}
+
+/* Obsah info karty */
+.info-card-content {
+  color: #4338ca; /* indigo-700 */
+  line-height: 1.6;
+}
+
+/* ========================================
+ * 7. FORM COMPONENTS
+ * ======================================== */
+
+/* Kontejner pro formuláře - středně široký */
+.form-container {
+  max-width: 28rem; /* max-w-md */
+  margin: 0 auto;
+}
+
+/* Skupina prvků formuláře */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+/* Label pro formulářové prvky */
+.form-label {
+  display: block;
+  font-size: 0.875rem; /* text-sm */
+  font-weight: 500;
+  color: #4338ca; /* indigo-700 */
+  margin-bottom: 0.5rem;
+}
+
+/* Základní input pole */
+.form-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem; /* rounded-xl */
+  border: 2px solid #e0e7ff; /* border-indigo-100 */
+  background-color: white;
+  color: #1e293b; /* text-slate-800 */
+  transition: all 200ms ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #6366f1; /* indigo-500 */
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.form-input:hover {
+  border-color: #c7d2fe; /* indigo-200 */
+}
+
+/* Textarea pro delší texty */
+.form-textarea {
+  width: 100%;
+  min-height: 6rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  border: 2px solid #e0e7ff;
+  background-color: white;
+  color: #1e293b;
+  resize: vertical;
+  transition: all 200ms ease;
+}
+
+.form-textarea:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* ========================================
+ * 8. LIST COMPONENTS
+ * ======================================== */
+
+/* Kontejner pro seznam prvků */
+.list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Jednotlivý prvek v seznamu - hover efekt */
+.list-item {
+  background-color: white;
+  border-radius: 1rem;
+  padding: 1rem;
+  border: 1px solid #e0e7ff;
+  transition: all 200ms ease;
+  cursor: pointer;
+}
+
+.list-item:hover {
+  border-color: #c7d2fe;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* ========================================
+ * 9. SETTINGS COMPONENTS
+ * ======================================== */
+
+/* Sekce nastavení - bílá karta s okrajem */
+.settings-section {
+  background-color: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  border: 1px solid #e0e7ff;
+  margin-bottom: 1.5rem;
+}
+
+/* Header sekce nastavení s ikonou */
+.settings-section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e0e7ff;
+}
+
+/* Nadpis sekce nastavení */
+.settings-section-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #312e81;
+}
+
+/* ========================================
+ * 10. EMPTY STATE COMPONENTS
+ * ======================================== */
+
+/* Prázdný stav - když nejsou žádná data */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1.5rem;
+}
+
+/* Ikona pro prázdný stav */
+.empty-state-icon {
+  width: 4rem;
+  height: 4rem;
+  margin: 0 auto 1rem;
+  background-color: #eef2ff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6366f1;
+}
+
+/* Nadpis prázdného stavu */
+.empty-state-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #312e81;
+  margin-bottom: 0.5rem;
+}
+
+/* Popis prázdného stavu */
+.empty-state-description {
+  color: #6b7280;
+  margin-bottom: 1.5rem;
+}
+
+/* ========================================
+ * 11. UTILITY CLASSES
+ * ======================================== */
+
+/* Flexibilní layout pro tlačítka */
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .button-group {
+    flex-direction: row;
+  }
+}
+
+/* Terciární tlačítko - bílé s indigo okrajem pro méně důležité akce */
+.tertiary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: white;
+  color: #4338ca; /* indigo-700 */
+  padding: 0.75rem 1.5rem;
+  border-radius: 1rem;
+  border: 2px solid #e0e7ff; /* indigo-100 */
+  font-weight: 500;
+  transition: all 200ms ease;
+  cursor: pointer;
+}
+
+.tertiary-button:hover {
+  background-color: #f8fafc; /* slate-50 */
+  border-color: #c7d2fe; /* indigo-200 */
+  transform: translateY(-1px);
 }
