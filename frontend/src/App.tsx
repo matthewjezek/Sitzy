@@ -15,6 +15,7 @@ import SeatPositionTest from './pages/SeatPositionTest';
 import { ToastContainer } from 'react-toastify';
 import SeatPageNew from './pages/SeatPageNew'
 import SettingsPage from "./pages/SettingsPage";
+import AnonymousRoute from './utils/AnonymousRoute'
 
 function App() {
   return (
@@ -25,9 +26,10 @@ function App() {
         {/* Stránka pro 404 */}
         <Route path="*" element={<PageNotFound />} />
         {/* Veřejné stránky */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-
+        <Route element={<AnonymousRoute />}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+        </Route>
         {/* Stránky pod layoutem */}
         <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
           <Route path="/dashboard" element={<DashboardPage />} />
