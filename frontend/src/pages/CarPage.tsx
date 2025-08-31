@@ -9,6 +9,8 @@ import OverheadSvg from '../components/OverheadSvg'
 import Loader from '../components/Loader'
 import { SeatRenderer, type SeatData } from '../components/SeatRenderer'
 import { DeleteDialog } from '../components/Dialog'
+import InviteDialog from '../components/InviteDialog'
+import { useInvites } from "../hooks/useInvites";
 
 export default function CarPage() {
   const navigate = useNavigate()
@@ -26,7 +28,9 @@ export default function CarPage() {
   const [loading, setLoading] = useState(true)
   const axios = instance
   const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
-  const dialogRef = useRef<HTMLDialogElement | null>(null)
+  const dialogRef1 = useRef<HTMLDialogElement | null>(null)
+  const dialogRef2 = useRef<HTMLDialogElement | null>(null)
+  const { invites, createInvite, cancelInvite, loading: invitesLoading } = useInvites(car?.id ?? 0);
 
   const fetchCar = useCallback(async () => {
     setLoading(true)
@@ -88,14 +92,13 @@ export default function CarPage() {
   }
 
 
-  function toggleDialog() {
-    if (!dialogRef.current) {
-      return;
-    }
-    if (dialogRef.current.hasAttribute('open')) {
-      dialogRef.current.close();
+  function toggleDialog(which: 1 | 2) {
+    const ref = which === 1 ? dialogRef1 : dialogRef2;
+    if (!ref.current) return;
+    if (ref.current.hasAttribute('open')) {
+      ref.current.close();
     } else {
-      dialogRef.current.showModal();
+      ref.current.showModal();
     }
   }
 
@@ -111,7 +114,7 @@ export default function CarPage() {
       toast.error('Nepodařilo se smazat auto.')
       setError('Nepodařilo se smazat auto.')
     } finally {
-      toggleDialog()
+      toggleDialog(1)
     }
   }
 
@@ -195,7 +198,7 @@ export default function CarPage() {
             {/* Akční tlačítka */}
             <div className="flex flex-col sm:flex-row gap-3">
               <button
-                onClick={() => navigate('/invite')}
+                onClick={() => toggleDialog(2)}
                 className="col-span-3 sm:grow-4 primary-button"
               >
                 <FiUsers size={18} />
@@ -207,7 +210,7 @@ export default function CarPage() {
               </button>
               
               <button
-                onClick={toggleDialog}
+                onClick={() => toggleDialog(1)}
                 className="bg-red-50 hover:bg-red-100 border-2 border-red-200 hover:border-red-300 text-red-600 p-3 rounded-2xl transition-all duration-200 transform hover:scale-105 cursor-pointer flex items-center justify-center group col-span-3 sm:grow-2"
               >
                 <FiTrash size={20} className="group-hover:scale-110 transition-transform" />
@@ -234,12 +237,20 @@ export default function CarPage() {
       </div>
 
       {/* Dialog mimo layout */}
-      <DeleteDialog toggle={toggleDialog} ref={dialogRef} action={handleDeleteCar}>
+      <DeleteDialog toggle={() => toggleDialog(1)} ref={dialogRef1} action={handleDeleteCar}>
         <span className="dialog-title">Smazat auto</span>
         <p className="dialog-message">
           Opravdu chcete smazat toto auto? Společně s ním bude smazána i jízda. Tato akce je nevratná.
         </p>
       </DeleteDialog>
+      <InviteDialog
+        toggle={() => toggleDialog(2)}
+        ref={dialogRef2}
+        pendingInvites={invites}
+        onInvite={createInvite}
+        onCancel={cancelInvite}
+        loading={invitesLoading}
+      />
     </div>
   )
 }
