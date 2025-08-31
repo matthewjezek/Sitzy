@@ -119,12 +119,34 @@ const Button = () => {
         </div>
 
         {/* Pravá skupina tlačítek */}
-        <div>
+        <div className="flex items-center gap-2">
+          <button 
+            className="nav-button glass hover:text-sky-800"
+            onClick={() => navigate('/settings')}
+          >
+            <svg
+              className="text-sky-800"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              fill="none"
+              viewBox="0 0 20 20"
+              width={20}
+              height={20}
+            >
+              <circle r="2.5" cy={10} cx={10} />
+              <path
+                fillRule="evenodd"
+                d="m8.39079 2.80235c.53842-1.51424 2.67991-1.51424 3.21831-.00001.3392.95358 1.4284 1.40477 2.3425.97027 1.4514-.68995 2.9657.82427 2.2758 2.27575-.4345.91407.0166 2.00334.9702 2.34248 1.5143.53842 1.5143 2.67996 0 3.21836-.9536.3391-1.4047 1.4284-.9702 2.3425.6899 1.4514-.8244 2.9656-2.2758 2.2757-.9141-.4345-2.0033.0167-2.3425.9703-.5384 1.5142-2.67989 1.5142-3.21831 0-.33914-.9536-1.4284-1.4048-2.34247-.9703-1.45148.6899-2.96571-.8243-2.27575-2.2757.43449-.9141-.01669-2.0034-.97028-2.3425-1.51422-.5384-1.51422-2.67994.00001-3.21836.95358-.33914 1.40476-1.42841.97027-2.34248-.68996-1.45148.82427-2.9657 2.27575-2.27575.91407.4345 2.00333-.01669 2.34247-.97026z"
+                clipRule="evenodd"
+              />
+            </svg>
+              Nastavení
+          </button>
           <button
-            className="nav-button glass hover:text-red-600"
+            className="nav-button glass gap-0 group overflow-hidden transition-all duration-300 ease-in hover:gap-2 hover:text-red-600"
             onClick={() => {
               localStorage.removeItem('token');
-              window.location.href = '/login';
+              navigate('/login');
             }}
           >
             <svg
@@ -140,7 +162,9 @@ const Button = () => {
               <path d="M16 17l5-5-5-5" />
               <path d="M21 12H9" />
             </svg>
-            Odhlásit se
+            <span className="whitespace-nowrap max-w-0 overflow-hidden transition-all duration-300 ease-in group-hover:max-w-[100px]">
+              Odhlásit se
+            </span>
           </button>
         </div>
       </div>
@@ -178,38 +202,119 @@ const Button = () => {
           className={`top-16 left-0 w-full z-50 ${menuOpen ? '' : 'hidden'}`}
           id="mobile-menu"
         >
-          <ul className="font-medium flex flex-col gap-2 p-4 mt-4 rounded-xl rtl:space-x-reverse glass">
+          <ul className="font-medium flex flex-col gap-2 p-4 mt-4 rounded-xl rtl:space-x-reverse card">
             <li>
               <a
                 href="/"
-                className="block py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200"
+                className="inline-flex gap-2 py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200"
               >
+                <svg
+                  className="lucide lucide-rocket text-cyan-400"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                  strokeLinecap="round"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  height={22}
+                  width={22}
+                >
+                  <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+                  <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+                  <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
+                  <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+                </svg>
                 Dashboard
               </a>
             </li>
-            <hr />
+            <hr className="border-gray-200" />
             <li>
               <a
                 href="/seats"
-                className="block py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200"
+                className="inline-flex gap-2 py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200"
               >
+                <svg
+                  className="lucide lucide-car-seat text-fuchsia-500"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  height={22}
+                  width={22}
+                >
+                  <rect x="7" y="6" width="10" height="8" rx="3" />
+                  <rect x="5" y="14" width="14" height="7" rx="2" />
+                  <path d="M9 6v-1a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v1" />
+                </svg>
                 Jízdy
               </a>
             </li>
+            <hr className="border-gray-200" />
             <li>
               <a
                 href="/invitations"
-                className="block py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200"
+                className="inline-flex gap-2 py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200"
               >
+                <svg
+                  className="lucide lucide-envelope text-yellow-400"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  height={22}
+                  width={22}
+                >
+                  <rect x="3" y="5" width="18" height="14" rx="2" />
+                  <polyline points="3 7 12 13 21 7" />
+                </svg>
                 Pozvánky
               </a>
             </li>
+            <hr className="border-gray-200" />
             <li>
               <a
                 href="/car"
-                className="block py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200"
+                className="inline-flex gap-2 py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200"
               >
+                <svg
+                  className="text-orange-500"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  height={22}
+                  width={22}
+                >
+                  <rect x="2" y="10" width="20" height="9" rx="2" />
+                  <path d="m20.772 10.156-1.368-4.105A2.995 2.995 0 0 0 16.559 4H7.441a2.995 2.995 0 0 0-2.845 2.051l-1.368 4.105A2.003" />
+                  <circle cx="6" cy="14.5" r="1.5" />
+                  <circle cx="18" cy="14.5" r="1.5" />
+                  <rect x="3" y="19" width="3" height="3" rx="1" />
+                  <rect x="18" y="19" width="3" height="3" rx="1" />
+                </svg>
                 Moje auto
+              </a>
+            </li>
+            <hr className="border-gray-200" />
+            <li>
+              <a
+                onClick={() => localStorage.removeItem('token')}
+                href="/login"
+                className="inline-flex gap-2 py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200"
+              >
+                <svg
+                  className="text-red-600"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  height={22}
+                  width={22}
+                >
+                  <path d="M9 21H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3" />
+                  <path d="M16 17l5-5-5-5" />
+                  <path d="M21 12H9" />
+                </svg>
+                Odhlásit se
               </a>
             </li>
           </ul>
