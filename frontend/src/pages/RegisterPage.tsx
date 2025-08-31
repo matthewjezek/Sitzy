@@ -24,7 +24,7 @@ export default function RegisterPage() {
           headers: {
             'Content-Type': 'application/json',
           },
-          withCredentials: true, // pokud backend používá cookies/sessions
+          withCredentials: true,
         }
       )
       navigate('/login')
@@ -42,49 +42,63 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex justify-center-safe items-center h-full mt-32 p-6">
-      <form
-        onSubmit={handleRegister}
-        className="bg-gray-100 rounded-3xl shadow-xl border border-indigo-100 p-8 space-y-4 max-w-md"
-      >
-        <h2 className="text-2xl font-semibold mb-4 text-center">Registrace</h2>
+    <div className="page-container">
+      <div className="page-content">
+        <div className="form-container">
+          <div className="main-card">
+            <div className="main-card-header text-center">
+              <h1 className="text-2xl font-bold">Registrace</h1>
+            </div>
+            <div className="main-card-body">
+              <form
+                onSubmit={handleRegister}
+              >
+                {error && <div className="text-red-500 text-sm">{error}</div>}
 
-        {error && <div className="text-red-500 text-sm">{error}</div>}
+                <div className="form-group">
+                  <input
+                    type="email"
+                    placeholder="E-mail"
+                    className="form-input"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
 
-        <input
-          type="email"
-          placeholder="E-mail"
-          className="w-full p-2 border rounded focus:outline-2 focus:outline-indigo-500"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
+                <div className="form-group">
+                  <input
+                    type="password"
+                    placeholder="Heslo"
+                    className="form-input"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
 
-        <input
-          type="password"
-          placeholder="Heslo"
-          className="w-full p-2 border rounded focus:outline-2 focus:outline-indigo-500"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
+                <div className="form-group">
+                  <div className="flex justify-center">
+                    <button
+                      type="submit"
+                      className="primary-button w-4/6"
+                    >
+                      Registrovat se
+                    </button>
+                  </div>
+                </div>
 
-        <div className="flex justify-center">
-          <button
-            type="submit"
-            className="primary-button w-4/6"
-          >
-            Registrovat se
-          </button>
+                <p className="text-center text-sm">
+                  Máš už účet?{' '}
+                  <button onClick={() => navigate('/login')} className="text-indigo-600 hover:underline cursor-pointer">
+                    Přihlaš se
+                  </button>
+                </p>
+              </form>
+            </div>
+          </div>
         </div>
-
-        <p className="text-center text-sm">
-          Máš už účet?{' '}
-          <button onClick={() => navigate('/login')} className="text-indigo-600 hover:underline cursor-pointer">
-            Přihlaš se
-          </button>
-        </p>
-      </form>
+      </div>
     </div>
   )
 }

@@ -33,54 +33,68 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex justify-center items-center h-full mt-32 p-6">
-      <form
-        onSubmit={handleLogin}
-        className="bg-gray-100 rounded-3xl shadow-xl border border-indigo-100 p-8 space-y-4 max-w-md"
-      >
-        <h2 className="text-2xl font-semibold mb-4 text-center">Přihlášení</h2>
+    <div className="page-container">
+      <div className='page-content'>
+        <div className="form-container">
+          <div className="main-card">
+            <div className="main-card-header text-center">
+              <h1 className='text-2xl font-bold'>Přihlášení</h1>
+            </div>
+            <div className="main-card-body">
+              <form
+                onSubmit={handleLogin}
+              >
+                {expired && (
+                  <div className="text-red-500 text-sm mb-2 text-center">
+                    Vaše přihlášení vypršelo. Přihlaste se prosím znovu.
+                  </div>
+                )}
+                {error && <div className="text-red-500 text-sm">{error}</div>}
 
-        {expired && (
-          <div className="text-red-500 text-sm mb-2 text-center">
-            Vaše přihlášení vypršelo. Přihlaste se prosím znovu.
+                <div className="form-group">
+                  <input
+                    type="email"
+                    placeholder="E-mail"
+                    className="form-input"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <input
+                    type="password"
+                    placeholder="Heslo"
+                    className="form-input"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <div className="flex justify-center">
+                    <button
+                      type="submit"
+                      className="primary-button w-4/6"
+                    >
+                      Přihlásit se
+                    </button>
+                  </div>
+                </div>
+
+                <p className="text-center text-sm">
+                  Nemáš ještě účet?{' '}
+                  <button onClick={() => navigate('/register')} className="text-indigo-600 hover:underline cursor-pointer">
+                    Zaregistruj se
+                  </button>
+                </p>
+              </form>
+            </div>
           </div>
-        )}
-        {error && <div className="text-red-500 text-sm">{error}</div>}
-
-        <input
-          type="email"
-          placeholder="E-mail"
-          className="w-full p-2 border rounded focus:outline-2 focus:outline-indigo-500"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-
-        <input
-          type="password"
-          placeholder="Heslo"
-          className="w-full p-2 border rounded focus:outline-2 focus:outline-indigo-500"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-
-        <div className="flex justify-center">
-          <button
-            type="submit"
-            className="primary-button w-4/6"
-          >
-            Přihlásit se
-          </button>
         </div>
-
-        <p className="text-center text-sm">
-          Nemáš ještě účet?{' '}
-          <button onClick={() => navigate('/register')} className="text-indigo-600 hover:underline cursor-pointer">
-            Zaregistruj se
-          </button>
-        </p>
-      </form>
+      </div>
     </div>
   )
 }
