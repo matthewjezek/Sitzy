@@ -7,14 +7,14 @@ import InvitationListPage from './pages/InvitePage'
 import CarPage from './pages/CarPage'
 import CreateCarPage from './pages/CreateCarPage'
 import Layout from './components/Layout'
-import ProtectedRoute from './components/ProtectedRoute'
-import InvitePage from "./pages/CreateInvitePage";
+import ProtectedRoute from './utils/ProtectedRoute'
 import PageNotFound from './pages/PageNotFound'
 import SeatRendererTestPage from './pages/SeatRendererTestPage';
 import SeatRendererDemo from './pages/SeatRendererDemo';
 import SeatPositionTest from './pages/SeatPositionTest';
 import { ToastContainer } from 'react-toastify';
 import SeatPageNew from './pages/SeatPageNew'
+import SettingsPage from "./pages/SettingsPage";
 
 function App() {
   return (
@@ -35,11 +35,11 @@ function App() {
           <Route path="/invitations" element={<InvitationListPage />} />
           <Route path="/car" element={<CarPage />} />
           <Route path="/create-car" element={<CreateCarPage />} />
-          <Route path="/invite" element={<InvitePage />} />
           <Route path="/test-seats" element={<SeatRendererTestPage />} />
           <Route path="/demo-seats" element={<SeatRendererDemo />} />
           <Route path="/position-test" element={<SeatPositionTest />} />
           <Route path="/seats" element={<SeatPageNew />} />
+          <Route path="/settings" element={<SettingsPage />} />
         </Route>
       </Routes>
       <ToastContainer position="bottom-left" autoClose={3000} hideProgressBar pauseOnHover draggable theme="colored" />
