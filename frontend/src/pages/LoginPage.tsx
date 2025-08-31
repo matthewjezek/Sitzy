@@ -57,7 +57,10 @@ export default function LoginPage() {
                     placeholder="E-mail"
                     className="form-input"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value.toLocaleLowerCase());
+                      setError('');
+                    }}
                     required
                   />
                 </div>
@@ -68,7 +71,10 @@ export default function LoginPage() {
                     placeholder="Heslo"
                     className="form-input"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setError('');
+                    }}
                     required
                   />
                 </div>

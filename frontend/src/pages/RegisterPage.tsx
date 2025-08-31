@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { isAxiosError } from 'axios'
 import instance from '../api/axios'
-import { toast } from 'react-toastify'
 
 export default function RegisterPage() {
   const navigate = useNavigate()
@@ -29,14 +28,10 @@ export default function RegisterPage() {
       )
       navigate('/login')
     } catch (err: unknown) {
-      if (isAxiosError(err) && err.response?.data?.detail) {
-        setError(`Registrace selhala: ${err.response.data.detail}`);
-        console.error('Registration error:', err);
-        toast.error('Chyba registrace.');
+      if (isAxiosError(err)) {
+        setError(err.response?.data?.message ?? "Chyba registrace");
       } else {
-        setError('Registrace selhala. Zkus to znovu.');
-        console.error('Registration error:', err);
-        toast.error('Chyba registrace.');
+        setError("Nastala neočekávaná chyba");
       }
     }
   }
@@ -61,7 +56,10 @@ export default function RegisterPage() {
                     placeholder="E-mail"
                     className="form-input"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value.toLocaleLowerCase());
+                      setError('');
+                    }}
                     required
                   />
                 </div>
@@ -72,7 +70,10 @@ export default function RegisterPage() {
                     placeholder="Heslo"
                     className="form-input"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setError('');
+                    }}
                     required
                   />
                 </div>
