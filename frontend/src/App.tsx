@@ -16,6 +16,7 @@ import { ToastContainer } from 'react-toastify';
 import SeatPageNew from './pages/SeatPageNew'
 import SettingsPage from "./pages/SettingsPage";
 import AnonymousRoute from './utils/AnonymousRoute'
+import DialogExamples from './examples/DialogExamples'
 
 function App() {
   return (
@@ -43,6 +44,7 @@ function App() {
           <Route path="/position-test" element={<SeatPositionTest />} />
           <Route path="/seats" element={<SeatPageNew />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/dialogs" element={<DialogExamples />} />
         </Route>
       </Routes>
       <ToastContainer position="bottom-left" autoClose={3000} hideProgressBar pauseOnHover draggable theme="colored" />

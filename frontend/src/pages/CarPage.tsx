@@ -8,8 +8,7 @@ import { toast } from 'react-toastify'
 import OverheadSvg from '../components/OverheadSvg'
 import Loader from '../components/Loader'
 import { SeatRenderer, type SeatData } from '../components/SeatRenderer'
-import { DeleteDialog } from '../components/Dialog'
-import InviteDialog from '../components/InviteDialog'
+import { DeleteDialog, InviteDialog } from '../components/Dialog'
 import { useInvites } from "../hooks/useInvites";
 
 export default function CarPage() {
