@@ -34,10 +34,7 @@ export default function CarPage() {
     setLoading(true)
     setError('')
     try {
-      const token = localStorage.getItem('token')
-      const res = await axios.get('http://localhost:8000/cars/my', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const res = await axios.get('http://localhost:8000/cars/my')
       setCar(res.data)
       setNotFound(false)
     } catch (err) {
@@ -103,9 +100,7 @@ export default function CarPage() {
   async function handleDeleteCar() {
     try {
       if (!car) return;
-      const token = localStorage.getItem('token')
-      await axios.delete(`http://localhost:8000/cars/${car.id}`,
-        { headers: { Authorization: `Bearer ${token}` } })
+      await axios.delete(`http://localhost:8000/cars/${car.id}`)
       navigate('/dashboard')
     } catch (err) {
       console.error('Chyba při mazání auta:', err)

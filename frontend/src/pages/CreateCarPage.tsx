@@ -38,10 +38,7 @@ export const CreateCarPage: React.FC<CreateCarPageProps> = ({ editMode = false, 
     if (editMode && !carData) {
       const fetchCar = async () => {
         try {
-          const token = localStorage.getItem('token')
-          const res = await axios.get('http://localhost:8000/cars/my', {
-            headers: { Authorization: `Bearer ${token}` },
-          })
+          const res = await axios.get('http://localhost:8000/cars/my')
           setName(res.data.name)
           setLayout(res.data.layout)
           const utcDate = new Date(res.data.date);
@@ -70,7 +67,6 @@ export const CreateCarPage: React.FC<CreateCarPageProps> = ({ editMode = false, 
     e.preventDefault()
     setError("")
     try {
-      const token = localStorage.getItem('token')
       const localDate = new Date(`${date}T${time}`); // lokální čas
       const dateWithSeconds = localDate.toISOString(); // UTC ISO string
       const layoutCapacity = layout === 'Sedan (4 seats)' ? 4
@@ -87,14 +83,12 @@ export const CreateCarPage: React.FC<CreateCarPageProps> = ({ editMode = false, 
       if (editMode && carId) {
         await axios.patch(
           `http://localhost:8000/cars/${carId}`,
-          { name, layout, date: dateWithSeconds },
-          { headers: { Authorization: `Bearer ${token}` } }
+          { name, layout, date: dateWithSeconds }
         )
       } else {
         await axios.post(
           'http://localhost:8000/cars/',
-          { name, layout, date: dateWithSeconds },
-          { headers: { Authorization: `Bearer ${token}` } }
+          { name, layout, date: dateWithSeconds }
         )
       }
       navigate('/car')

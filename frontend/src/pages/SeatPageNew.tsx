@@ -28,10 +28,7 @@ function useCarData() {
   useEffect(() => {
     const fetchCar = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const res = await axios.get('http://localhost:8000/cars/my', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await axios.get('http://localhost:8000/cars/my');
         setCarData({
           layout_label: res.data.layout_label,
           owner_name: res.data.owner_name,
@@ -58,10 +55,7 @@ export default function SeatPage() {
   const fetchSeats = useCallback(async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:8000/seats', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.get('http://localhost:8000/seats');
       setSeats(res.data);
     } catch (err) {
       if (isAxiosError(err)) {
@@ -88,23 +82,14 @@ export default function SeatPage() {
     }
 
     try {
-      const token = localStorage.getItem('token');
-      
       // Nejdříve zkontrolujeme, jestli už nějaké sedadlo máme vybráno
       if (selectedSeat !== null) {
-        await axios.delete(`http://localhost:8000/seats/${selectedSeat}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        await axios.delete(`http://localhost:8000/seats/${selectedSeat}`);
       }
 
       // Pak vyberme nové sedadlo
       await axios.post(
-        `http://localhost:8000/seats/${position}`, 
-        {},
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+        `http://localhost:8000/seats/${position}`);
 
       setSelectedSeat(position);
       toast.success(`Sedadlo ${position} bylo úspěšně vybráno!`);
