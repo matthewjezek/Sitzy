@@ -16,6 +16,7 @@ export type UseInvitesReturn = {
   error: string | null;
   createInvite: (email: string) => Promise<void>;
   cancelInvite: (inviteToken: string) => Promise<void>;
+  respondInvite: (inviteToken: string, accept: boolean) => Promise<void>;
   fetchInvites: () => Promise<void>;
 };
 
@@ -107,9 +108,36 @@ export function useInvites(carId?: number): UseInvitesReturn {
     }
   };
 
+  const respondInvite = async (inviteToken: string, accept: boolean) => {
+    try {
+      const decision = accept
+        ? "accept"
+        : "decline";
+      setInvites(prev =>
+        prev.map(inv =>
+          inv.token === inviteToken ? { ...inv, status: accept ? "ACCEPTED" : "DECLINED" } : inv
+        )
+      );
+      await axios.post(`/invitations/${inviteToken}/${decision}`);
+      setInvites(prev => prev.filter(i => i.token !== inviteToken));
+    } catch (err: unknown) {
+      setInvites(prev =>
+        prev.map(inv => 
+          inv.token === inviteToken ? { ...inv, status: "PENDING" } : inv
+        )
+      );
+
+      if (isAxiosError(err)) {
+        setError(err.response?.data?.message ?? "Nepodařilo se odpovědět na pozvánku");
+      } else {
+        setError("Nastala neočekávaná chyba");
+      }
+    }
+  }
+
   useEffect(() => {
     fetchInvites();
   }, [fetchInvites]);
 
-  return { invites, loading, error, createInvite, cancelInvite, fetchInvites };
+  return { invites, loading, error, createInvite, cancelInvite, respondInvite, fetchInvites };
 }
