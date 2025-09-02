@@ -5,7 +5,7 @@ import DashboardPage from './pages/DashboardPage'
 // import SeatPage from './pages/SeatPage'
 import InvitationListPage from './pages/InvitePage'
 import CarPage from './pages/CarPage'
-import CreateCarPage from './pages/CreateCarPage'
+import { CreateCarPage } from './pages/CreateCarPage'
 import Layout from './components/Layout'
 import ProtectedRoute from './utils/ProtectedRoute'
 import PageNotFound from './pages/PageNotFound'
@@ -37,6 +37,7 @@ function App() {
           <Route path="/invitations" element={<InvitationListPage />} />
           <Route path="/car" element={<CarPage />} />
           <Route path="/create-car" element={<CreateCarPage />} />
+          <Route path="/edit-car" element={<CreateCarPage editMode={true} />} />
           <Route path="/test-seats" element={<SeatRendererTestPage />} />
           <Route path="/demo-seats" element={<SeatRendererDemo />} />
           <Route path="/position-test" element={<SeatPositionTest />} />

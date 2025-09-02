@@ -363,109 +363,24 @@
   }
 }
 
+/* Kontejner pro radio inputy - flexibilní layout */
 .radio-inputs {
   display: flex;
   justify-content: space-around;
   align-items: center;
+  gap: 1rem;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  flex-wrap: wrap;
 }
 
 .radio-inputs > * {
   margin: 6px;
 }
 
-.radio-input:checked + .radio-tile {
-  border-color: #155dfc;
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
-  color: #155dfc;
-}
-
-.radio-input:checked + .radio-tile:before {
-  transform: scale(1);
-  opacity: 1;
-  background-color: #155dfc;
-  border-color: #155dfc;
-}
-
-.radio-input:checked + .radio-tile .radio-icon svg {
-  fill: #155dfc;
-}
-
-.radio-input:checked + .radio-tile .radio-label {
-  color: #155dfc;
-}
-
-.radio-input:checked + .radio-tile .radio-description {
-  color: #155efcab;
-}
-
-.radio-input:focus + .radio-tile {
-  border-color: #155dfc;
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1), 0 0 0 4px #b5c9fc;
-}
-
-.radio-input:focus + .radio-tile:before {
-  transform: scale(1);
-  opacity: 1;
-}
-
-.radio-tile {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 80px;
-  min-height: 80px;
-  border-radius: 0.5rem;
-  border: 2px solid #b5bfd9;
-  background-color: #fff;
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
-  transition: 0.15s ease;
-  cursor: pointer;
-  position: relative;
-}
-
-.radio-tile:before {
-  content: "";
-  position: absolute;
-  display: block;
-  width: 0.75rem;
-  height: 0.75rem;
-  border: 2px solid #b5bfd9;
-  background-color: #fff;
-  border-radius: 50%;
-  top: 0.25rem;
-  left: 0.25rem;
-  opacity: 0;
-  transform: scale(0);
-  transition: 0.25s ease;
-}
-
-.radio-tile:hover {
-  border-color: #155dfc;
-}
-
-.radio-tile:hover:before {
-  transform: scale(1);
-  opacity: 1;
-}
-
-.radio-icon svg {
-  width: 2rem;
-  height: 2rem;
-  fill: #494949;
-}
-
-.radio-label {
-  color: #707070;
-  transition: 0.375s ease;
-  text-align: center;
-  font-size: 13px;
-}
-
+/* Skrytý radio input */
 .radio-input {
   clip: rect(0 0 0 0);
   -webkit-clip-path: inset(100%);
@@ -477,16 +392,118 @@
   width: 1px;
 }
 
-.radio-description {
-  color: #a1a1a1;
-  transition: 0.375s ease;
-  text-align: center;
-  font-size: 12px;
+/* Hlavní radio tile - karta pro volbu s indigo designem */
+.radio-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  min-height: 80px;
+  border-radius: 1rem; /* rounded-2xl */
+  border: 2px solid #e0e7ff; /* indigo-100 */
+  background-color: white;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: all 200ms ease;
+  cursor: pointer;
+  position: relative;
 }
 
-/* ========================================
- * 5. PAGE LAYOUT COMPONENTS
- * ======================================== */
+/* Indikátor vybrané volby - kroužek vlevo nahoře */
+.radio-tile:before {
+  content: "";
+  position: absolute;
+  display: block;
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 2px solid #e0e7ff; /* indigo-100 */
+  background-color: white;
+  border-radius: 50%;
+  top: 0.5rem;
+  left: 0.5rem;
+  opacity: 0;
+  transform: scale(0);
+  transition: all 250ms ease;
+}
+
+/* Hover stav radio tile */
+.radio-tile:hover {
+  border-color: #c7d2fe; /* indigo-200 */
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.radio-tile:hover:before {
+  transform: scale(1);
+  opacity: 1;
+  border-color: #a5b4fc; /* indigo-300 */
+}
+
+/* Checked stav - vybraná volba */
+.radio-input:checked + .radio-tile {
+  border-color: #6366f1; /* indigo-500 */
+  background-color: #eef2ff; /* indigo-50 */
+  box-shadow: 0 8px 15px -3px rgba(99, 102, 241, 0.2);
+}
+
+.radio-input:checked + .radio-tile:before {
+  transform: scale(1);
+  opacity: 1;
+  background-color: #6366f1; /* indigo-500 */
+  border-color: #6366f1; /* indigo-500 */
+}
+
+.radio-input:checked + .radio-tile .radio-icon svg {
+  fill: #6366f1; /* indigo-500 */
+}
+
+.radio-input:checked + .radio-tile .radio-label {
+  color: #4338ca; /* indigo-700 */
+  font-weight: 600;
+}
+
+.radio-input:checked + .radio-tile .radio-description {
+  color: #6366f1; /* indigo-500 */
+}
+
+/* Focus stav pro accessibility */
+.radio-input:focus + .radio-tile {
+  border-color: #6366f1; /* indigo-500 */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+.radio-input:focus + .radio-tile:before {
+  transform: scale(1);
+  opacity: 1;
+  border-color: #6366f1; /* indigo-500 */
+}
+
+/* Ikona v radio tile */
+.radio-icon svg {
+  width: 2rem;
+  height: 2rem;
+  fill: #6b7280; /* gray-500 */
+  transition: fill 200ms ease;
+}
+
+/* Label textu pod ikonou */
+.radio-label {
+  color: #6b7280; /* gray-500 */
+  transition: all 200ms ease;
+  text-align: center;
+  font-size: 0.75rem; /* text-xs */
+  font-weight: 500;
+  margin-top: 0.25rem;
+}
+
+/* Popisek pod labelem */
+.radio-description {
+  color: #9ca3af; /* gray-400 */
+  transition: all 200ms ease;
+  text-align: center;
+  font-size: 0.625rem; /* text-xs */
+  margin-top: 0.125rem;
+}
 
 /* Hlavní kontejner pro celé stránky - centruje obsah */
 .page-container {

@@ -27,7 +27,6 @@ export default function CarPage() {
   const [notFound, setNotFound] = useState(false)
   const [loading, setLoading] = useState(true)
   const axios = instance
-  const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
   const dialogRef1 = useRef<HTMLDialogElement | null>(null)
   const dialogRef2 = useRef<HTMLDialogElement | null>(null)
   const { invites, createInvite, cancelInvite, loading: invitesLoading } = useInvites(car?.id ?? 0);
@@ -170,14 +169,12 @@ export default function CarPage() {
                       <div>
                         <div className="text-4xl font-bold text-indigo-900">
                           {new Date(car.date).toLocaleString('cs-CZ', {
-                            timeZone: localTimezone,
                             hour: '2-digit',
                             minute: '2-digit',
                           })}
                         </div>
                         <div className="text-lg text-indigo-600 mt-1">
                           {new Date(car.date).toLocaleDateString('cs-CZ', {
-                            timeZone: localTimezone,
                             weekday: 'long',
                             day: '2-digit',
                             month: 'long',
@@ -205,7 +202,10 @@ export default function CarPage() {
                 Pozvat řidiče
               </button>
 
-              <button className="col-span-3 sm:grow-2 secondary-button">
+              <button
+                onClick={() => navigate('/edit-car')}
+                className="col-span-3 sm:grow-2 secondary-button"
+              >
                 <FiEdit size={20} />
               </button>
               
