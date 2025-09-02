@@ -19,7 +19,7 @@ export type UseInvitesReturn = {
   fetchInvites: () => Promise<void>;
 };
 
-export function useInvites(carId: number): UseInvitesReturn {
+export function useInvites(carId?: number): UseInvitesReturn {
   const [invites, setInvites] = useState<Invitation[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,10 +27,12 @@ export function useInvites(carId: number): UseInvitesReturn {
   const axios = instance;
 
   const fetchInvites = useCallback(async () => {
-    if (carId <= 0) return;
     try {
       setLoading(true);
-      const res = await axios.get(`/cars/${carId}/invitations`);
+      const url = carId
+        ? `/cars/${carId}/invitations`
+        : `/invitations/received`
+      const res = await axios.get(url);
       setInvites(res.data);
       setError(null);
     } catch (err: unknown) {
@@ -45,7 +47,7 @@ export function useInvites(carId: number): UseInvitesReturn {
   }, [carId, axios]);
 
   const createInvite = async (email: string) => {
-    if (carId <= 0) return;
+    if (!carId) return;
     const dummyToken = nanoid()
 
     try {
@@ -86,10 +88,8 @@ export function useInvites(carId: number): UseInvitesReturn {
     }
   };
 
-
-
   const cancelInvite = async (inviteToken: string) => {
-    if (carId <= 0) return;
+    if (!carId) return;
     if (!invites.some(inv => inv.token === inviteToken)) {
       setError("Pozvánka už není platná.");
       return;
