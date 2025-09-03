@@ -1,7 +1,8 @@
 from uuid import UUID
+from datetime import timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from api import models
 from api.database import get_db
@@ -33,9 +34,44 @@ def read_my_car(
     if not current_user.car:
         raise HTTPException(status_code=404, detail="User has no car.")
 
-    car = db.query(Car).filter(Car.id == current_user.car.id).first()
+    car = db.query(Car).options(selectinload(Car.owner)).filter(Car.id == current_user.car.id).first()
     db.refresh(car)
 
+    return CarFullOut.from_orm_with_labels(car)
+
+
+# === Získání auta, kde jsem cestujícím ===
+@router.get("/as-passenger", response_model=CarFullOut | None)
+def read_passenger_car(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> CarFullOut | None:
+    # Najdi auto, kde jsem cestujícím
+    passenger_entry = db.query(Passenger).filter(Passenger.user_id == current_user.id).first()
+    if not passenger_entry:
+        return None
+    
+    car = db.query(Car).options(selectinload(Car.owner)).filter(Car.id == passenger_entry.car_id).first()
+    if not car:
+        return None
+    
+    db.refresh(car)
+    return CarFullOut.from_orm_with_labels(car)
+
+
+# === Získání auta podle ID ===
+@router.get("/{car_id}", response_model=CarFullOut)
+def read_car_by_id(
+    car_id: UUID,
+    request: Request,
+    db: Session = Depends(get_db),
+) -> CarFullOut:
+    car = db.query(Car).options(selectinload(Car.owner)).filter(Car.id == car_id).first()
+    if not car:
+        raise HTTPException(status_code=404, detail="Car not found.")
+    
+    db.refresh(car)
     return CarFullOut.from_orm_with_labels(car)
 
 
@@ -117,6 +153,12 @@ def create_invitation(
             status_code=403, detail="Car not found or does not belong to you."
         )
 
+    # Kontrola proti pozvání sebe sama
+    if invitation_in.invited_email.lower() == current_user.email.lower():
+        raise HTTPException(
+            status_code=400, detail="You cannot invite yourself."
+        )
+
     existing = (
         db.query(models.Invitation)
         .filter(
@@ -134,11 +176,15 @@ def create_invitation(
         )
 
     token = generate_token()
+    
+    # Nastavíme expires_at na 7 dní od vytvoření
+    expires_at = invitation_in.created_at + timedelta(days=7)
 
     invitation = models.Invitation(
         car_id=car.id,
         invited_email=invitation_in.invited_email,
         created_at=invitation_in.created_at,
+        expires_at=expires_at,
         token=token,
         status=invitation_in.status,
     )
@@ -151,7 +197,7 @@ def create_invitation(
 
 
 # === Seznam odeslaných pozvánek ===
-@router.get("{car_id}/invitations", response_model=list[InvitationOut])
+@router.get("/{car_id}/invitations", response_model=list[InvitationOut])
 def list_sent_invitations(
     car_id: UUID,
     db: Session = Depends(get_db),
@@ -195,20 +241,3 @@ def get_my_seat(
         raise HTTPException(status_code=404, detail="User has no assigned seat.")
 
     return SeatOut.model_validate(current_user.seat)
-
-
-# === Získání aut, kde je uživatel cestující ===
-@router.get("/as-passenger", response_model=list[CarOut])
-def get_passenger_cars(
-    request: Request,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-) -> list[CarOut]:
-    cars = (
-        db.query(Car)
-        .join(Passenger)
-        .filter(Passenger.user_id == current_user.id)
-        .order_by(Car.date.desc())
-        .all()
-    )
-    return [CarOut.from_orm_with_labels(car) for car in cars]
