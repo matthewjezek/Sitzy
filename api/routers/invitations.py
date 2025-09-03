@@ -10,6 +10,22 @@ from api.utils.enums import InvitationStatus
 router = APIRouter()
 
 
+# === Získání pozvánek aktuálního uživatele ===
+@router.get("/received", response_model=list[InvitationOut])
+def get_received_invitations(
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> list[InvitationOut]:
+    invitations = (
+        db.query(Invitation)
+        .filter(Invitation.invited_email.ilike(current_user.email))
+        .order_by(Invitation.created_at.desc())
+        .all()
+    )
+    return [InvitationOut.from_orm_with_labels(inv) for inv in invitations]
+
+
 # === Zneplatnění pozvánky ===
 @router.delete("/{token}", status_code=status.HTTP_204_NO_CONTENT)
 def cancel_invitation(
@@ -121,19 +137,3 @@ def reject_invitation(
     invitation.status = InvitationStatus.REJECTED
     db.commit()
     return {"detail": "Invitation has been successfully rejected."}
-
-
-# === Získání pozvánek aktuálního uživatele ===
-@router.get("/received", response_model=list[InvitationOut])
-def get_received_invitations(
-    request: Request,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-) -> list[InvitationOut]:
-    invitations = (
-        db.query(Invitation)
-        .filter(Invitation.invited_email.ilike(current_user.email))
-        .order_by(Invitation.created_at.desc())
-        .all()
-    )
-    return [InvitationOut.from_orm_with_labels(inv) for inv in invitations]
