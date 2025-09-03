@@ -1,9 +1,90 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { FiBell } from 'react-icons/fi';
 import { useNavigate } from 'react-router';
+import { useInvites } from '../hooks/useInvites';
+import { NotificationDialog, InvitationDialog } from './Dialog';
+import { useCar } from '../hooks/useCar';
 
 const Button = () => {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const { fetchCarById } = useCar();
+
+  {/* Notifikace */}
+  const {
+    invites,
+    loading: invitesLoading,
+    fetchInvites,
+    respondInvite,
+  } = useInvites();
+
+  // Lokální read state pro notifikace
+  const [readSet, setReadSet] = useState<Set<string>>(new Set());
+
+  const notifRef = useRef<HTMLDialogElement|null>(null);
+  const invitationRef = useRef<HTMLDialogElement|null>(null);
+
+  const [selectedToken, setSelectedToken] = useState<string | null>(null);
+
+  const notifications = invites.map(inv => ({
+    id: inv.token,
+    title: "Pozvánka na jízdu",
+    message: `Máte novou pozvánku od ${inv.invited_email}`,
+    type: "info" as const,
+    created_at: new Date(inv.created_at),
+    read: inv.status !== "Pending" || readSet.has(inv.token),
+  }));
+
+  const markAsRead = (id: string) => {
+    setReadSet(prev => new Set(prev).add(id));
+  };
+
+  const markAllAsRead = () => {
+    setReadSet(new Set(invites.map(i => i.token)));
+  };
+
+  const openNotifications = () => {
+    fetchInvites();
+    notifRef.current?.showModal();
+  };
+
+  const openInvitationByToken = (token: string) => {
+    setSelectedToken(token);
+    // Dialog se otevře automaticky po načtení carData v useEffect
+  };
+
+  const closeInvitation = () => {
+    invitationRef.current?.close();
+    setSelectedToken(null);
+    setCarData(null);
+  };
+
+  const selectedInvite = selectedToken ? invites.find(i => i.token === selectedToken) : null;
+  const [carData, setCarData] = useState<{ name: string; owner: string; date: string } | null>(null);
+
+  useEffect(() => {
+    if (!selectedInvite) return;
+
+    const fetchCar = async () => {
+      const carInfo = await fetchCarById(selectedInvite.car_id);
+      if (carInfo) {
+        setCarData({
+          name: carInfo.name,
+          owner: carInfo.owner_name || 'Neznámý řidič',
+          date: carInfo.date || '',
+        });
+      }
+    };
+
+    fetchCar();
+  }, [selectedInvite, fetchCarById]);
+
+  // Otevřít dialog po načtení carData
+  useEffect(() => {
+    if (selectedInvite && carData) {
+      invitationRef.current?.showModal();
+    }
+  }, [selectedInvite, carData]);
 
   return (
     <>
@@ -12,7 +93,7 @@ const Button = () => {
         {/* Levá skupina tlačítek */}
         <div className="flex items-center gap-2">
           <button
-            className="nav-button glass gap-0 group overflow-hidden transition-all duration-300 ease-in hover:gap-2"
+            className="nav-button glass gap-0 group transition-all duration-300 ease-in hover:gap-2"
             onClick={() => navigate(-1)}
           >
             <svg
@@ -56,11 +137,11 @@ const Button = () => {
           </button>
 
           <button
-            className="nav-button glass hover:text-fuchsia-500"
+            className="nav-button glass hover:text-violet-500"
             onClick={() => navigate('/seats')}
           >
             <svg
-              className="lucide lucide-car-seat text-fuchsia-500"
+              className="lucide lucide-car-seat text-violet-500"
               stroke="currentColor"
               strokeWidth={1.5}
               fill="none"
@@ -76,30 +157,11 @@ const Button = () => {
           </button>
 
           <button
-            className="nav-button glass hover:text-amber-400"
-            onClick={() => navigate('/invitations')}
-          >
-            <svg
-              className="lucide lucide-envelope text-yellow-400"
-              stroke="currentColor"
-              strokeWidth={1.5}
-              fill="none"
-              viewBox="0 0 24 24"
-              height={22}
-              width={22}
-            >
-              <rect x="3" y="5" width="18" height="14" rx="2" />
-              <polyline points="3 7 12 13 21 7" />
-            </svg>
-            Pozvánky
-          </button>
-
-          <button
-            className="nav-button glass hover:text-orange-500"
+            className="nav-button glass hover:text-fuchsia-500"
             onClick={() => navigate('/car')}
           >
             <svg
-              className="text-orange-500"
+              className="text-fuchsia-500"
               stroke="currentColor"
               strokeWidth={1.5}
               fill="none"
@@ -114,14 +176,25 @@ const Button = () => {
               <rect x="3" y="19" width="3" height="3" rx="1" />
               <rect x="18" y="19" width="3" height="3" rx="1" />
             </svg>
-            Moje auto
+           <span className="font-">Moje auto</span>
           </button>
         </div>
 
         {/* Pravá skupina tlačítek */}
         <div className="flex items-center gap-2">
+          <button
+            onClick={openNotifications}
+            className="nav-button p-0 glass rounded-full w-9 h-9 flex items-center justify-center relative"
+          >
+            <FiBell className="text-sky-500" size={20} />
+            {notifications.some(n => !n.read) && (
+              <span className="absolute -top-1 -right-1 bg-indigo-500 text-white rounded-full px-1.5 py-0.5 text-xs min-w-5 flex items-center justify-center">
+                {notifications.filter(n => !n.read).length}
+              </span>
+            )}
+          </button>
           <button 
-            className="nav-button glass hover:text-sky-800"
+            className="nav-button p-0 glass rounded-full w-9 h-9 flex items-center justify-center hover:text-sky-800"
             onClick={() => navigate('/settings')}
           >
             <svg
@@ -130,8 +203,8 @@ const Button = () => {
               strokeWidth="1.5"
               fill="none"
               viewBox="0 0 20 20"
-              width={20}
-              height={20}
+              width={22}
+              height={22}
             >
               <circle r="2.5" cy={10} cx={10} />
               <path
@@ -140,10 +213,9 @@ const Button = () => {
                 clipRule="evenodd"
               />
             </svg>
-              Nastavení
           </button>
           <button
-            className="nav-button glass gap-0 group overflow-hidden transition-all duration-300 ease-in hover:gap-2 hover:text-red-600"
+            className="nav-button glass gap-0 group transition-all duration-300 ease-in hover:gap-2 hover:text-red-600"
             onClick={() => {
               localStorage.removeItem('token');
               navigate('/login');
@@ -177,27 +249,40 @@ const Button = () => {
         >
           <span className="text-3xl font-semibold text-gray-700">Sitzy</span>
         </a>
-        <button
-          id="mobile-menu-button"
-          type="button"
-          className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
-          aria-controls="navbar-default"
-          aria-expanded={menuOpen}
-          onClick={() => setMenuOpen((open) => !open)}
-        >
-          <span className="sr-only">Open main menu</span>
-          <svg
-            className="w-5 h-5"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            stroke="currentColor"
-            strokeWidth={1.5}
-            fill="none"
-            viewBox="0 0 17 14"
-          >
-            <path d="M1 1h15M1 7h15M1 13h15" />
-          </svg>
-        </button>
+          <div className="flex items-center gap-2">
+            <button
+              className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600 relative"
+              onClick={openNotifications}
+            >
+              <FiBell size={20} />
+              {notifications.some(n => !n.read) && (
+                <span className="absolute -top-1 -right-1 bg-indigo-500 text-white rounded-full px-1.5 py-0.5 text-xs min-w-5 flex items-center justify-center">
+                  {notifications.filter(n => !n.read).length}
+                </span>
+              )}
+            </button>
+            <button
+              id="mobile-menu-button"
+              type="button"
+              className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
+              aria-controls="navbar-default"
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen((open) => !open)}
+            >
+              <span className="sr-only">Open main menu</span>
+              <svg
+                className="w-5 h-5"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                stroke="currentColor"
+                strokeWidth={1.5}
+                fill="none"
+                viewBox="0 0 17 14"
+              >
+                <path d="M1 1h15M1 7h15M1 13h15" />
+              </svg>
+            </button>
+          </div>
         <div
           className={`top-16 left-0 w-full z-50 ${menuOpen ? '' : 'hidden'}`}
           id="mobile-menu"
@@ -206,7 +291,7 @@ const Button = () => {
             <li>
               <a
                 href="/"
-                className="inline-flex gap-2 py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200"
+                className="inline-flex items-center gap-2 py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200"
               >
                 <svg
                   className="lucide lucide-rocket text-cyan-400"
@@ -230,10 +315,10 @@ const Button = () => {
             <li>
               <a
                 href="/seats"
-                className="inline-flex gap-2 py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200"
+                className="inline-flex items-center gap-2 py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200"
               >
                 <svg
-                  className="lucide lucide-car-seat text-fuchsia-500"
+                  className="lucide lucide-car-seat text-violet-500"
                   stroke="currentColor"
                   strokeWidth={1.5}
                   fill="none"
@@ -251,32 +336,11 @@ const Button = () => {
             <hr className="border-gray-200" />
             <li>
               <a
-                href="/invitations"
-                className="inline-flex gap-2 py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200"
-              >
-                <svg
-                  className="lucide lucide-envelope text-yellow-400"
-                  stroke="currentColor"
-                  strokeWidth={1.5}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  height={22}
-                  width={22}
-                >
-                  <rect x="3" y="5" width="18" height="14" rx="2" />
-                  <polyline points="3 7 12 13 21 7" />
-                </svg>
-                Pozvánky
-              </a>
-            </li>
-            <hr className="border-gray-200" />
-            <li>
-              <a
                 href="/car"
-                className="inline-flex gap-2 py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200"
+                className="inline-flex items-center gap-2 py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200"
               >
                 <svg
-                  className="text-orange-500"
+                  className="text-fuchsia-500"
                   stroke="currentColor"
                   strokeWidth={1.5}
                   fill="none"
@@ -297,9 +361,34 @@ const Button = () => {
             <hr className="border-gray-200" />
             <li>
               <a
+                href="/settings"
+                className="inline-flex items-center gap-2 py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200"
+              >
+                <svg
+                  className="text-sky-800"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  fill="none"
+                  viewBox="0 0 20 20"
+                  width={22}
+                  height={22}
+                >
+                  <circle r="2.5" cy={10} cx={10} />
+                  <path
+                    fillRule="evenodd"
+                    d="m8.39079 2.80235c.53842-1.51424 2.67991-1.51424 3.21831-.00001.3392.95358 1.4284 1.40477 2.3425.97027 1.4514-.68995 2.9657.82427 2.2758 2.27575-.4345.91407.0166 2.00334.9702 2.34248 1.5143.53842 1.5143 2.67996 0 3.21836-.9536.3391-1.4047 1.4284-.9702 2.3425.6899 1.4514-.8244 2.9656-2.2758 2.2757-.9141-.4345-2.0033.0167-2.3425.9703-.5384 1.5142-2.67989 1.5142-3.21831 0-.33914-.9536-1.4284-1.4048-2.34247-.9703-1.45148.6899-2.96571-.8243-2.27575-2.2757.43449-.9141-.01669-2.0034-.97028-2.3425-1.51422-.5384-1.51422-2.67994.00001-3.21836.95358-.33914 1.40476-1.42841.97027-2.34248-.68996-1.45148.82427-2.9657 2.27575-2.27575.91407.4345 2.00333-.01669 2.34247-.97026z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Nastavení
+              </a>
+            </li>
+            <hr className="border-gray-200" />
+            <li>
+              <a
                 onClick={() => localStorage.removeItem('token')}
                 href="/login"
-                className="inline-flex gap-2 py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200"
+                className="inline-flex items-center gap-2 py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200"
               >
                 <svg
                   className="text-red-600"
@@ -320,6 +409,30 @@ const Button = () => {
           </ul>
         </div>
       </div>
+      <NotificationDialog
+        ref={notifRef}
+        toggle={() => notifRef.current?.close()}
+        notifications={notifications}
+        onMarkAsRead={markAsRead}
+        onMarkAllAsRead={markAllAsRead}
+        onOpen={openInvitationByToken}
+      />
+      {selectedInvite && carData && (
+        <InvitationDialog
+          ref={invitationRef}
+          toggle={closeInvitation}
+          invitation={{
+            id: selectedInvite.token,
+            carName: carData.name,
+            ownerName: carData.owner,
+            date: carData.date,
+            token: selectedInvite.token,
+          }}
+          onAccept={(token) => respondInvite(token, true)}
+          onDecline={(token) => respondInvite(token, false)}
+          loading={invitesLoading}
+        />
+      )}
     </>
   );
 };
