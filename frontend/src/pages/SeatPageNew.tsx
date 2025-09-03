@@ -1,259 +1,267 @@
-import { useCallback, useEffect, useState } from 'react';
-import { isAxiosError } from "axios";
-import instance from '../api/axios';
+import React, { useEffect, useState, useCallback } from 'react';
 import { toast } from 'react-toastify';
+import { isAxiosError } from 'axios';
+import { FiUser, FiCalendar } from 'react-icons/fi';
+import axios from '../api/axios';
 import Loader from '../components/Loader';
 import SeatRenderer from '../components/SeatRenderer';
 import type { SeatData } from '../components/SeatRenderer';
+import { useCar } from '../hooks/useCar';
+import { getSeatPositionLabel } from '../utils/seatUtils';
 
-interface Seat {
-  id: number;
-  position: number;
-  occupied: boolean;
-  user?: string;
+interface User {
+  id: string;
+  email: string;
 }
 
-interface CarData {
-  layout_label: string;
-  owner_name?: string;
-  name?: string;
-}
+const SeatPageNew: React.FC = () => {
+  const { car, loading, error, fetchPassengerCar } = useCar();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [selectedSeat, setSelectedSeat] = useState<number | null>(null);
+  const [seatLoading, setSeatLoading] = useState(false);
 
-const axios = instance;
-
-// Hook pro zjištění layoutu auta a dalších dat
-function useCarData() {
-  const [carData, setCarData] = useState<CarData | null>(null);
-  
+  // Load current user and passenger car data
   useEffect(() => {
-    const fetchCar = async () => {
+    const fetchData = async () => {
       try {
-        const res = await axios.get('http://localhost:8000/cars/my');
-        setCarData({
-          layout_label: res.data.layout_label,
-          owner_name: res.data.owner_name,
-          name: res.data.name,
-        });
-      } catch {
-        setCarData(null);
+        // Get current user
+        const userRes = await axios.get('/auth/me');
+        setCurrentUser(userRes.data);
+        
+        // Load passenger car
+        await fetchPassengerCar();
+      } catch (err: unknown) {
+        console.error('Error loading data:', err);
       }
     };
-    fetchCar();
-  }, []);
-  
-  return carData;
-}
+    
+    fetchData();
+  }, [fetchPassengerCar]);
 
-export default function SeatPage() {
-  const [seats, setSeats] = useState<Seat[]>([]);
-  const [selectedSeat, setSelectedSeat] = useState<number | null>(null);
-  const [error, setError] = useState('');
-  const [notFound, setNotFound] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const carData = useCarData();
+  // Find user's current seat if they have one
+  useEffect(() => {
+    if (car?.seats && currentUser) {
+      const userSeat = car.seats.find(seat => seat.user_name === currentUser.email);
+      setSelectedSeat(userSeat ? userSeat.position : null);
+    }
+  }, [car?.seats, currentUser]);
 
-  const fetchSeats = useCallback(async () => {
-    setLoading(true);
+  const handleSeatSelect = useCallback(async (seatId: number | null) => {
+    if (!car || !currentUser || seatId === null) return;
+
     try {
-      const res = await axios.get('http://localhost:8000/seats');
-      setSeats(res.data);
-    } catch (err) {
+      setSeatLoading(true);
+      
+      // Use correct seats endpoint for choosing a seat
+      await axios.post(`/seats/choose`, {
+        position: seatId,
+      });
+      
+      setSelectedSeat(seatId);
+      toast.success('Sedadlo bylo úspěšně vybráno!');
+      
+      // Refresh car data to get updated seats
+      await fetchPassengerCar();
+      
+    } catch (err: unknown) {
       if (isAxiosError(err)) {
-        if (err.response?.status === 404) {
-          setNotFound(true);
-        } else if (err.response?.status === 401) {
-          setError('Neautorizovaný přístup');
-        } else {
-          setError(err.response?.data?.detail || 'Neočekávaná chyba');
-        }
+        toast.error(err.response?.data?.message ?? "Nepodařilo se vybrat sedadlo");
       } else {
-        setError('Síťová chyba');
+        toast.error("Nastala neočekávaná chyba");
       }
     } finally {
-      setLoading(false);
+      setSeatLoading(false);
     }
-  }, []);
+  }, [car, currentUser, fetchPassengerCar]);
 
-  const handleSeatSelect = useCallback(async (position: number | null) => {
-    if (position === null) {
-      // Zrušení výběru
-      setSelectedSeat(null);
-      return;
-    }
+  const handleFreeSeat = useCallback(async () => {
+    if (!car || !currentUser || selectedSeat === null) return;
 
     try {
-      // Nejdříve zkontrolujeme, jestli už nějaké sedadlo máme vybráno
-      if (selectedSeat !== null) {
-        await axios.delete(`http://localhost:8000/seats/${selectedSeat}`);
-      }
-
-      // Pak vyberme nové sedadlo
-      await axios.post(
-        `http://localhost:8000/seats/${position}`);
-
-      setSelectedSeat(position);
-      toast.success(`Sedadlo ${position} bylo úspěšně vybráno!`);
+      setSeatLoading(true);
       
-      // Refresh dat sedadel
-      await fetchSeats();
+      // Use correct seats endpoint for leaving a seat
+      await axios.delete(`/seats/`);
       
-    } catch (err) {
+      setSelectedSeat(null);
+      toast.success('Sedadlo bylo úspěšně uvolněno!');
+      
+      await fetchPassengerCar();
+      
+    } catch (err: unknown) {
       if (isAxiosError(err)) {
-        toast.error(err.response?.data?.detail || 'Chyba při výběru sedadla');
+        toast.error(err.response?.data?.message ?? "Nepodařilo se uvolnit sedadlo");
       } else {
-        toast.error('Síťová chyba');
+        toast.error("Nastala neočekávaná chyba");
       }
+    } finally {
+      setSeatLoading(false);
     }
-  }, [selectedSeat, fetchSeats]);
+  }, [car, currentUser, selectedSeat, fetchPassengerCar]);
 
-  useEffect(() => {
-    fetchSeats();
-  }, [fetchSeats]);
-
-  // Najdi aktuálně vybrané sedadlo uživatele
-  useEffect(() => {
-    const currentUserSeat = seats.find(seat => seat.user && seat.occupied);
-    if (currentUserSeat) {
-      setSelectedSeat(currentUserSeat.position);
-    }
-  }, [seats]);
-
-  // Konverze dat pro SeatRenderer komponentu
-  const convertSeatsForRenderer = (): SeatData[] => {
-    return seats.map(seat => ({
-      position: seat.position,
-      position_label: seat.position.toString(),
-      user_name: seat.user,
-      occupied: seat.occupied,
-    }));
-  };
-
-  // Normalizace layout pro SeatRenderer
-  const normalizeLayout = (layout: string): string => {
-    const normalized = layout.toLowerCase();
-    if (normalized.includes('sedan') || normalized.includes('sedaq')) return 'SEDAQ';
-    if (normalized.includes('coup') || normalized.includes('trapaq')) return 'TRAPAQ';
-    if (normalized.includes('minivan') || normalized.includes('praq')) return 'PRAQ';
-    return layout;
-  };
-
-  if (loading) {
+  if (loading || !currentUser) {
     return <Loader />;
-  }
-
-  if (notFound) {
-    return (
-      <div className="max-w-2xl mx-auto p-4">
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
-          <h2 className="text-xl font-semibold text-yellow-800 mb-2">
-            Žádné auto nenalezeno
-          </h2>
-          <p className="text-yellow-700">
-            Nemáte žádné aktivní auto. Nejdříve si vytvořte auto na dashboardu.
-          </p>
-        </div>
-      </div>
-    );
   }
 
   if (error) {
     return (
-      <div className="max-w-2xl mx-auto p-4">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-          <h2 className="text-xl font-semibold text-red-800 mb-2">Chyba</h2>
-          <p className="text-red-700 mb-4">{error}</p>
-          <button
-            onClick={fetchSeats}
-            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
-          >
-            Zkusit znovu
-          </button>
+      <div className="page-container">
+        <div className="card">
+          <div className="empty-state">
+            <div className="empty-state-icon">
+              <FiUser className="w-8 h-8" />
+            </div>
+            <h2 className="empty-state-title">Chyba načítání</h2>
+            <p className="empty-state-description">{error}</p>
+          </div>
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="max-w-4xl mx-auto p-4">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Výběr sedadla</h1>
-        
-        {carData && (
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-gray-600">
-            <span className="font-medium">Auto:</span>
-            <span className="bg-blue-50 px-2 py-1 rounded text-blue-900 font-mono">
-              {carData.name || 'Neznámé auto'}
-            </span>
-            <span className="font-medium ml-4">Řidič:</span>
-            <span className="bg-gray-50 px-2 py-1 rounded text-gray-900">
-              {carData.owner_name || 'Neznámý řidič'}
-            </span>
-          </div>
-        )}
-      </div>
-
-      <div className="flex flex-col items-center">
-        {carData ? (
-          <SeatRenderer
-            layout={normalizeLayout(carData.layout_label)}
-            seats={convertSeatsForRenderer()}
-            selectedSeat={selectedSeat}
-            onSeatSelect={handleSeatSelect}
-            ownerName={carData.owner_name || 'Řidič'}
-            mode="interactive"
-            className="mb-6"
-          />
-        ) : (
-          <div className="text-center py-8">
-            <Loader />
-            <p className="text-gray-500 mt-2">Načítání dat auta...</p>
-          </div>
-        )}
-
-        {/* Informační panel */}
-        <div className="w-full max-w-md bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-          <h3 className="font-semibold text-gray-900 mb-3">Informace</h3>
-          
-          {selectedSeat ? (
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 bg-green-500 rounded"></span>
-                <span className="text-sm">Máte vybráno sedadlo #{selectedSeat}</span>
-              </div>
-              <button
-                onClick={() => handleSeatSelect(null)}
-                className="w-full px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors text-sm"
-              >
-                Zrušit rezervaci
-              </button>
+  if (!car) {
+    return (
+      <div className="page-container">
+        <div className="card">
+          <div className="empty-state">
+            <div className="empty-state-icon">
+              <FiUser className="w-8 h-8" />
             </div>
-          ) : (
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 bg-gray-400 rounded"></span>
-                <span className="text-sm text-gray-600">Nemáte vybrané žádné sedadlo</span>
-              </div>
-              <p className="text-xs text-gray-500">
-                Klikněte na volné sedadlo pro výběr
-              </p>
-            </div>
-          )}
-          
-          <div className="mt-4 pt-3 border-t border-gray-100">
-            <p className="text-xs text-gray-500">
-              💡 Tip: Můžete držet pouze jedno sedadlo najednou
+            <h2 className="empty-state-title">Žádné auto k zobrazení</h2>
+            <p className="empty-state-description">
+              Přijměte pozvánku na jízdu, abyste mohli vybrat sedadlo.
             </p>
           </div>
         </div>
+      </div>
+    );
+  }
 
-        {/* Tlačítko pro refresh */}
-        <button
-          onClick={fetchSeats}
-          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-sm"
-        >
-          Aktualizovat sedadla
-        </button>
+  // Convert car.seats to SeatData format for SeatRenderer
+  const seatData: SeatData[] = car.seats?.map(seat => ({
+    position: seat.position,
+    position_label: seat.position_label,
+    user_name: seat.user_name,
+    occupied: !!seat.user_name,
+  })) || [];
+
+  return (
+    <div className="page-container">
+      <div className="page-content">
+        <div className="main-card">
+          <div className="main-card-header">
+            <h1 className="text-3xl font-bold flex items-center gap-3">
+              <FiUser className="w-8 h-8" />
+              Výběr sedadla
+            </h1>
+            <p className="text-indigo-100 mt-1">{car.name} • Řidič: {car.owner_name}</p>
+          </div>
+          <div className="main-card-body">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Levá karta - informace o jízdě */}
+              <div className="info-card">
+                <div className="info-card-header">
+                  <div className="info-card-icon">
+                    <FiCalendar className="w-5 h-5" />
+                  </div>
+                  <h3 className="info-card-title">Detail jízdy</h3>
+                </div>
+                <div className="info-card-content">
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-sm font-medium text-indigo-600 mb-1">Řidič</p>
+                      <p className="text-lg font-semibold text-indigo-900">{car.owner_name}</p>
+                    </div>
+                    {car.date && (
+                      <div>
+                        <p className="text-sm font-medium text-indigo-600 mb-1">Datum a čas</p>
+                        <div className="bg-indigo-50 rounded-lg p-3 border border-indigo-100">
+                          <div className="text-2xl font-bold text-indigo-900">
+                            {new Date(car.date).toLocaleString('cs-CZ', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </div>
+                          <div className="text-sm text-indigo-600 mt-1">
+                            {new Date(car.date).toLocaleDateString('cs-CZ', {
+                              weekday: 'long',
+                              day: '2-digit',
+                              month: 'long',
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div>
+                      <p className="text-sm font-medium text-indigo-600 mb-1">Vaše sedadlo</p>
+                      <div className="bg-indigo-50 rounded-lg p-3 border border-indigo-100">
+                        <span className="text-lg font-bold text-indigo-900">
+                          {selectedSeat ? `Pozice ${selectedSeat}` : 'Nevybráno'}
+                        </span>
+                        {selectedSeat && (
+                          <div className="text-sm text-indigo-600 mt-1">
+                            {getSeatPositionLabel(car.layout, selectedSeat)}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Pravá karta - výběr sedadla */}
+              <div className="info-card">
+                <div className="info-card-header">
+                  <div className="info-card-icon">
+                    <FiUser className="w-5 h-5" />
+                  </div>
+                  <h3 className="info-card-title">Rozložení sedadel</h3>
+                </div>
+                <div className="info-card-content">
+                  <div className="flex items-center justify-center min-h-[320px] p-4">
+                    <SeatRenderer
+                      layout={car.layout}
+                      seats={seatData}
+                      selectedSeat={selectedSeat}
+                      onSeatSelect={seatLoading ? undefined : handleSeatSelect}
+                      ownerName={car.owner_name}
+                      mode="interactive"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Akční tlačítka */}
+            <div className="flex justify-center mt-6">
+              {selectedSeat ? (
+                <button
+                  className="secondary-button"
+                  onClick={handleFreeSeat}
+                  disabled={seatLoading}
+                >
+                  {seatLoading ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Uvolňuji...
+                    </>
+                  ) : (
+                    'Uvolnit sedadlo'
+                  )}
+                </button>
+              ) : (
+                <p className="text-indigo-600 text-center">Vyberte si sedadlo kliknutím na něj v rozložení výše</p>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
-}
+};
+
+export default SeatPageNew;
