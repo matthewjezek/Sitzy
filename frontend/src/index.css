@@ -511,7 +511,7 @@
   align-items: center;
   justify-content: center;
   padding: 1.5rem;
-  min-height: 100dvh;
+  min-height: calc(100dvh - 4rem);
 }
 
 /* Omezuje šířku obsahu stránky */
