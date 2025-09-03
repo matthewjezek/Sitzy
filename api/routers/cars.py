@@ -1,5 +1,5 @@
-from uuid import UUID
 from datetime import timedelta
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from sqlalchemy.orm import Session, selectinload
@@ -34,7 +34,12 @@ def read_my_car(
     if not current_user.car:
         raise HTTPException(status_code=404, detail="User has no car.")
 
-    car = db.query(Car).options(selectinload(Car.owner)).filter(Car.id == current_user.car.id).first()
+    car = (
+        db.query(Car)
+        .options(selectinload(Car.owner))
+        .filter(Car.id == current_user.car.id)
+        .first()
+    )
     db.refresh(car)
 
     return CarFullOut.from_orm_with_labels(car)
@@ -48,14 +53,21 @@ def read_passenger_car(
     db: Session = Depends(get_db),
 ) -> CarFullOut | None:
     # Najdi auto, kde jsem cestujícím
-    passenger_entry = db.query(Passenger).filter(Passenger.user_id == current_user.id).first()
+    passenger_entry = (
+        db.query(Passenger).filter(Passenger.user_id == current_user.id).first()
+    )
     if not passenger_entry:
         return None
-    
-    car = db.query(Car).options(selectinload(Car.owner)).filter(Car.id == passenger_entry.car_id).first()
+
+    car = (
+        db.query(Car)
+        .options(selectinload(Car.owner))
+        .filter(Car.id == passenger_entry.car_id)
+        .first()
+    )
     if not car:
         return None
-    
+
     db.refresh(car)
     return CarFullOut.from_orm_with_labels(car)
 
@@ -67,10 +79,12 @@ def read_car_by_id(
     request: Request,
     db: Session = Depends(get_db),
 ) -> CarFullOut:
-    car = db.query(Car).options(selectinload(Car.owner)).filter(Car.id == car_id).first()
+    car = (
+        db.query(Car).options(selectinload(Car.owner)).filter(Car.id == car_id).first()
+    )
     if not car:
         raise HTTPException(status_code=404, detail="Car not found.")
-    
+
     db.refresh(car)
     return CarFullOut.from_orm_with_labels(car)
 
@@ -155,9 +169,7 @@ def create_invitation(
 
     # Kontrola proti pozvání sebe sama
     if invitation_in.invited_email.lower() == current_user.email.lower():
-        raise HTTPException(
-            status_code=400, detail="You cannot invite yourself."
-        )
+        raise HTTPException(status_code=400, detail="You cannot invite yourself.")
 
     existing = (
         db.query(models.Invitation)
@@ -176,7 +188,7 @@ def create_invitation(
         )
 
     token = generate_token()
-    
+
     # Nastavíme expires_at na 7 dní od vytvoření
     expires_at = invitation_in.created_at + timedelta(days=7)
 
