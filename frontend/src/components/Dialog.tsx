@@ -115,8 +115,8 @@ const MyDialog = forwardRef<HTMLDialogElement, { children: React.ReactNode; togg
 
 // Typy pro InviteDialog
 type InviteInvitation = {
-  email: string;
-  status: "PENDING" | "ACCEPTED" | "DECLINED";
+  invited_email: string;
+  status: "Pending" | "Accepted" | "Rejected";
   created_at: Date;
   token: string;
 };
@@ -127,20 +127,25 @@ type InviteDialogProps = {
   onInvite: (email: string) => void;
   onCancel: (inviteToken: string) => void;
   loading: boolean;
+  error: string | null;
 };
 
 // Dialog pro pozvání uživatelů
 const InviteDialog = forwardRef<HTMLDialogElement, InviteDialogProps>(
-  ({ toggle, pendingInvites, onInvite, onCancel, loading }, ref) => {
+  ({ toggle, pendingInvites, onInvite, onCancel, loading, error }, ref) => {
     const [email, setEmail] = useState("");
-    const [error, setError] = useState<string | null>(null);
+    const [localError, setLocalError] = useState<string | null>(null);
 
     const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault();
+      
+      setLocalError(null);
       onInvite(email);
       setEmail("");
-      setError(null);
     };
+
+    // Kombinovaný error - lokální má přednost před backend chybou
+    const displayError = localError || error;
 
     return (
       <dialog className="dialog-card" ref={ref}>
@@ -168,7 +173,8 @@ const InviteDialog = forwardRef<HTMLDialogElement, InviteDialogProps>(
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value.toLocaleLowerCase());
-                    setError(null);
+                    // Reset chyb při psaní nového emailu
+                    setLocalError(null);
                   }}
                   required
                 />
@@ -180,9 +186,9 @@ const InviteDialog = forwardRef<HTMLDialogElement, InviteDialogProps>(
                   Pozvat
                 </button>
               </div>
-              {error && (
+              {displayError && (
                 <div className="form-group flex flex-row !mb-0.5">
-                  <span className="text-md text-red-500">{error}</span>
+                  <span className="text-md text-red-500">{displayError}</span>
                 </div>
               )}
             </form>
@@ -190,7 +196,7 @@ const InviteDialog = forwardRef<HTMLDialogElement, InviteDialogProps>(
             <hr className="border-gray-300 my-4" />
 
             <div className="flex flex-col gap-2">
-              <h2 className="dialog-title flex items-start">Čekající pozvánky</h2>
+              <h2 className="text-lg font-medium mb-2">Čekající pozvánky</h2>
               <div className="flex flex-col gap-2">
                 {loading ? (
                   <p className="text-gray-500 text-sm">Načítání...</p>
@@ -200,15 +206,28 @@ const InviteDialog = forwardRef<HTMLDialogElement, InviteDialogProps>(
                   pendingInvites.map((invite) => (
                     <div
                       key={invite.token}
-                      className="flex justify-between items-center p-2 border rounded"
+                      className="flex justify-between items-center p-3 border border-gray-200 rounded-lg bg-gray-50"
                     >
-                      <span>{invite.email}</span>
-                      {invite.status === "PENDING" && (
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium">{invite.invited_email}</span>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs text-gray-500">Status:</span>
+                          <span className={`text-xs px-2 py-1 rounded ${
+                            invite.status === "Pending" ? "bg-yellow-100 text-yellow-700" :
+                            invite.status === "Accepted" ? "bg-green-100 text-green-700" :
+                            "bg-red-100 text-red-700"
+                          }`}>
+                            {invite.status}
+                          </span>
+                        </div>
+                      </div>
+                      {invite.status === "Pending" && (
                         <button
-                          className="text-red-500 text-sm hover:underline"
+                          className="p-3 bg-red-50 hover:bg-red-100 border-red-200 rounded-2xl border-2 hover:border-red-300 text-red-600 transition-all duration-200 transform hover:scale-105 cursor-pointer flex items-center justify-center"
                           onClick={() => onCancel(invite.token)}
+                          title="Zrušit pozvánku"
                         >
-                          Zrušit
+                          <FiX size={16} />
                         </button>
                       )}
                     </div>
@@ -247,11 +266,12 @@ type NotificationDialogProps = {
   notifications: Notification[];
   onMarkAsRead: (id: string) => void;
   onMarkAllAsRead: () => void;
+  onOpen: (id: string) => void;
 };
 
 // Dialog pro notifikace
 const NotificationDialog = forwardRef<HTMLDialogElement, NotificationDialogProps>(
-  ({ toggle, notifications, onMarkAsRead, onMarkAllAsRead }, ref) => {
+  ({ toggle, notifications, onMarkAsRead, onMarkAllAsRead, onOpen }, ref) => {
     const unreadCount = notifications.filter(n => !n.read).length;
 
     return (
@@ -307,7 +327,11 @@ const NotificationDialog = forwardRef<HTMLDialogElement, NotificationDialogProps
                           ? 'bg-gray-50 border-gray-200'
                           : 'bg-indigo-50 border-indigo-200'
                       }`}
-                      onClick={() => onMarkAsRead(notification.id)}
+                      onClick={() => {
+                        onMarkAsRead(notification.id);
+                        onOpen(notification.id);
+                        toggle(); // Zavřít notification dialog po kliknutí
+                      }}
                     >
                       <div className="flex items-start gap-2">
                         <div className={`p-1 rounded-full ${
