@@ -109,6 +109,7 @@ export default function DialogExamples() {
         notifications={notifications}
         onMarkAsRead={handleMarkAsRead}
         onMarkAllAsRead={handleMarkAllAsRead}
+        onOpen={handleMarkAsRead}
       />
 
       <InvitationDialog
