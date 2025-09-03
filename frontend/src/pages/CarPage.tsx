@@ -1,57 +1,32 @@
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import RideStatus from '../components/RideStatus'
-import instance from '../api/axios'
 import { useNavigate } from 'react-router'
-import { isAxiosError } from 'axios'
 import { FiEdit, FiTrash, FiMapPin, FiCalendar, FiUsers } from 'react-icons/fi'
 import { toast } from 'react-toastify'
 import OverheadSvg from '../components/OverheadSvg'
 import Loader from '../components/Loader'
 import { SeatRenderer, type SeatData } from '../components/SeatRenderer'
 import { DeleteDialog, InviteDialog } from '../components/Dialog'
-import { useInvites } from "../hooks/useInvites";
+import { useInvites } from "../hooks/useInvites"
+import { useCar } from "../hooks/useCar";
 
 export default function CarPage() {
   const navigate = useNavigate()
-  interface Car {
-    id: number;
-    owner_id: string;
-    name: string;
-    date?: string;
-    layout: string;
-    seats: SeatData[];
-  }
-  const [car, setCar] = useState<Car | null>(null)
-  const [error, setError] = useState('')
-  const [notFound, setNotFound] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const axios = instance
   const dialogRef1 = useRef<HTMLDialogElement | null>(null)
   const dialogRef2 = useRef<HTMLDialogElement | null>(null)
-  const { invites, createInvite, cancelInvite, loading: invitesLoading } = useInvites(car?.id ?? 0);
-
-  const fetchCar = useCallback(async () => {
-    setLoading(true)
-    setError('')
-    try {
-      const res = await axios.get('http://localhost:8000/cars/my')
-      setCar(res.data)
-      setNotFound(false)
-    } catch (err) {
-      if (isAxiosError(err) && err.response?.status === 404) {
-        setNotFound(true)
-      } else {
-        setError('Nepodařilo se načíst auto.')
-      }
-    } finally {
-      setLoading(false)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  
+  const { car, loading, error, notFound, fetchMyCar, deleteCar } = useCar()
+  const { 
+    invites, 
+    createInvite, 
+    cancelInvite, 
+    loading: invitesLoading, 
+    error: inviteError 
+  } = useInvites(car?.id)
 
   useEffect(() => {
-    fetchCar()
-  }, [fetchCar])
+    fetchMyCar()
+  }, [fetchMyCar])
 
   if (loading && !notFound) {
     return <Loader />
@@ -63,7 +38,7 @@ export default function CarPage() {
 
   if (notFound) {
     return (
-      <div className='flex justify-center items-center p-6'>
+      <div className='page-container'>
         <div className="card">
           <div className="w-full rounded-t-3xl h-60 flex items-center overflow-hidden">
             <OverheadSvg />
@@ -86,7 +61,6 @@ export default function CarPage() {
     return null
   }
 
-
   function toggleDialog(which: 1 | 2) {
     const ref = which === 1 ? dialogRef1 : dialogRef2;
     if (!ref.current) return;
@@ -100,12 +74,13 @@ export default function CarPage() {
   async function handleDeleteCar() {
     try {
       if (!car) return;
-      await axios.delete(`http://localhost:8000/cars/${car.id}`)
-      navigate('/dashboard')
+      const success = await deleteCar(car.id)
+      if (success) {
+        navigate('/dashboard')
+      }
     } catch (err) {
       console.error('Chyba při mazání auta:', err)
       toast.error('Nepodařilo se smazat auto.')
-      setError('Nepodařilo se smazat auto.')
     } finally {
       toggleDialog(1)
     }
@@ -133,7 +108,7 @@ export default function CarPage() {
           </div>
 
           {/* Map placeholder */}
-          <div className="relative bg-gradient-to-br from-indigo-50 to-blue-50 min-h-[400px] lg:flex-1 lg:min-h-0 border-b border-indigo-100">
+          <div className="relative bg-gradient-to-br from-indigo-50 to-blue-50 min-h-[400px] lg:flex-1 lg:min-h-0 border-b border-indigo-100 overflow-hidden">
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center space-y-3">
                 <div className="bg-indigo-500 rounded-full p-4 inline-block">
@@ -218,7 +193,7 @@ export default function CarPage() {
           <SeatRenderer
             layout={car.layout || 'Neznámé rozložení'}
             seats={
-              car.seats?.map((seat, idx) => ({
+              car.seats?.map((seat: SeatData, idx: number) => ({
                 position: seat.position ?? idx + 1,
                 user_name: seat.user_name ?? '',
                 occupied: !!seat.user_name,
@@ -244,6 +219,7 @@ export default function CarPage() {
         onInvite={createInvite}
         onCancel={cancelInvite}
         loading={invitesLoading}
+        error={inviteError}
       />
     </div>
   )

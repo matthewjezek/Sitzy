@@ -5,81 +5,49 @@ import { useNavigate } from 'react-router'
 import Loader from '../components/Loader';
 import { WarningDialog } from '../components/Dialog';
 import { FiCalendar, FiUser } from 'react-icons/fi';
-
-interface Seat {
-  position: number;
-  position_label?: string;
-  user_name?: string;
-}
-
-interface Invitation {
-  id: number;
-  invited_email: string;
-  status_label: string;
-}
-
-interface Car {
-  id: number;
-  name: string;
-  date: string;
-  layout: string;
-  invitations: Invitation[];
-  seats: Seat[];
-}
+import { isAxiosError } from 'axios';
+import { useCar } from '../hooks/useCar';
 
 export default function DashboardPage() {
   const [error, setError] = useState('')
   const [user, setUser] = useState<{ email: string } | null>(null)
-  const [car, setCar] = useState<Car | null>(null)
   const [loading, setLoading] = useState(true)
-  const [userNotFound, setUserNotFound] = useState(false)
-  const [carNotFound, setCarNotFound] = useState(false)
   const navigate = useNavigate()
-  const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
   const dialogRef = useRef<HTMLDialogElement | null>(null)
+  
+  const { car, fetchMyCar } = useCar()
 
-  // `instance` and `localStorage` are stable and do not change between renders, so it's safe to only include `navigate` in the dependency array.
   useEffect(() => {
     const axios = instance
-    const token = localStorage.getItem('token')
-    if (!token) {
-      navigate('/login')
-      return
-    }
 
     setLoading(true);
     setError('');
     Promise.all([
       axios
-        .get('http://localhost:8000/auth/me', {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        .get('http://localhost:8000/auth/me')
         .then((res: { data: { email: string } | null }) => {
           setUser(res.data);
-          setUserNotFound(false);
         })
-        .catch(() => {
-          setUser(null);
-          setUserNotFound(true);
-          setError("Uživatel nebyl nalezen");
+        .catch((err: unknown) => {
+          if (isAxiosError(err)) {
+            setError(err.response?.data?.message ?? "Uživatel nebyl nalezen");
+            setUser(null);
+          } else {
+            setError("Nastala neočekávaná chyba");
+          }
         }),
-      axios
-        .get('http://localhost:8000/cars/my', {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        .then((res: { data: Car | null }) => {
-          setCar(res.data);
-          setCarNotFound(false);
-        })
-        .catch(() => {
-          setCar(null);
-          setCarNotFound(true);
-          setError("Auto nebylo nalezeno");
+      fetchMyCar()
+        .catch((err: unknown) => {
+          if (isAxiosError(err)) {
+            setError(err.response?.data?.message ?? "Auto nebylo nalezeno");
+          } else {
+            setError("Nastala neočekávaná chyba");
+          }
         })
     ]).finally(() => {
       setLoading(false)
     })
-  }, [navigate])
+  }, [navigate, fetchMyCar])
 
   function toggleDialog() {
     if (!dialogRef.current) {
@@ -92,15 +60,15 @@ export default function DashboardPage() {
     }
   }
 
-  if (loading && !userNotFound && !carNotFound) {
+  if (loading) {
     return <Loader />
   }
 
-  if (userNotFound || error === "Uživatel nebyl nalezen") {
+  if (user === null) {
     toggleDialog();
   }
 
-  if (carNotFound || error === "Auto nebylo nalezeno") {
+  if (car === null) {
     return (
       <div className="page-container">
         <div className="page-content">
@@ -118,7 +86,17 @@ export default function DashboardPage() {
                     <h3 className="info-card-title">{user?.email}</h3>
                   </div>
                   <div className="info-card-content">
-                    {/* Content */}
+                    <p className="text-gray-600 mb-4">
+                      Nemáte zatím žádné auto. Můžete vytvořit vlastní jízdu nebo zkontrolovat pozvánky v notifikacích.
+                    </p>
+                    <div className="flex flex-col gap-3">
+                      <button 
+                        className="primary-button"
+                        onClick={() => navigate('/create-car')}
+                      >
+                        Vytvořit jízdu
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -166,14 +144,12 @@ export default function DashboardPage() {
                       <div>
                         <div className="text-4xl font-bold text-indigo-900">
                           {new Date(car.date).toLocaleString('cs-CZ', {
-                            timeZone: localTimezone,
                             hour: '2-digit',
                             minute: '2-digit',
                           })}
                         </div>
                         <div className="text-lg text-indigo-600 mt-1">
                           {new Date(car.date).toLocaleDateString('cs-CZ', {
-                            timeZone: localTimezone,
                             weekday: 'long',
                             day: '2-digit',
                             month: 'long',

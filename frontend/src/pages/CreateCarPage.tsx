@@ -1,17 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router'
-import instance from '../api/axios'
-import { isAxiosError } from 'axios'
-import type { SeatData } from '../components/SeatRenderer';
-
-interface Car {
-  id: number;
-  owner_id: string;
-  name: string;
-  date?: string;
-  layout: string;
-  seats: SeatData[];
-}
+import { useCar, type Car } from '../hooks/useCar'
 
 interface CreateCarPageProps {
   editMode?: boolean;
@@ -20,7 +9,6 @@ interface CreateCarPageProps {
 
 export const CreateCarPage: React.FC<CreateCarPageProps> = ({ editMode = false, carData }) => {
   const navigate = useNavigate()
-  const axios = instance
   const today = new Date()
   const yyyy = today.getFullYear()
   const mm = String(today.getMonth() + 1).padStart(2, '0')
@@ -32,16 +20,17 @@ export const CreateCarPage: React.FC<CreateCarPageProps> = ({ editMode = false, 
   const [date, setDate] = useState(carData?.date ?? defaultDate)
   const [time, setTime] = useState(carData?.date ? carData.date.slice(11, 16) : '00:00')
   const [error, setError] = useState('')
-  const [carId, setCarId] = useState(carData?.id ?? null)
+  const [carId, setCarId] = useState<string | null>(carData?.id ?? null)
+
+  const { fetchMyCar, createCar, updateCar } = useCar()
 
   useEffect(() => {
     if (editMode && !carData) {
-      const fetchCar = async () => {
-        try {
-          const res = await axios.get('http://localhost:8000/cars/my')
-          setName(res.data.name)
-          setLayout(res.data.layout)
-          const utcDate = new Date(res.data.date);
+      fetchMyCar().then((fetchedCar) => {
+        if (fetchedCar) {
+          setName(fetchedCar.name)
+          setLayout(fetchedCar.layout)
+          const utcDate = new Date(fetchedCar.date);
           setDate(
             utcDate.getFullYear() +
             '-' +
@@ -50,18 +39,13 @@ export const CreateCarPage: React.FC<CreateCarPageProps> = ({ editMode = false, 
             String(utcDate.getDate()).padStart(2, '0')
           );
           setTime(utcDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })); // HH:MM
-          setCarId(res.data.id)
-        } catch (err: unknown) {
-          if (isAxiosError(err)) {
-            setError(err.response?.data?.message || 'Chyba při načítání auta.');
-          } else {
-            setError("Nastala neočekávaná chyba");
-          }
+          setCarId(fetchedCar.id)
         }
-      }
-      fetchCar()
+      }).catch(() => {
+        setError('Chyba při načítání auta.');
+      })
     }
-  }, [editMode, carData, axios])
+  }, [editMode, carData, fetchMyCar])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -80,24 +64,20 @@ export const CreateCarPage: React.FC<CreateCarPageProps> = ({ editMode = false, 
         setError(`Nelze uložit: obsazeno ${occupiedSeats} míst, ale nové auto má jen ${layoutCapacity} sedaček.`);
         return;
       }
+      
       if (editMode && carId) {
-        await axios.patch(
-          `http://localhost:8000/cars/${carId}`,
-          { name, layout, date: dateWithSeconds }
-        )
+        const result = await updateCar(carId, { name, layout, date: dateWithSeconds })
+        if (result) {
+          navigate('/car')
+        }
       } else {
-        await axios.post(
-          'http://localhost:8000/cars/',
-          { name, layout, date: dateWithSeconds }
-        )
+        const result = await createCar({ name, layout, date: dateWithSeconds })
+        if (result) {
+          navigate('/car')
+        }
       }
-      navigate('/car')
     } catch (err: unknown) {
-      if (isAxiosError(err)) {
-        setError(err.response?.data?.message || (editMode ? 'Chyba při úpravě auta.' : 'Chyba při vytváření auta.'));
-      } else {
-        setError("Nastala neočekávaná chyba");
-      }
+      setError(editMode ? (err instanceof Error ? err.message : 'Chyba při úpravě auta.') : (err instanceof Error ? err.message : 'Chyba při vytváření auta.'));
     }
   }
 
