@@ -46,6 +46,7 @@ class CarCreate(CarBase):
 class CarOut(BaseModelWithLabels["CarOut"], CarBase):
     id: UUID
     owner_id: UUID
+    owner_name: str | None = None
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
@@ -56,6 +57,7 @@ class CarOut(BaseModelWithLabels["CarOut"], CarBase):
         return cls(
             id=car.id,
             owner_id=car.owner_id,
+            owner_name=car.owner.email if car.owner else None,
             created_at=car.created_at,
             name=car.name,
             layout=car.layout,
@@ -136,6 +138,7 @@ class CarFullOut(CarOut):
         return cls(
             id=car.id,
             owner_id=car.owner_id,
+            owner_name=car.owner.email if car.owner else None,
             created_at=car.created_at,
             name=car.name,
             layout=car.layout,
