@@ -91,8 +91,6 @@ def accept_invitation(
         raise HTTPException(
             status_code=403, detail="User is not the owner of this car."
         )
-    if current_user.car is not None:
-        raise HTTPException(status_code=400, detail="User already has a car.")
 
     # Aktualizace stavu
     invitation.status = InvitationStatus.ACCEPTED
@@ -130,7 +128,7 @@ def reject_invitation(
         )
     if invitation.invited_email.lower() != current_user.email.lower():
         raise HTTPException(
-            status_code=403, detail="User is not the owner of this car."
+            status_code=403, detail="This is not your invitation."
         )
 
     # Odmítnutí
