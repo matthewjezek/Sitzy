@@ -127,9 +127,7 @@ def reject_invitation(
             detail="Invitation has already been processed.",
         )
     if invitation.invited_email.lower() != current_user.email.lower():
-        raise HTTPException(
-            status_code=403, detail="This is not your invitation."
-        )
+        raise HTTPException(status_code=403, detail="This is not your invitation.")
 
     # Odmítnutí
     invitation.status = InvitationStatus.REJECTED
