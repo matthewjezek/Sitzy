@@ -580,6 +580,15 @@
 .info-card-content {
   color: #4338ca; /* indigo-700 */
   line-height: 1.6;
+  margin-top: 1rem;
+}
+
+/* Label pro content info karty */
+.info-card-label {
+  font-size: 0.875rem; /* text-sm */
+  font-weight: 500;
+  color: #4f39f6; /* indigo-600 */
+  margin-bottom: 0.25rem; /* mb-1 */
 }
 
 /* ========================================
