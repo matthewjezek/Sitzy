@@ -149,7 +149,7 @@ export function useCar() {
     setError(null);
     
     try {
-      const res = await axios.put(`/cars/${carId}`, carData);
+      const res = await axios.patch(`/cars/${carId}`, carData);
       const updatedCar = res.data;
       setCar(updatedCar);
       return updatedCar;
