@@ -169,12 +169,12 @@ const SeatPageNew: React.FC = () => {
                 <div className="info-card-content">
                   <div className="space-y-4">
                     <div>
-                      <p className="text-sm font-medium text-indigo-600 mb-1">Řidič</p>
+                      <p className="info-card-label">Řidič</p>
                       <p className="text-lg font-semibold text-indigo-900">{car.owner_name}</p>
                     </div>
                     {car.date && (
                       <div>
-                        <p className="text-sm font-medium text-indigo-600 mb-1">Datum a čas</p>
+                        <p className="info-card-label">Datum a čas</p>
                         <div className="bg-indigo-50 rounded-lg p-3 border border-indigo-100">
                           <div className="text-2xl font-bold text-indigo-900">
                             {new Date(car.date).toLocaleString('cs-CZ', {
@@ -194,7 +194,7 @@ const SeatPageNew: React.FC = () => {
                     )}
 
                     <div>
-                      <p className="text-sm font-medium text-indigo-600 mb-1">Vaše sedadlo</p>
+                      <p className="info-card-label">Vaše sedadlo</p>
                       <div className="bg-indigo-50 rounded-lg p-3 border border-indigo-100">
                         <span className="text-lg font-bold text-indigo-900">
                           {selectedSeat ? `Pozice ${selectedSeat}` : 'Nevybráno'}
