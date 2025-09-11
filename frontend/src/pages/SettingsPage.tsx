@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { FiUser, FiX } from "react-icons/fi";
 import { isAxiosError } from 'axios';
 import instance from '../api/axios';
-import { useCar } from '../hooks/useCar';
+import { useCar, type Car } from '../hooks/useCar';
 import Loader from '../components/Loader';
 
 interface User {
@@ -15,7 +15,7 @@ export default function SettingsPage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const { car, fetchMyCar, fetchPassengerCar } = useCar();
-  const [ownCar, setOwnCar] = useState<any>(null);
+  const [ownCar, setOwnCar] = useState<Car | null>(null);
 
   useEffect(() => {
     const axios = instance;
@@ -32,15 +32,24 @@ export default function SettingsPage() {
         try {
           const myCar = await fetchMyCar();
           setOwnCar(myCar);
-        } catch (err) {
+        } catch (err: unknown) {
+          if (isAxiosError(err)) {
+            console.log(err.response?.data?.message ?? "Nepodařilo se načíst vlastní auto");
+          } else {
+            console.log("Nastala neočekávaná chyba");
+          }
           setOwnCar(null);
         }
 
         // Načteme auto kde je uživatel pasažérem (pro kontrolu sedadla)
         try {
           await fetchPassengerCar();
-        } catch (err) {
-          console.log('User is not a passenger in any car');
+        } catch (err: unknown) {
+          if (isAxiosError(err)) {
+            console.log(err.response?.data?.message ?? "Nepodařilo se načíst auto, kde je uživatel pasažérem");
+          } else {
+            console.log("Nastala neočekávaná chyba");
+          }
         }
 
       } catch (err: unknown) {
