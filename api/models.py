@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import DateTime
 from sqlalchemy import Enum as SqlEnum
@@ -28,7 +28,7 @@ class User(Base):
         DateTime(timezone=True), nullable=False, server_default="now()"
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default="now()", onupdate=datetime.utcnow
+        DateTime(timezone=True), nullable=False, server_default="now()", onupdate=datetime.now(timezone.utc)
     )
 
     cars: Mapped[list["Car"]] = relationship(
@@ -103,7 +103,7 @@ class Car(Base):
         DateTime(timezone=True), nullable=False, server_default="now()"
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default="now()", onupdate=datetime.utcnow
+        DateTime(timezone=True), nullable=False, server_default="now()", onupdate=datetime.now(timezone.utc)
     )
 
     owner: Mapped["User"] = relationship(back_populates="cars")
@@ -164,7 +164,7 @@ class CarDriver(Base):
         DateTime(timezone=True), nullable=False, server_default="now()"
     )
     revoked_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
+        DateTime(timezone=True), nullable=True, server_default="now()"
     )
 
     car: Mapped["Car"] = relationship(back_populates="drivers")
