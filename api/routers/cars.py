@@ -184,3 +184,25 @@ def list_sent_invitations(
 
     invitations = db.query(Invitation).filter(Invitation.car_id == car.id).all()
     return [InvitationOut.from_orm_with_labels(inv) for inv in invitations]
+
+
+# === Předání řízení jinému uživateli ===
+@router.post("/{car_id}/transfer-driver")
+def transfer_driver(
+    car_id: UUID,
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Transfer active driver role to another user.
+    
+    TODO: Implement driver transfer:
+    - Validate current user is car owner or active driver
+    - Validate new driver is a passenger in an active ride
+    - Find current active CarDriver record
+    - Set revoked_at = now() and is_active = False
+    - Create new CarDriver record for new driver
+    - Return success message or new CarDriverOut
+    """
+    raise HTTPException(status_code=501, detail="Driver transfer not implemented yet")

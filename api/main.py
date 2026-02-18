@@ -37,9 +37,10 @@ async def validation_exception_handler(
 
 
 # Import routerů
-from api.routers import auth, cars, invitations, seats  # noqa: E402
+from api.routers import auth, cars, invitations, rides, seats  # noqa: E402
 
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(cars.router, prefix="/cars", tags=["cars"])
+app.include_router(rides.router, prefix="/rides", tags=["rides"])
 app.include_router(seats.router, prefix="/seats", tags=["seats"])
 app.include_router(invitations.router, prefix="/invitations", tags=["invitations"])
