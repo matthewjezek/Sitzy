@@ -1,8 +1,8 @@
 from datetime import datetime
-from typing import TYPE_CHECKING, Annotated, cast
+from typing import TYPE_CHECKING, cast
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, EmailStr, StringConstraints
+from pydantic import BaseModel, ConfigDict, EmailStr
 
 from .utils.base_models import BaseModelWithLabels
 from .utils.enums import CarLayout, InvitationStatus
@@ -16,18 +16,12 @@ class UserBase(BaseModel):
     email: EmailStr
 
 
-class UserCreate(UserBase):
-    password: Annotated[str, StringConstraints(min_length=8)]
-
-
-class UserLogin(BaseModel):
-    email: EmailStr
-    password: str
-
-
 class UserOut(BaseModelWithLabels["UserOut"], UserBase):
     id: UUID
+    full_name: str | None = None
+    avatar_url: str | None = None
     created_at: datetime
+    updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -36,7 +30,6 @@ class UserOut(BaseModelWithLabels["UserOut"], UserBase):
 class CarBase(BaseModel):
     name: str
     layout: CarLayout
-    date: datetime
 
 
 class CarCreate(CarBase):
@@ -48,6 +41,7 @@ class CarOut(BaseModelWithLabels["CarOut"], CarBase):
     owner_id: UUID
     owner_name: str | None = None
     created_at: datetime
+    updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -59,9 +53,9 @@ class CarOut(BaseModelWithLabels["CarOut"], CarBase):
             owner_id=car.owner_id,
             owner_name=car.owner.email if car.owner else None,
             created_at=car.created_at,
+            updated_at=car.updated_at,
             name=car.name,
             layout=car.layout,
-            date=car.date,
         )
 
 
@@ -108,9 +102,7 @@ class SeatBase(BaseModel):
 # === Sedadla ===
 class SeatOut(BaseModelWithLabels["SeatOut"]):
     car_id: UUID
-    user_id: UUID | None
     position: int
-    user_name: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -119,9 +111,7 @@ class SeatOut(BaseModelWithLabels["SeatOut"]):
         seat = cast("Seat", seat)
         return cls(
             car_id=seat.car_id,
-            user_id=seat.user_id,
             position=seat.position,
-            user_name=seat.user.email if seat.user else None,
         )
 
 
@@ -140,9 +130,9 @@ class CarFullOut(CarOut):
             owner_id=car.owner_id,
             owner_name=car.owner.email if car.owner else None,
             created_at=car.created_at,
+            updated_at=car.updated_at,
             name=car.name,
             layout=car.layout,
-            date=car.date,
             invitations=[
                 InvitationOut.from_orm_with_labels(inv) for inv in car.invitations
             ],
