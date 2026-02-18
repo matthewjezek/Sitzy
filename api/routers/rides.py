@@ -6,7 +6,8 @@ from sqlalchemy.orm import Session
 from api import models
 from api.database import get_db
 from api.deps import get_current_user
-from api.models import User
+from api.models import Ride, User, Passenger
+from api.schemas import RideOut
 
 router = APIRouter()
 
@@ -28,6 +29,22 @@ def create_ride(
     - Return RideOut
     """
     raise HTTPException(status_code=501, detail="Not implemented yet")
+
+
+# === Seznam mých jízd (kde jsem cestující) ===
+@router.get("/", response_model=list[RideOut])
+def get_my_rides(
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> list[RideOut]:
+    rides = (
+        db.query(Ride)
+        .join(Passenger, Ride.id == Passenger.ride_id)
+        .filter(Passenger.user_id == current_user.id)
+        .all()
+    )
+    return [RideOut.model_validate(ride) for ride in rides]
 
 
 # === Detail jízdy ===
