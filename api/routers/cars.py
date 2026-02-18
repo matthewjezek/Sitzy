@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
@@ -24,52 +24,15 @@ from api.utils.security import generate_token
 router = APIRouter()
 
 
-# === Získání auta aktuálního uživatele ===
-@router.get("/my", response_model=CarFullOut)
-def read_my_car(
+# === Seznam mých aut (kde jsem vlastníkem) ===
+@router.get("/", response_model=list[CarOut])
+def list_my_cars(
     request: Request,
-    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
-) -> CarFullOut:
-    if not current_user.car:
-        raise HTTPException(status_code=404, detail="User has no car.")
-
-    car = (
-        db.query(Car)
-        .options(selectinload(Car.owner))
-        .filter(Car.id == current_user.car.id)
-        .first()
-    )
-    db.refresh(car)
-
-    return CarFullOut.from_orm_with_labels(car)
-
-
-# === Získání auta, kde jsem cestujícím ===
-@router.get("/as-passenger", response_model=CarFullOut | None)
-def read_passenger_car(
-    request: Request,
     current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-) -> CarFullOut | None:
-    # Najdi auto, kde jsem cestujícím
-    passenger_entry = (
-        db.query(Passenger).filter(Passenger.user_id == current_user.id).first()
-    )
-    if not passenger_entry:
-        return None
-
-    car = (
-        db.query(Car)
-        .options(selectinload(Car.owner))
-        .filter(Car.id == passenger_entry.car_id)
-        .first()
-    )
-    if not car:
-        return None
-
-    db.refresh(car)
-    return CarFullOut.from_orm_with_labels(car)
+) -> list[CarOut]:
+    cars = db.query(Car).filter(Car.owner_id == current_user.id).all()
+    return [CarOut.from_orm_with_labels(car) for car in cars]
 
 
 # === Získání auta podle ID ===
@@ -100,8 +63,6 @@ def create_car(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ) -> CarOut:
-    if current_user.car:
-        raise HTTPException(status_code=400, detail="User already has a car.")
     new_car = models.Car(**car_in.model_dump(), owner_id=current_user.id)
     db.add(new_car)
     db.commit()
@@ -126,7 +87,6 @@ def change_car(
 
     car.name = car_in.name
     car.layout = car_in.layout
-    car.date = car_in.date
 
     db.commit()
     db.refresh(car)
@@ -177,7 +137,6 @@ def create_invitation(
             models.Invitation.car_id == car.id,
             models.Invitation.invited_email == invitation_in.invited_email,
             models.Invitation.status == InvitationStatus.PENDING,
-            models.Invitation.created_at == invitation_in.created_at,
         )
         .first()
     )
@@ -189,13 +148,13 @@ def create_invitation(
 
     token = generate_token()
 
-    # Nastavíme expires_at na 7 dní od vytvoření
-    expires_at = invitation_in.created_at + timedelta(days=7)
+    # Backend si nastaví created_at (server_default) a expires_at (7 dní od teď)
+    now = datetime.now(timezone.utc)
+    expires_at = now + timedelta(days=7)
 
     invitation = models.Invitation(
         car_id=car.id,
         invited_email=invitation_in.invited_email,
-        created_at=invitation_in.created_at,
         expires_at=expires_at,
         token=token,
         status=invitation_in.status,
@@ -225,31 +184,3 @@ def list_sent_invitations(
 
     invitations = db.query(Invitation).filter(Invitation.car_id == car.id).all()
     return [InvitationOut.from_orm_with_labels(inv) for inv in invitations]
-
-
-# === Získání všech účastníků auta ===
-@router.get("/participants", response_model=list[UserOut])
-def list_participants(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-) -> list[UserOut]:
-    if not current_user.car:
-        raise HTTPException(status_code=404, detail="User has no car.")
-
-    car = current_user.car
-    participant_ids = [seat.user_id for seat in car.seats] + [car.owner_id]
-
-    users = db.query(User).filter(User.id.in_(participant_ids)).all()
-    return [UserOut.model_validate(u) for u in users]
-
-
-# === Moje místo ===
-@router.get("/seats/my", response_model=SeatOut)
-def get_my_seat(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-) -> SeatOut:
-    if not current_user.seat:
-        raise HTTPException(status_code=404, detail="User has no assigned seat.")
-
-    return SeatOut.model_validate(current_user.seat)

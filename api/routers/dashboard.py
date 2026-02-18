@@ -3,44 +3,23 @@ from sqlalchemy.orm import Session
 
 from api.database import get_db
 from api.deps import get_current_user
-from api.models import Invitation, User
-from api.schemas import CarOut, DashboardOut, InvitationOut
+from api.models import Passenger, Ride, User
+from api.schemas import RideOut
 
 router = APIRouter()
 
 
-# === Získání dashboardu aktuálního uživatele ===
-@router.get("/", response_model=DashboardOut)
-def get_dashboard(
+# === Seznam mých jízd (kde jsem cestující) ===
+@router.get("/rides", response_model=list[RideOut])
+def get_my_rides(
     request: Request,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> DashboardOut:
-    # Auto, které vlastním
-    owned_car = None
-    if current_user.car:
-        owned_car = CarOut.from_orm_with_labels(current_user.car)
-
-    # Auta, kam jsem pozván jako pasažér
-    cars_as_passenger = [
-        CarOut.from_orm_with_labels(p.car) for p in current_user.passenger_entries
-    ]
-
-    # Čekající pozvánky
-    pending_invitations = (
-        db.query(Invitation)
-        .filter(
-            Invitation.invited_email.ilike(current_user.email),
-            Invitation.status == "pending",
-        )
+) -> list[RideOut]:
+    rides = (
+        db.query(Ride)
+        .join(Passenger, Ride.id == Passenger.ride_id)
+        .filter(Passenger.user_id == current_user.id)
         .all()
     )
-    invitations_out = [
-        InvitationOut.from_orm_with_labels(inv) for inv in pending_invitations
-    ]
-
-    return DashboardOut(
-        owned_car=owned_car,
-        passenger_cars=cars_as_passenger,
-        pending_invitations=invitations_out,
-    )
+    return [RideOut.model_validate(ride) for ride in rides]
