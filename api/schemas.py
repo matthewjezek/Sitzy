@@ -63,14 +63,13 @@ class CarOut(BaseModelWithLabels["CarOut"], CarBase):
 class InvitationBase(BaseModel):
     invited_email: EmailStr
     car_id: UUID
-    created_at: datetime
 
 
 class InvitationCreate(InvitationBase):
     status: InvitationStatus = InvitationStatus.PENDING
 
 
-class InvitationOut(BaseModelWithLabels["InvitationOut"], InvitationBase):
+class InvitationOut(BaseModelWithLabels["InvitationOut"]):
     id: UUID
     car_id: UUID
     invited_email: EmailStr
@@ -144,3 +143,27 @@ class DashboardOut(BaseModel):
     owned_car: CarOut | None
     passenger_cars: list[CarOut]
     pending_invitations: list[InvitationOut]
+
+
+# === Řidič (CarDriver) ===
+class CarDriverOut(BaseModel):
+    id: UUID
+    car_id: UUID
+    driver_id: UUID
+    is_active: bool
+    assigned_at: datetime
+    revoked_at: datetime | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# === Jízda (Ride) ===
+class RideOut(BaseModel):
+    id: UUID
+    car_id: UUID
+    car_driver_id: UUID
+    departure_time: datetime
+    destination: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
