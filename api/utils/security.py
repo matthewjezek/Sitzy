@@ -1,26 +1,15 @@
 import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
+from uuid import UUID
 
-from jose import jwt
-from passlib.context import CryptContext
+from api.config import settings
+from jose import jwt, JWTError
 
-# Password context for hashing and verifying passwords
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-# JWT settings (these should be imported or passed in, not hardcoded in production)
-SECRET_KEY = "dev-secret"  # Default, should be overridden
-ALGORITHM = "HS256"
-
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify a plain password against a hashed password."""
-    return pwd_context.verify(plain_password, hashed_password)
-
-
-def get_password_hash(password: str) -> str:
-    """Hash a password for storing."""
-    return pwd_context.hash(password)
+# JWT settings
+SECRET_KEY = settings.secret_key
+REFRESH_SECRET_KEY = settings.refresh_secret_key
+ALGORITHM = settings.algorithm
 
 
 def create_access_token(
@@ -31,9 +20,29 @@ def create_access_token(
 ) -> str:
     """Create a JWT access token."""
     to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=15))
-    to_encode.update({"exp": expire})
+    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=settings.access_token_expire_minutes))
+    to_encode.update({"exp": expire, "type": "access"})
     return jwt.encode(to_encode, secret_key, algorithm=algorithm)
+
+
+def create_refresh_token(user_id: UUID, session_id: UUID) -> str:
+    """Create a JWT refresh token."""
+    expire = datetime.now(timezone.utc) + timedelta(days=settings.refresh_token_expire_days)
+    payload = {
+        "sub": str(user_id),
+        "session_id": str(session_id),
+        "type": "refresh",
+        "exp": expire,
+    }
+    return jwt.encode(payload, REFRESH_SECRET_KEY, algorithm=ALGORITHM)
+
+
+def decode_refresh_token(token: str) -> dict[str, Any]:
+    """Decode and validate refresh token."""
+    payload = jwt.decode(token, REFRESH_SECRET_KEY, algorithms=[ALGORITHM])
+    if payload.get("type") != "refresh":
+        raise JWTError("Invalid token type")
+    return payload
 
 
 def generate_token(length: int = 32) -> str:
