@@ -5,13 +5,22 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 
-# Načtení proměnných z .env
+from api.utils.limiter import limiter
+from api.routers import auth, cars, invitations, rides, seats
+
 load_dotenv()
 
 app = FastAPI(title="Sitzy API")
+app.state.limiter = limiter
 
-# CORS konfigurace
+app.add_middleware(SlowAPIMiddleware)
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# CORS configuration
 origins = [
     os.getenv("FRONTEND_ORIGIN", "http://localhost:5173"),
 ]
@@ -35,9 +44,6 @@ async def validation_exception_handler(
         content={"detail": "; ".join(error_messages)},
     )
 
-
-# Import routerů
-from api.routers import auth, cars, invitations, rides, seats  # noqa: E402
 
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(cars.router, prefix="/cars", tags=["cars"])
