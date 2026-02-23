@@ -1,79 +1,162 @@
-import os
-from datetime import timedelta
-from typing import Any
+from datetime import datetime, timezone
+from uuid import UUID
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request, status
+from fastapi.responses import RedirectResponse
+from jose import JWTError
 from sqlalchemy.orm import Session
 
-from api import models
 from api.database import get_db
-from api.deps import get_current_user
+from api.deps import UserContext, get_current_user
+from api.models import SocialSession
 from api.schemas import UserOut
+from api.services.oauth_service import (
+    FacebookOAuthClient,
+    OAuthStateManager,
+    Provider,
+    XOAuthClient,
+    create_or_update_session,
+    find_or_create_user,
+)
+from api.utils.security import (
+    create_access_token,
+    create_refresh_token,
+    decode_refresh_token,
+)
 
-router = APIRouter()
-
-# === JWT nastavení ===
-SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret")
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 1 týden
-
-
-# === Získání aktuálního uživatele ===
-@router.get("/me", response_model=UserOut)
-def read_me(current_user: models.User = Depends(get_current_user)) -> UserOut:
-    return UserOut.model_validate(current_user)
-
-
-# === OAuth Login - Facebook ===
-@router.post("/oauth/facebook")
-def oauth_facebook_login(request: Request):
-    """
-    Initiate Facebook OAuth flow.
-    
-    TODO: Implement Facebook OAuth:
-    - Generate state token for CSRF protection
-    - Redirect to Facebook authorization URL
-    - Store state in session/redis
-    - Return redirect URL
-    """
-    raise HTTPException(status_code=501, detail="Facebook OAuth not implemented yet")
+router = APIRouter(tags=["auth"])
+state_manager = OAuthStateManager()
+x_client = XOAuthClient()
+fb_client = FacebookOAuthClient()
 
 
-# === OAuth Login - X (Twitter) ===
-@router.post("/oauth/x")
-def oauth_x_login(request: Request):
-    """
-    Initiate X (Twitter) OAuth flow.
-    
-    TODO: Implement X OAuth:
-    - Generate state token for CSRF protection
-    - Redirect to X authorization URL
-    - Store state in session/redis
-    - Return redirect URL
-    """
-    raise HTTPException(status_code=501, detail="X OAuth not implemented yet")
+@router.get("/{provider}/authorize")
+def oauth_authorize(provider: Provider) -> RedirectResponse:
+    """Redirect user to OAuth provider."""
+    state = state_manager.generate_state()
+
+    if provider == "x":
+        code_verifier, code_challenge = x_client.generate_pkce()
+        state_manager.store_state(state, provider, code_verifier=code_verifier)
+        url = x_client.get_authorization_url(state, code_challenge)
+    else:
+        state_manager.store_state(state, provider)
+        url = fb_client.get_authorization_url(state)
+
+    return RedirectResponse(url)
 
 
-# === OAuth Callback ===
-@router.get("/oauth/callback")
-def oauth_callback(
-    code: str,
-    state: str,
-    provider: str,
+@router.get("/{provider}/callback")
+async def oauth_callback(
+    provider: Provider,
     request: Request,
+    code: str = Query(...),
+    state: str = Query(...),
     db: Session = Depends(get_db),
-):
-    """
-    Handle OAuth callback from provider (Facebook/X).
-    
-    TODO: Implement OAuth callback:
-    - Validate state token (CSRF protection)
-    - Exchange code for access token with provider
-    - Get user info from provider
-    - Find or create User record
-    - Find or create SocialAccount record
-    - Create SocialSession record
-    - Generate JWT token
-    - Return {access_token, token_type, user}
-    """
-    raise HTTPException(status_code=501, detail="OAuth callback not implemented yet")
+) -> dict:
+    """Handle OAuth callback and create session."""
+    result = state_manager.validate_and_consume_state(state)
+    if not result or result[0] != provider:
+        raise HTTPException(status_code=400, detail="Invalid or expired state token.")
+
+    _, code_verifier = result
+
+    if provider == "x":
+        if not code_verifier:
+            raise HTTPException(status_code=400, detail="Missing PKCE code verifier.")
+        token_data = x_client.exchange_code(code, code_verifier)
+        user_info = await x_client.get_user_info(token_data["access_token"])
+    else:
+        token_data = fb_client.exchange_code(code)
+        user_info = await fb_client.get_user_info(token_data["access_token"])
+
+    if not user_info.get("id"):
+        raise HTTPException(status_code=502, detail="Failed to fetch user profile.")
+
+    email = user_info.get("email") or f"{user_info['id']}@{provider}.invalid"
+
+    user = find_or_create_user(
+        provider=provider,
+        social_id=user_info["id"],
+        email=email,
+        full_name=user_info.get("full_name"),
+        avatar_url=user_info.get("avatar_url"),
+        db=db,
+    )
+
+    session = create_or_update_session(
+        user_id=user.id,
+        social_account_id=user.social_accounts[-1].id,
+        provider_access_token=token_data["access_token"],
+        provider_refresh_token=token_data.get("refresh_token"),
+        expires_in=token_data.get("expires_in", 7200),
+        user_agent=request.headers.get("user-agent"),
+        db=db,
+    )
+
+    db.commit()
+
+    access_token = create_access_token({"sub": str(user.id), "session_id": str(session.id)})
+    refresh_token = create_refresh_token(user.id, session.id)
+
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer",
+    }
+
+
+@router.post("/refresh")
+def refresh_access_token(
+    refresh_token: str = Body(..., embed=True),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Issue new access token from refresh token."""
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid refresh token.",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+    try:
+        payload = decode_refresh_token(refresh_token)
+    except JWTError:
+        raise credentials_exception
+
+    user_id = payload.get("sub")
+    session_id = payload.get("session_id")
+    if not user_id or not session_id:
+        raise credentials_exception
+
+    session = (
+        db.query(SocialSession)
+        .filter(
+            SocialSession.id == UUID(session_id),
+            SocialSession.revoked_at.is_(None),
+            SocialSession.expires_at > datetime.now(timezone.utc),
+        )
+        .first()
+    )
+    if not session:
+        raise credentials_exception
+
+    access_token = create_access_token({"sub": user_id, "session_id": session_id})
+    return {"access_token": access_token, "token_type": "bearer"}
+
+
+@router.post("/revoke", status_code=status.HTTP_204_NO_CONTENT)
+def revoke_session(
+    ctx: UserContext = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> None:
+    """Revoke current session (logout)."""
+    session = db.query(SocialSession).filter(SocialSession.id == ctx.session_id).first()
+    if session:
+        session.revoked_at = datetime.now(timezone.utc)
+        db.commit()
+
+
+@router.get("/me", response_model=UserOut)
+def read_me(ctx: UserContext = Depends(get_current_user)) -> UserOut:
+    """Return current authenticated user."""
+    return ctx.user
