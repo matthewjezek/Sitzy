@@ -3,8 +3,9 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
 from uuid import UUID
 
+from jose import JWTError, jwt
+
 from api.config import settings
-from jose import jwt, JWTError
 
 # JWT settings
 SECRET_KEY = settings.secret_key
@@ -20,14 +21,18 @@ def create_access_token(
 ) -> str:
     """Create a JWT access token."""
     to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=settings.access_token_expire_minutes))
+    expire = datetime.now(timezone.utc) + (
+        expires_delta or timedelta(minutes=settings.access_token_expire_minutes)
+    )
     to_encode.update({"exp": expire, "type": "access"})
     return jwt.encode(to_encode, secret_key, algorithm=algorithm)
 
 
 def create_refresh_token(user_id: UUID, session_id: UUID) -> str:
     """Create a JWT refresh token."""
-    expire = datetime.now(timezone.utc) + timedelta(days=settings.refresh_token_expire_days)
+    expire = datetime.now(timezone.utc) + timedelta(
+        days=settings.refresh_token_expire_days
+    )
     payload = {
         "sub": str(user_id),
         "session_id": str(session_id),
