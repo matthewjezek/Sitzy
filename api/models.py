@@ -28,7 +28,10 @@ class User(Base):
         DateTime(timezone=True), nullable=False, server_default="now()"
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default="now()", onupdate=datetime.now(timezone.utc)
+        DateTime(timezone=True),
+        nullable=False,
+        server_default="now()",
+        onupdate=datetime.now(timezone.utc),
     )
 
     cars: Mapped[list["Car"]] = relationship(
@@ -55,7 +58,9 @@ class SocialAccount(Base):
         PG_UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True
     )
     provider: Mapped[str] = mapped_column(String, nullable=False)  # "facebook" | "x"
-    social_id: Mapped[str] = mapped_column(String, nullable=False)  # Permanent UID from provider
+    social_id: Mapped[str] = mapped_column(
+        String, nullable=False
+    )  # Permanent UID from provider
     email: Mapped[str] = mapped_column(String, nullable=False)
     linked_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default="now()"
@@ -74,7 +79,10 @@ class SocialSession(Base):
         PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     social_account_id: Mapped[uuid.UUID] = mapped_column(
-        PG_UUID(as_uuid=True), ForeignKey("social_accounts.id"), nullable=False, index=True
+        PG_UUID(as_uuid=True),
+        ForeignKey("social_accounts.id"),
+        nullable=False,
+        index=True,
     )
     access_token: Mapped[str] = mapped_column(String, nullable=False)
     refresh_token: Mapped[str | None] = mapped_column(String, nullable=True)
@@ -82,6 +90,12 @@ class SocialSession(Base):
         DateTime(timezone=True), nullable=False, index=True
     )
     user_agent: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default="now()"
+    )
+    revoked_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True, index=True
+    )
 
     social_account: Mapped["SocialAccount"] = relationship(back_populates="sessions")
 
@@ -103,7 +117,10 @@ class Car(Base):
         DateTime(timezone=True), nullable=False, server_default="now()"
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default="now()", onupdate=datetime.now(timezone.utc)
+        DateTime(timezone=True),
+        nullable=False,
+        server_default="now()",
+        onupdate=datetime.now(timezone.utc),
     )
 
     owner: Mapped["User"] = relationship(back_populates="cars")
