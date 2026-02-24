@@ -9,7 +9,7 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
-from api.routers import auth, cars, invitations, rides, seats
+from api.routers import auth, cars, invitations, rides
 from api.utils.limiter import limiter
 
 load_dotenv()
@@ -18,7 +18,7 @@ app = FastAPI(title="Sitzy API")
 app.state.limiter = limiter
 
 app.add_middleware(SlowAPIMiddleware)
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler) # type: ignore[arg-type]
 
 # CORS configuration
 origins = [
@@ -48,5 +48,4 @@ async def validation_exception_handler(
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(cars.router, prefix="/cars", tags=["cars"])
 app.include_router(rides.router, prefix="/rides", tags=["rides"])
-app.include_router(seats.router, prefix="/seats", tags=["seats"])
 app.include_router(invitations.router, prefix="/invitations", tags=["invitations"])
