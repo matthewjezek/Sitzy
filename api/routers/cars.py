@@ -1,4 +1,3 @@
-from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
@@ -6,18 +5,9 @@ from sqlalchemy.orm import Session, selectinload
 
 from api import models
 from api.database import get_db
-from api.deps import get_current_user, UserContext
-from api.models import Car, Invitation
-from api.schemas import (
-    CarBase,
-    CarCreate,
-    CarFullOut,
-    CarOut,
-    InvitationCreate,
-    InvitationOut,
-)
-from api.utils.enums import InvitationStatus
-from api.utils.security import generate_token
+from api.deps import UserContext, get_current_user
+from api.models import Car
+from api.schemas import CarBase, CarCreate, CarFullOut, CarOut
 
 router = APIRouter()
 
@@ -110,100 +100,11 @@ def delete_car(
     return Response(status_code=204)
 
 
-# === Vytvoření pozvánky pro auto ===
-@router.post("/{car_id}/invite", response_model=InvitationOut)
-def create_invitation(
-    car_id: UUID,
-    request: Request,
-    invitation_in: InvitationCreate,
-    db: Session = Depends(get_db),
-    ctx: UserContext = Depends(get_current_user),
-) -> InvitationOut:
-    car = db.query(models.Car).filter(models.Car.id == car_id).first()
-    if not car or car.owner_id != ctx.user.id:
-        raise HTTPException(
-            status_code=403, detail="Car not found or does not belong to you."
-        )
-
-    # Kontrola proti pozvání sebe sama
-    if (
-        ctx.user.email
-        and invitation_in.invited_email.lower() == ctx.user.email.lower()
-    ):
-        raise HTTPException(status_code=400, detail="You cannot invite yourself.")
-
-    existing = (
-        db.query(models.Invitation)
-        .filter(
-            models.Invitation.car_id == car.id,
-            models.Invitation.invited_email == invitation_in.invited_email,
-            models.Invitation.status == InvitationStatus.PENDING,
-        )
-        .first()
-    )
-
-    if existing:
-        raise HTTPException(
-            status_code=400, detail="Invitation has already been sent to this email."
-        )
-
-    token = generate_token()
-
-    # Backend si nastaví created_at (server_default) a expires_at (7 dní od teď)
-    now = datetime.now(timezone.utc)
-    expires_at = now + timedelta(days=7)
-
-    invitation = models.Invitation(
-        car_id=car.id,
-        invited_email=invitation_in.invited_email,
-        expires_at=expires_at,
-        token=token,
-        status=invitation_in.status,
-    )
-
-    db.add(invitation)
-    db.commit()
-    db.refresh(invitation)
-
-    return InvitationOut.from_orm_with_labels(invitation)
-
-
-# === Seznam odeslaných pozvánek ===
-@router.get("/{car_id}/invitations", response_model=list[InvitationOut])
-def list_sent_invitations(
-    car_id: UUID,
-    db: Session = Depends(get_db),
-    ctx: UserContext = Depends(get_current_user),
-) -> list[InvitationOut]:
-    car = (
-        db.query(Car).filter(Car.id == car_id, Car.owner_id == ctx.user.id).first()
-    )
-    if not car:
-        raise HTTPException(
-            status_code=404, detail="Car not found or does not belong to you."
-        )
-
-    invitations = db.query(Invitation).filter(Invitation.car_id == car.id).all()
-    return [InvitationOut.from_orm_with_labels(inv) for inv in invitations]
-
-
-# === Předání řízení jinému uživateli ===
 @router.post("/{car_id}/transfer-driver")
 def transfer_driver(
     car_id: UUID,
     request: Request,
     db: Session = Depends(get_db),
     ctx: UserContext = Depends(get_current_user),
-):
-    """
-    Transfer active driver role to another user.
-
-    TODO: Implement driver transfer:
-    - Validate current user is car owner or active driver
-    - Validate new driver is a passenger in an active ride
-    - Find current active CarDriver record
-    - Set revoked_at = now() and is_active = False
-    - Create new CarDriver record for new driver
-    - Return success message or new CarDriverOut
-    """
+) -> dict[str, str]:
     raise HTTPException(status_code=501, detail="Driver transfer not implemented yet")
