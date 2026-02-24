@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from api.database import get_db
-from api.deps import get_current_user
-from api.models import Car, Invitation, Passenger, User
+from api.deps import get_current_user, UserContext
+from api.models import Car, Invitation, Passenger
 from api.schemas import InvitationOut, UserOut
 from api.utils.enums import InvitationStatus
 
@@ -15,11 +15,13 @@ router = APIRouter()
 def get_received_invitations(
     request: Request,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    ctx: UserContext = Depends(get_current_user),
 ) -> list[InvitationOut]:
+    if not ctx.user.email:
+        return []
     invitations = (
         db.query(Invitation)
-        .filter(Invitation.invited_email.ilike(current_user.email))
+        .filter(Invitation.invited_email.ilike(ctx.user.email))
         .order_by(Invitation.created_at.desc())
         .all()
     )
@@ -32,7 +34,7 @@ def cancel_invitation(
     token: str,
     request: Request,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    ctx: UserContext = Depends(get_current_user),
 ) -> None:
     invitation = (
         db.query(Invitation).join(Car).filter(Invitation.token == token).first()
@@ -44,7 +46,7 @@ def cancel_invitation(
             detail="Invitation not found.",
         )
 
-    if invitation.car.owner_id != current_user.id:
+    if invitation.car.owner_id != ctx.user.id:
         raise HTTPException(
             status_code=403,
             detail="User is not the owner of this car.",
@@ -74,7 +76,7 @@ def accept_invitation(
     token: str,
     request: Request,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    ctx: UserContext = Depends(get_current_user),
 ) -> UserOut:
     invitation = db.query(Invitation).filter(Invitation.token == token).first()
     if not invitation:
@@ -87,24 +89,24 @@ def accept_invitation(
             status_code=400,
             detail="Invitation has already been processed.",
         )
-    if invitation.invited_email.lower() != current_user.email.lower():
+    if invitation.invited_email.lower() != ctx.user.email.lower():
         raise HTTPException(
             status_code=403, detail="User is not the owner of this car."
         )
 
     # Aktualizace stavu
     invitation.status = InvitationStatus.ACCEPTED
-    passenger = Passenger(user_id=current_user.id, car_id=invitation.car_id)
+    passenger = Passenger(user_id=ctx.user.id, car_id=invitation.car_id)
     existing = (
         db.query(Passenger)
-        .filter_by(user_id=current_user.id, car_id=invitation.car_id)
+        .filter_by(user_id=ctx.user.id, car_id=invitation.car_id)
         .first()
     )
     if existing:
         raise HTTPException(status_code=400, detail="User is already in the car.")
     db.add(passenger)
     db.commit()
-    return UserOut.model_validate(current_user)
+    return UserOut.model_validate(ctx.user)
 
 
 # === Odmítnutí pozvánky ===
@@ -113,7 +115,7 @@ def reject_invitation(
     token: str,
     request: Request,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    ctx: UserContext = Depends(get_current_user),
 ) -> dict[str, str]:
     invitation = db.query(Invitation).filter(Invitation.token == token).first()
     if not invitation:
@@ -126,8 +128,10 @@ def reject_invitation(
             status_code=400,
             detail="Invitation has already been processed.",
         )
-    if invitation.invited_email.lower() != current_user.email.lower():
-        raise HTTPException(status_code=403, detail="This is not your invitation.")
+    if not ctx.user.email or invitation.invited_email.lower() != ctx.user.email.lower():
+        raise HTTPException(
+            status_code=403, detail="This is not your invitation."
+        )
 
     # Odmítnutí
     invitation.status = InvitationStatus.REJECTED
