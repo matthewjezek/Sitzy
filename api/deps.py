@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from uuid import UUID
 
 from fastapi import Depends, HTTPException, status
@@ -65,6 +66,7 @@ def get_current_user(
         .filter(
             SocialSession.id == session_uuid,
             SocialSession.revoked_at.is_(None),
+            SocialSession.expires_at > datetime.now(timezone.utc),
         )
         .first()
     )
