@@ -73,11 +73,11 @@ async def oauth_callback(
         token_data = fb_client.exchange_code(code)
         user_info = await fb_client.get_user_info(token_data["access_token"])
 
-    email = user_info.get("email") or f"{user_info['id']}@{provider}.invalid"
     raw_id = user_info.get("id")
     if not raw_id:
         raise HTTPException(status_code=502, detail="Failed to fetch user profile.")
     social_id: str = str(raw_id)
+    email = user_info.get("email") or f"{social_id}@{provider}.invalid"
 
     user = find_or_create_user(
         provider=provider,
