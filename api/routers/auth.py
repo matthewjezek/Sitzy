@@ -32,7 +32,7 @@ fb_client = FacebookOAuthClient()
 
 
 @router.get("/{provider}/authorize")
-@limiter.limit("5/minute")
+@limiter.limit("10/minute")
 def oauth_authorize(request: Request, provider: Provider) -> RedirectResponse:
     """Redirect user to OAuth provider."""
     state = state_manager.generate_state()
@@ -110,7 +110,7 @@ async def oauth_callback(
 
 
 @router.post("/refresh")
-@limiter.limit("10/minute")
+@limiter.limit("30/minute")
 def refresh_access_token(
     request: Request,
     refresh_token: str = Body(..., embed=True),
