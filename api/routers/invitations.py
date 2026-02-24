@@ -31,6 +31,29 @@ def get_received_invitations(
     return [InvitationOut.from_orm_with_labels(inv) for inv in invitations]
 
 
+@router.get("/ride/{ride_id}", response_model=list[InvitationOut])
+def get_ride_invitations(
+    ride_id: UUID,
+    request: Request,
+    db: Session = Depends(get_db),
+    ctx: UserContext = Depends(get_current_user),
+) -> list[InvitationOut]:
+    ride = db.query(Ride).join(Car).filter(Ride.id == ride_id).first()
+    if not ride:
+        raise HTTPException(status_code=404, detail="Ride not found.")
+    if ride.car.owner_id != ctx.user.id:
+        raise HTTPException(
+            status_code=403, detail="User is not the owner of this car."
+        )
+    invitations = (
+        db.query(Invitation)
+        .filter(Invitation.ride_id == ride_id)
+        .order_by(Invitation.created_at.desc())
+        .all()
+    )
+    return [InvitationOut.from_orm_with_labels(inv) for inv in invitations]
+
+
 # === Zneplatnění pozvánky ===
 @router.delete("/{token}", status_code=status.HTTP_204_NO_CONTENT)
 def cancel_invitation(
@@ -135,26 +158,3 @@ def reject_invitation(
     invitation.status = InvitationStatus.REJECTED
     db.commit()
     return {"detail": "Invitation has been successfully rejected."}
-
-
-@router.get("/ride/{ride_id}", response_model=list[InvitationOut])
-def get_ride_invitations(
-    ride_id: UUID,
-    request: Request,
-    db: Session = Depends(get_db),
-    ctx: UserContext = Depends(get_current_user),
-) -> list[InvitationOut]:
-    ride = db.query(Ride).join(Car).filter(Ride.id == ride_id).first()
-    if not ride:
-        raise HTTPException(status_code=404, detail="Ride not found.")
-    if ride.car.owner_id != ctx.user.id:
-        raise HTTPException(
-            status_code=403, detail="User is not the owner of this car."
-        )
-    invitations = (
-        db.query(Invitation)
-        .filter(Invitation.ride_id == ride_id)
-        .order_by(Invitation.created_at.desc())
-        .all()
-    )
-    return [InvitationOut.from_orm_with_labels(inv) for inv in invitations]
