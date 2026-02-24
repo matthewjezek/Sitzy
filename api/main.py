@@ -9,8 +9,8 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
-from api.utils.limiter import limiter
 from api.routers import auth, cars, invitations, rides, seats
+from api.utils.limiter import limiter
 
 load_dotenv()
 

@@ -20,7 +20,9 @@ class User(Base):
     id: Mapped[uuid.UUID] = mapped_column(
         PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
-    email: Mapped[str | None] = mapped_column(String, unique=True, nullable=True, index=True)
+    email: Mapped[str | None] = mapped_column(
+        String, unique=True, nullable=True, index=True
+    )
     full_name: Mapped[str | None] = mapped_column(String, nullable=True)
     avatar_url: Mapped[str | None] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(

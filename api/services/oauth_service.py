@@ -4,13 +4,13 @@ import json
 import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Literal
+from urllib.parse import urlencode
 from uuid import UUID
 
 import httpx
 import redis as redis_lib
 from authlib.oauth2.rfc7636 import create_s256_code_challenge
 from sqlalchemy.orm import Session
-from urllib.parse import urlencode
 
 from api import models
 from api.config import settings
@@ -32,13 +32,23 @@ class OAuthStateManager:
         """Generate Redis key for a given state."""
         return f"{self._PREFIX}{state}"
 
-    def store_state(self, state: str, provider: Provider, code_verifier: str | None = None, ttl: int = 600) -> None:
-        """Store state with associated provider and optional PKCE code verifier in Redis."""
+    def store_state(
+        self,
+        state: str,
+        provider: Provider,
+        code_verifier: str | None = None,
+        ttl: int = 600,
+    ) -> None:
+        """Store state with associated provider and optional PKCE code verifier
+        in Redis."""
         data = {"provider": provider, "code_verifier": code_verifier}
         _redis.set(self._key(state), json.dumps(data), ex=ttl)
 
-    def validate_and_consume_state(self, state: str) -> tuple[Provider, str | None] | None:
-        """Validate state and return associated provider and code_verifier, then delete it."""
+    def validate_and_consume_state(
+        self, state: str
+    ) -> tuple[Provider, str | None] | None:
+        """Validate state and return associated provider and code_verifier,
+        then delete it."""
         raw = _redis.getdel(self._key(state))
         if not raw:
             return None
@@ -177,9 +187,9 @@ def find_or_create_user(
         return social_account.user
 
     user = (
-    db.query(models.User).filter(models.User.email == email).first()
-    if email
-    else None
+        db.query(models.User).filter(models.User.email == email).first()
+        if email
+        else None
     )
     if not user:
         user = models.User(email=email, full_name=full_name, avatar_url=avatar_url)

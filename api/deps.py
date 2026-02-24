@@ -1,14 +1,14 @@
 from dataclasses import dataclass
 from uuid import UUID
 
-from fastapi import Depends, HTTPException, Request, status
+from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
 from api.config import settings
 from api.database import get_db
-from api.models import User, SocialSession
+from api.models import SocialSession, User
 
 # Cesta k tokenu (standardní schema „Bearer <token>“)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
@@ -17,6 +17,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 @dataclass
 class UserContext:
     """Current user context with a session_id."""
+
     user: User
     session_id: UUID
 
@@ -35,14 +36,20 @@ def get_current_user(
     )
 
     try:
-        payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
+        payload = jwt.decode(
+            token, settings.secret_key, algorithms=[settings.algorithm]
+        )
         user_id = payload.get("sub")
         session_id = payload.get("session_id")
         token_type = payload.get("type")
 
-        if not isinstance(user_id, str) or not isinstance(session_id, str) or token_type != "access":
+        if (
+            not isinstance(user_id, str)
+            or not isinstance(session_id, str)
+            or token_type != "access"
+        ):
             raise credentials_exception
-        
+
         user_uuid = UUID(user_id)
         session_uuid = UUID(session_id)
     except (JWTError, ValueError):
@@ -51,7 +58,7 @@ def get_current_user(
     user = db.query(User).filter(User.id == user_uuid).first()
     if not user:
         raise credentials_exception
-    
+
     # Validate session exists, not revoked, and not expired
     session = (
         db.query(SocialSession)

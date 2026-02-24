@@ -18,12 +18,12 @@ from api.services.oauth_service import (
     create_or_update_session,
     find_or_create_user,
 )
+from api.utils.limiter import limiter
 from api.utils.security import (
     create_access_token,
     create_refresh_token,
     decode_refresh_token,
 )
-from api.utils.limiter import limiter
 
 router = APIRouter(tags=["auth"])
 state_manager = OAuthStateManager()
@@ -99,7 +99,9 @@ async def oauth_callback(
 
     db.commit()
 
-    access_token = create_access_token({"sub": str(user.id), "session_id": str(session.id)})
+    access_token = create_access_token(
+        {"sub": str(user.id), "session_id": str(session.id)}
+    )
     refresh_token = create_refresh_token(user.id, session.id)
 
     return {

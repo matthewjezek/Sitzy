@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session, selectinload
 from api import models
 from api.database import get_db
 from api.deps import get_current_user
-from api.models import Car, Invitation, Passenger, User
+from api.models import Car, Invitation, User
 from api.schemas import (
     CarBase,
     CarCreate,
@@ -15,8 +15,6 @@ from api.schemas import (
     CarOut,
     InvitationCreate,
     InvitationOut,
-    SeatOut,
-    UserOut,
 )
 from api.utils.enums import InvitationStatus
 from api.utils.security import generate_token
