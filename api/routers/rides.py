@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from api import models
 from api.database import get_db
 from api.deps import get_current_user
-from api.models import Ride, User, Passenger
+from api.models import Passenger, Ride, User
 from api.schemas import RideOut
 
 router = APIRouter()
@@ -21,7 +21,7 @@ def create_ride(
 ):
     """
     Create a new ride.
-    
+
     TODO: Implement ride creation logic:
     - Validate user owns the car
     - Validate user is active driver for the car
@@ -57,7 +57,7 @@ def get_ride(
 ):
     """
     Get ride details.
-    
+
     TODO: Implement ride retrieval:
     - Get ride with passengers, car info
     - Check user has access (owner, driver, or passenger)
@@ -76,7 +76,7 @@ def update_ride(
 ):
     """
     Update ride information (departure time, destination).
-    
+
     TODO: Implement ride update:
     - Validate user is owner or driver
     - Update ride fields
@@ -95,7 +95,7 @@ def cancel_ride(
 ):
     """
     Cancel a ride.
-    
+
     TODO: Implement ride cancellation:
     - Validate user is owner or driver
     - Delete ride (cascade will remove passengers)
@@ -114,7 +114,7 @@ def book_seat(
 ):
     """
     Book a seat in a ride (become a passenger).
-    
+
     TODO: Implement seat booking:
     - Validate ride exists and has available seats
     - Validate user has been invited to the car
@@ -134,7 +134,7 @@ def cancel_booking(
 ):
     """
     Cancel seat booking (remove yourself as passenger).
-    
+
     TODO: Implement booking cancellation:
     - Find and delete passenger record for current user
     - Return 204 No Content
@@ -152,7 +152,7 @@ def list_car_rides(
 ):
     """
     List all rides for a specific car.
-    
+
     TODO: Implement car rides listing:
     - Validate user has access to car (owner or invited)
     - Get all rides for the car

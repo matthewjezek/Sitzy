@@ -196,7 +196,7 @@ def transfer_driver(
 ):
     """
     Transfer active driver role to another user.
-    
+
     TODO: Implement driver transfer:
     - Validate current user is car owner or active driver
     - Validate new driver is a passenger in an active ride
