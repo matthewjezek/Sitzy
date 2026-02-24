@@ -133,9 +133,6 @@ class Car(Base):
     )
 
     owner: Mapped["User"] = relationship(back_populates="cars")
-    invitations: Mapped[list["Invitation"]] = relationship(
-        back_populates="car", cascade="all, delete"
-    )
     drivers: Mapped[list["CarDriver"]] = relationship(
         back_populates="car", cascade="all, delete-orphan"
     )
@@ -153,8 +150,8 @@ class Invitation(Base):
     id: Mapped[uuid.UUID] = mapped_column(
         PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
-    car_id: Mapped[uuid.UUID] = mapped_column(
-        PG_UUID(as_uuid=True), ForeignKey("cars.id"), nullable=False, index=True
+    ride_id: Mapped[uuid.UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("rides.id"), nullable=False, index=True
     )
     invited_email: Mapped[str] = mapped_column(String, nullable=False, index=True)
     token: Mapped[str] = mapped_column(String, unique=True, nullable=False)
@@ -170,7 +167,7 @@ class Invitation(Base):
         DateTime(timezone=True), nullable=False, index=True
     )
 
-    car: Mapped["Car"] = relationship(back_populates="invitations")
+    ride: Mapped["Ride"] = relationship(back_populates="invitations")
 
 
 class CarDriver(Base):
@@ -223,6 +220,9 @@ class Ride(Base):
     car: Mapped["Car"] = relationship(back_populates="rides")
     car_driver: Mapped["CarDriver"] = relationship(back_populates="rides")
     passengers: Mapped[list["Passenger"]] = relationship(
+        back_populates="ride", cascade="all, delete-orphan"
+    )
+    invitations: Mapped[list["Invitation"]] = relationship(
         back_populates="ride", cascade="all, delete-orphan"
     )
 
