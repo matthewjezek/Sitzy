@@ -56,7 +56,7 @@ async def oauth_callback(
     code: str = Query(...),
     state: str = Query(...),
     db: Session = Depends(get_db),
-) -> dict:
+) -> dict[str, str]:
     """Handle OAuth callback and create session."""
     result = state_manager.validate_and_consume_state(state)
     if not result or result[0] != provider:
@@ -73,26 +73,30 @@ async def oauth_callback(
         token_data = fb_client.exchange_code(code)
         user_info = await fb_client.get_user_info(token_data["access_token"])
 
-    if not user_info.get("id"):
-        raise HTTPException(status_code=502, detail="Failed to fetch user profile.")
-
     email = user_info.get("email") or f"{user_info['id']}@{provider}.invalid"
+    raw_id = user_info.get("id")
+    if not raw_id:
+        raise HTTPException(status_code=502, detail="Failed to fetch user profile.")
+    social_id: str = str(raw_id)
 
     user = find_or_create_user(
         provider=provider,
-        social_id=user_info["id"],
+        social_id=social_id,
         email=email,
         full_name=user_info.get("full_name"),
         avatar_url=user_info.get("avatar_url"),
         db=db,
     )
 
+    expires_in_raw = token_data.get("expires_in", 7200)
+    expires_in = int(expires_in_raw)
+
     session = create_or_update_session(
         user_id=user.id,
         social_account_id=user.social_accounts[-1].id,
         provider_access_token=token_data["access_token"],
         provider_refresh_token=token_data.get("refresh_token"),
-        expires_in=token_data.get("expires_in", 7200),
+        expires_in=expires_in,
         user_agent=request.headers.get("user-agent"),
         db=db,
     )
@@ -117,7 +121,7 @@ def refresh_access_token(
     request: Request,
     refresh_token: str = Body(..., embed=True),
     db: Session = Depends(get_db),
-) -> dict:
+) -> dict[str, str]:
     """Issue new access token from refresh token."""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
