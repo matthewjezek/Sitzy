@@ -6,8 +6,8 @@ from sqlalchemy.orm import Session, selectinload
 
 from api import models
 from api.database import get_db
-from api.deps import get_current_user
-from api.models import Car, Invitation, User
+from api.deps import get_current_user, UserContext
+from api.models import Car, Invitation
 from api.schemas import (
     CarBase,
     CarCreate,
@@ -27,9 +27,9 @@ router = APIRouter()
 def list_my_cars(
     request: Request,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    ctx: UserContext = Depends(get_current_user),
 ) -> list[CarOut]:
-    cars = db.query(Car).filter(Car.owner_id == current_user.id).all()
+    cars = db.query(Car).filter(Car.owner_id == ctx.user.id).all()
     return [CarOut.from_orm_with_labels(car) for car in cars]
 
 
@@ -59,9 +59,9 @@ def create_car(
     request: Request,
     car_in: CarCreate,
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_user),
+    ctx: UserContext = Depends(get_current_user),
 ) -> CarOut:
-    new_car = models.Car(**car_in.model_dump(), owner_id=current_user.id)
+    new_car = models.Car(**car_in.model_dump(), owner_id=ctx.user.id)
     db.add(new_car)
     db.commit()
     db.refresh(new_car)
@@ -75,10 +75,10 @@ def change_car(
     car_id: UUID,
     car_in: CarBase,
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_user),
+    ctx: UserContext = Depends(get_current_user),
 ) -> CarOut:
     car = db.query(models.Car).filter(models.Car.id == car_id).first()
-    if not car or car.owner_id != current_user.id:
+    if not car or car.owner_id != ctx.user.id:
         raise HTTPException(
             status_code=404, detail="Car not found or does not belong to you."
         )
@@ -97,10 +97,10 @@ def delete_car(
     request: Request,
     car_id: UUID,
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_user),
+    ctx: UserContext = Depends(get_current_user),
 ) -> Response:
     car = db.query(models.Car).filter(models.Car.id == car_id).first()
-    if not car or car.owner_id != current_user.id:
+    if not car or car.owner_id != ctx.user.id:
         raise HTTPException(
             status_code=404, detail="Car not found or does not belong to you."
         )
@@ -117,16 +117,19 @@ def create_invitation(
     request: Request,
     invitation_in: InvitationCreate,
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_user),
+    ctx: UserContext = Depends(get_current_user),
 ) -> InvitationOut:
     car = db.query(models.Car).filter(models.Car.id == car_id).first()
-    if not car or car.owner_id != current_user.id:
+    if not car or car.owner_id != ctx.user.id:
         raise HTTPException(
             status_code=403, detail="Car not found or does not belong to you."
         )
 
     # Kontrola proti pozvání sebe sama
-    if invitation_in.invited_email.lower() == current_user.email.lower():
+    if (
+        ctx.user.email
+        and invitation_in.invited_email.lower() == ctx.user.email.lower()
+    ):
         raise HTTPException(status_code=400, detail="You cannot invite yourself.")
 
     existing = (
@@ -170,10 +173,10 @@ def create_invitation(
 def list_sent_invitations(
     car_id: UUID,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    ctx: UserContext = Depends(get_current_user),
 ) -> list[InvitationOut]:
     car = (
-        db.query(Car).filter(Car.id == car_id, Car.owner_id == current_user.id).first()
+        db.query(Car).filter(Car.id == car_id, Car.owner_id == ctx.user.id).first()
     )
     if not car:
         raise HTTPException(
@@ -190,7 +193,7 @@ def transfer_driver(
     car_id: UUID,
     request: Request,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    ctx: UserContext = Depends(get_current_user),
 ):
     """
     Transfer active driver role to another user.
