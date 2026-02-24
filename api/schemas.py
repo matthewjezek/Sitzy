@@ -11,9 +11,9 @@ if TYPE_CHECKING:
     from .models import Car, Invitation, Seat
 
 
-# === Uživatelská schémata ===
+# === User ===
 class UserBase(BaseModel):
-    email: EmailStr
+    email: EmailStr | None = None  # X neposkytuje email
 
 
 class UserOut(BaseModelWithLabels["UserOut"], UserBase):
@@ -26,7 +26,31 @@ class UserOut(BaseModelWithLabels["UserOut"], UserBase):
     model_config = ConfigDict(from_attributes=True)
 
 
-# === Auta ===
+# === Seat ===
+class PassengerSeatIn(BaseModel):
+    seat_position: int
+
+
+class SeatBase(BaseModel):
+    position: int
+
+
+class SeatOut(BaseModelWithLabels["SeatOut"]):
+    car_id: UUID
+    position: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+    @classmethod
+    def from_orm_with_labels(cls, seat: object) -> "SeatOut":
+        seat = cast("Seat", seat)
+        return cls(
+            car_id=seat.car_id,
+            position=seat.position,
+        )
+
+
+# === Car ===
 class CarBase(BaseModel):
     name: str
     layout: CarLayout
@@ -59,64 +83,7 @@ class CarOut(BaseModelWithLabels["CarOut"], CarBase):
         )
 
 
-# === Pozvánky ===
-class InvitationBase(BaseModel):
-    invited_email: EmailStr
-    car_id: UUID
-
-
-class InvitationCreate(InvitationBase):
-    status: InvitationStatus = InvitationStatus.PENDING
-
-
-class InvitationOut(BaseModelWithLabels["InvitationOut"]):
-    id: UUID
-    car_id: UUID
-    invited_email: EmailStr
-    token: str
-    status: InvitationStatus
-    created_at: datetime
-    expires_at: datetime
-
-    model_config = ConfigDict(from_attributes=True)
-
-    @classmethod
-    def from_orm_with_labels(cls, inv: object) -> "InvitationOut":
-        inv = cast("Invitation", inv)
-        return cls(
-            id=inv.id,
-            car_id=inv.car_id,
-            invited_email=inv.invited_email,
-            token=inv.token,
-            status=inv.status,
-            created_at=inv.created_at,
-            expires_at=inv.expires_at,
-        )
-
-
-class SeatBase(BaseModel):
-    position: int
-
-
-# === Sedadla ===
-class SeatOut(BaseModelWithLabels["SeatOut"]):
-    car_id: UUID
-    position: int
-
-    model_config = ConfigDict(from_attributes=True)
-
-    @classmethod
-    def from_orm_with_labels(cls, seat: object) -> "SeatOut":
-        seat = cast("Seat", seat)
-        return cls(
-            car_id=seat.car_id,
-            position=seat.position,
-        )
-
-
-# === Kompletní informace o autě ===
 class CarFullOut(CarOut):
-    invitations: list[InvitationOut]
     seats: list[SeatOut]
 
     model_config = ConfigDict(from_attributes=True)
@@ -132,20 +99,53 @@ class CarFullOut(CarOut):
             updated_at=car.updated_at,
             name=car.name,
             layout=car.layout,
-            invitations=[
-                InvitationOut.from_orm_with_labels(inv) for inv in car.invitations
-            ],
             seats=[SeatOut.from_orm_with_labels(seat) for seat in car.seats],
         )
 
 
+# === Invitation ===
+class InvitationBase(BaseModel):
+    invited_email: EmailStr
+    ride_id: UUID
+
+
+class InvitationCreate(InvitationBase):
+    status: InvitationStatus = InvitationStatus.PENDING
+
+
+class InvitationOut(BaseModelWithLabels["InvitationOut"]):
+    id: UUID
+    ride_id: UUID
+    invited_email: EmailStr
+    token: str
+    status: InvitationStatus
+    created_at: datetime
+    expires_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+    @classmethod
+    def from_orm_with_labels(cls, inv: object) -> "InvitationOut":
+        inv = cast("Invitation", inv)
+        return cls(
+            id=inv.id,
+            ride_id=inv.ride_id,
+            invited_email=inv.invited_email,
+            token=inv.token,
+            status=inv.status,
+            created_at=inv.created_at,
+            expires_at=inv.expires_at,
+        )
+
+
+# === Dashboard ===
 class DashboardOut(BaseModel):
     owned_car: CarOut | None
     passenger_cars: list[CarOut]
     pending_invitations: list[InvitationOut]
 
 
-# === Řidič (CarDriver) ===
+# === CarDriver ===
 class CarDriverOut(BaseModel):
     id: UUID
     car_id: UUID
@@ -157,7 +157,7 @@ class CarDriverOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-# === Jízda (Ride) ===
+# === Ride ===
 class RideOut(BaseModel):
     id: UUID
     car_id: UUID
