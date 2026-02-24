@@ -18,7 +18,7 @@ from api.utils.security import generate_token
 
 Provider = Literal["x", "facebook"]
 
-_redis = redis_lib.from_url(settings.redis_url, decode_responses=True)
+_redis = redis_lib.from_url(settings.redis_url, decode_responses=True)  # type: ignore
 
 
 class OAuthStateManager:
@@ -82,7 +82,7 @@ class XOAuthClient:
         query = urlencode(params)
         return f"{self.AUTHORIZE_URL}?{query}"
 
-    def exchange_code(self, code: str, code_verifier: str) -> dict:
+    def exchange_code(self, code: str, code_verifier: str) -> dict[str, str]:
         """Exchange authorization code for access token."""
         with httpx.Client(timeout=httpx.Timeout(5.0)) as client:
             response = client.post(
@@ -97,9 +97,10 @@ class XOAuthClient:
                 auth=(settings.x_client_id, settings.x_client_secret),
             )
             response.raise_for_status()
-            return response.json()
+            result: dict[str, str] = response.json()
+            return result
 
-    async def get_user_info(self, access_token: str) -> dict:
+    async def get_user_info(self, access_token: str) -> dict[str, str | None]:
         """Fetch user profile from X API."""
         async with httpx.AsyncClient(timeout=httpx.Timeout(5.0)) as client:
             response = await client.get(
@@ -134,7 +135,7 @@ class FacebookOAuthClient:
         query = urlencode(params)
         return f"{self.AUTHORIZE_URL}?{query}"
 
-    def exchange_code(self, code: str) -> dict:
+    def exchange_code(self, code: str) -> dict[str, str]:
         """Exchange authorization code for access token."""
         with httpx.Client(timeout=httpx.Timeout(5.0)) as client:
             response = client.get(
@@ -147,9 +148,10 @@ class FacebookOAuthClient:
                 },
             )
             response.raise_for_status()
-            return response.json()
+            result: dict[str, str] = response.json()
+            return result
 
-    async def get_user_info(self, access_token: str) -> dict:
+    async def get_user_info(self, access_token: str) -> dict[str, str | None]:
         """Fetch user profile from Facebook Graph API."""
         async with httpx.AsyncClient(timeout=httpx.Timeout(5.0)) as client:
             response = await client.get(
@@ -163,7 +165,7 @@ class FacebookOAuthClient:
             data = response.json()
             return {
                 "id": data.get("id"),
-                "email": data.get("email"),
+                "email": data.get("email") or None,
                 "full_name": data.get("name"),
                 "avatar_url": data.get("picture", {}).get("data", {}).get("url"),
             }

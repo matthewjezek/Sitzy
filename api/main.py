@@ -18,7 +18,10 @@ app = FastAPI(title="Sitzy API")
 app.state.limiter = limiter
 
 app.add_middleware(SlowAPIMiddleware)
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler) # type: ignore[arg-type]
+app.add_exception_handler(
+    RateLimitExceeded,
+    _rate_limit_exceeded_handler,  # type: ignore
+)
 
 # CORS configuration
 origins = [

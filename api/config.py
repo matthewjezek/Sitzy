@@ -1,6 +1,6 @@
 from typing import Literal
 
-from pydantic import AnyUrl, Field, field_validator
+from pydantic import AnyUrl, Field, ValidationInfo, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -43,7 +43,7 @@ class Settings(BaseSettings):
 
     @field_validator("x_redirect_uri", "facebook_redirect_uri")
     @classmethod
-    def https_in_production(cls, v, info):
+    def https_in_production(cls, v: AnyUrl, info: ValidationInfo) -> AnyUrl:
         env = info.data.get("environment", "development")
         if env == "production" and not str(v).startswith("https://"):
             raise ValueError("Redirect URI musí být v produkci HTTPS.")
@@ -52,4 +52,4 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=True)
 
 
-settings = Settings()
+settings = Settings()  # type: ignore[call-arg]
