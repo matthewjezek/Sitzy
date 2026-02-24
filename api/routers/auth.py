@@ -166,4 +166,4 @@ def revoke_session(
 @router.get("/me", response_model=UserOut)
 def read_me(ctx: UserContext = Depends(get_current_user)) -> UserOut:
     """Return current authenticated user."""
-    return ctx.user
+    return UserOut.model_validate(ctx.user)
