@@ -10,6 +10,7 @@ import httpx
 import redis as redis_lib
 from authlib.oauth2.rfc7636 import create_s256_code_challenge
 from sqlalchemy.orm import Session
+from urllib.parse import urlencode
 
 from api import models
 from api.config import settings
@@ -68,7 +69,7 @@ class XOAuthClient:
             "code_challenge": code_challenge,
             "code_challenge_method": "S256",
         }
-        query = "&".join(f"{k}={v}" for k, v in params.items())
+        query = urlencode(params)
         return f"{self.AUTHORIZE_URL}?{query}"
 
     def exchange_code(self, code: str, code_verifier: str) -> dict:
@@ -120,7 +121,7 @@ class FacebookOAuthClient:
             "state": state,
             "response_type": "code",
         }
-        query = "&".join(f"{k}={v}" for k, v in params.items())
+        query = urlencode(params)
         return f"{self.AUTHORIZE_URL}?{query}"
 
     def exchange_code(self, code: str) -> dict:
@@ -175,7 +176,11 @@ def find_or_create_user(
     if social_account:
         return social_account.user
 
-    user = db.query(models.User).filter_by(email=email).first()
+    user = (
+    db.query(models.User).filter(models.User.email == email).first()
+    if email
+    else None
+    )
     if not user:
         user = models.User(email=email, full_name=full_name, avatar_url=avatar_url)
         db.add(user)
@@ -206,8 +211,8 @@ def create_or_update_session(
     session = models.SocialSession(
         user_id=user_id,
         social_account_id=social_account_id,
-        provider_access_token=provider_access_token,
-        provider_refresh_token=provider_refresh_token,
+        access_token=provider_access_token,
+        refresh_token=provider_refresh_token,
         expires_at=expires_at,
         user_agent=user_agent,
     )
