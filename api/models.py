@@ -3,14 +3,13 @@ from datetime import datetime, timezone
 
 from sqlalchemy import DateTime
 from sqlalchemy import Enum as SqlEnum
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import ForeignKey, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 from .utils.enums import CarLayout, InvitationStatus
 
 
-# Deklarativní základna pro modely
 class Base(DeclarativeBase):
     pass
 
@@ -21,7 +20,7 @@ class User(Base):
     id: Mapped[uuid.UUID] = mapped_column(
         PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
-    email: Mapped[str] = mapped_column(String, unique=True, nullable=False, index=True)
+    email: Mapped[str | None] = mapped_column(String, unique=True, nullable=True, index=True)
     full_name: Mapped[str | None] = mapped_column(String, nullable=True)
     avatar_url: Mapped[str | None] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
@@ -40,6 +39,9 @@ class User(Base):
     social_accounts: Mapped[list["SocialAccount"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
+    social_sessions: Mapped[list["SocialSession"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
     car_drivers: Mapped[list["CarDriver"]] = relationship(
         back_populates="driver", cascade="all, delete-orphan"
     )
@@ -50,6 +52,9 @@ class User(Base):
 
 class SocialAccount(Base):
     __tablename__ = "social_accounts"
+    __table_args__ = (
+        UniqueConstraint("provider", "social_id", name="uq_social_provider_id"),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(
         PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
@@ -57,11 +62,9 @@ class SocialAccount(Base):
     user_id: Mapped[uuid.UUID] = mapped_column(
         PG_UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True
     )
-    provider: Mapped[str] = mapped_column(String, nullable=False)  # "facebook" | "x"
-    social_id: Mapped[str] = mapped_column(
-        String, nullable=False
-    )  # Permanent UID from provider
-    email: Mapped[str] = mapped_column(String, nullable=False)
+    provider: Mapped[str] = mapped_column(String, nullable=False)
+    social_id: Mapped[str] = mapped_column(String, nullable=False)
+    email: Mapped[str | None] = mapped_column(String, nullable=True)
     linked_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default="now()"
     )
@@ -77,6 +80,9 @@ class SocialSession(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(
         PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True
     )
     social_account_id: Mapped[uuid.UUID] = mapped_column(
         PG_UUID(as_uuid=True),
@@ -97,6 +103,7 @@ class SocialSession(Base):
         DateTime(timezone=True), nullable=True, index=True
     )
 
+    user: Mapped["User"] = relationship(back_populates="social_sessions")
     social_account: Mapped["SocialAccount"] = relationship(back_populates="sessions")
 
 
@@ -181,7 +188,7 @@ class CarDriver(Base):
         DateTime(timezone=True), nullable=False, server_default="now()"
     )
     revoked_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True, server_default="now()"
+        DateTime(timezone=True), nullable=True
     )
 
     car: Mapped["Car"] = relationship(back_populates="drivers")
