@@ -106,7 +106,6 @@ class CarFullOut(CarOut):
 # === Invitation ===
 class InvitationBase(BaseModel):
     invited_email: EmailStr
-    ride_id: UUID
 
 
 class InvitationCreate(InvitationBase):
