@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 from typing import Any
 from uuid import UUID
 
@@ -7,8 +8,10 @@ from sqlalchemy.orm import Session
 
 from api.database import get_db
 from api.deps import UserContext, get_current_user
-from api.models import Passenger, Ride
-from api.schemas import RideOut
+from api.models import Car, Invitation, Passenger, Ride
+from api.schemas import InvitationCreate, InvitationOut, RideOut
+from api.utils.enums import InvitationStatus
+from api.utils.security import generate_token
 
 router = APIRouter()
 
@@ -95,3 +98,56 @@ def list_car_rides(
     ctx: UserContext = Depends(get_current_user),
 ) -> Any:
     raise HTTPException(status_code=501, detail="Not implemented yet")
+
+
+@router.post("/{ride_id}/invite", response_model=InvitationOut)
+def invite_passenger(
+    ride_id: UUID,
+    invitation_in: InvitationCreate,
+    request: Request,
+    db: Session = Depends(get_db),
+    ctx: UserContext = Depends(get_current_user),
+) -> InvitationOut:
+    ride = (
+        db.query(Ride)
+        .join(Car, Ride.car_id == Car.id)
+        .filter(Ride.id == ride_id)
+        .first()
+    )
+    if not ride:
+        raise HTTPException(status_code=404, detail="Ride not found.")
+    if ride.car.owner_id != ctx.user.id:
+        raise HTTPException(
+            status_code=403, detail="Only car owner can invite passengers."
+        )
+    if (
+        ctx.user.email
+        and str(invitation_in.invited_email).lower() == ctx.user.email.lower()
+    ):
+        raise HTTPException(status_code=400, detail="You cannot invite yourself.")
+    if len(ride.passengers) >= len(ride.car.seats) - 1:  # -1 for driver!
+        raise HTTPException(status_code=400, detail="No available seats in this ride.")
+
+    existing = (
+        db.query(Invitation)
+        .filter(
+            Invitation.ride_id == ride_id,
+            Invitation.invited_email == str(invitation_in.invited_email),
+            Invitation.status == InvitationStatus.PENDING,
+        )
+        .first()
+    )
+    if existing:
+        raise HTTPException(status_code=409, detail="Invitation already sent.")
+
+    invitation = Invitation(
+        ride_id=ride_id,
+        invited_email=str(invitation_in.invited_email),
+        token=generate_token(32),
+        status=InvitationStatus.PENDING,
+        expires_at=datetime.now(timezone.utc) + timedelta(days=7),
+    )
+    db.add(invitation)
+    db.commit()
+    db.refresh(invitation)
+    return InvitationOut.from_orm_with_labels(invitation)
