@@ -108,6 +108,7 @@ def invite_passenger(
     db: Session = Depends(get_db),
     ctx: UserContext = Depends(get_current_user),
 ) -> InvitationOut:
+    """Invite a passanger to a ride."""
     ride = (
         db.query(Ride)
         .join(Car, Ride.car_id == Car.id)
