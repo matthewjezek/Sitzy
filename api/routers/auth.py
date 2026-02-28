@@ -2,7 +2,6 @@ from datetime import datetime, timezone
 from uuid import UUID
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request, status
-from fastapi.responses import RedirectResponse
 from jose import JWTError
 from sqlalchemy.orm import Session
 
@@ -31,30 +30,34 @@ x_client = XOAuthClient()
 fb_client = FacebookOAuthClient()
 
 
-@router.get("/{provider}/authorize")
+@router.post("/oauth/facebook/init", response_model=dict[str, str])
 @limiter.limit("10/minute")
-def oauth_authorize(request: Request, provider: Provider) -> RedirectResponse:
-    """Redirect user to OAuth provider."""
+def facebook_init(request: Request) -> dict[str, str]:
+    """Initialize Facebook OAuth flow."""
     state = state_manager.generate_state()
-
-    if provider == "x":
-        code_verifier, code_challenge = x_client.generate_pkce()
-        state_manager.store_state(state, provider, code_verifier=code_verifier)
-        url = x_client.get_authorization_url(state, code_challenge)
-    else:
-        state_manager.store_state(state, provider)
-        url = fb_client.get_authorization_url(state)
-
-    return RedirectResponse(url)
+    state_manager.store_state(state, provider="facebook")
+    authorization_url = fb_client.get_authorization_url(state)
+    return {"authorization_url": authorization_url, "state": state}
 
 
-@router.get("/{provider}/callback")
+@router.post("/oauth/x/init", response_model=dict[str, str])
+@limiter.limit("10/minute")
+def x_init(request: Request) -> dict[str, str]:
+    """Initialize X OAuth flow with PKCE."""
+    state = state_manager.generate_state()
+    code_verifier, code_challenge = x_client.generate_pkce()
+    state_manager.store_state(state, provider="x", code_verifier=code_verifier)
+    authorization_url = x_client.get_authorization_url(state, code_challenge)
+    return {"authorization_url": authorization_url, "state": state}
+
+
+@router.get("/oauth/callback")
 @limiter.limit("5/minute")
 async def oauth_callback(
-    provider: Provider,
     request: Request,
     code: str = Query(...),
     state: str = Query(...),
+    provider: Provider = Query(...),
     db: Session = Depends(get_db),
 ) -> dict[str, str]:
     """Handle OAuth callback and create session."""
@@ -88,8 +91,7 @@ async def oauth_callback(
         db=db,
     )
 
-    expires_in_raw = token_data.get("expires_in", 7200)
-    expires_in = int(expires_in_raw)
+    expires_in: int = int(token_data.get("expires_in", 7200))
 
     session = create_or_update_session(
         user_id=user.id,
@@ -115,7 +117,7 @@ async def oauth_callback(
     }
 
 
-@router.post("/refresh")
+@router.post("/refresh", response_model=dict[str, str])
 @limiter.limit("30/minute")
 def refresh_access_token(
     request: Request,
@@ -157,6 +159,7 @@ def refresh_access_token(
 
 @router.post("/revoke", status_code=status.HTTP_204_NO_CONTENT)
 def revoke_session(
+    request: Request,
     ctx: UserContext = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> None:
