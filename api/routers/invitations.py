@@ -13,13 +13,13 @@ from api.utils.enums import InvitationStatus
 router = APIRouter()
 
 
-# === Získání pozvánek aktuálního uživatele ===
 @router.get("/received", response_model=list[InvitationOut])
 def get_received_invitations(
     request: Request,
     db: Session = Depends(get_db),
     ctx: UserContext = Depends(get_current_user),
 ) -> list[InvitationOut]:
+    """List of invitations received by the current user."""
     if not ctx.user.email:
         return []
     invitations = (
@@ -38,6 +38,7 @@ def get_ride_invitations(
     db: Session = Depends(get_db),
     ctx: UserContext = Depends(get_current_user),
 ) -> list[InvitationOut]:
+    """List of invitations for a specific ride (only for car owner)."""
     ride = db.query(Ride).join(Car).filter(Ride.id == ride_id).first()
     if not ride:
         raise HTTPException(status_code=404, detail="Ride not found.")
@@ -54,7 +55,6 @@ def get_ride_invitations(
     return [InvitationOut.from_orm_with_labels(inv) for inv in invitations]
 
 
-# === Zneplatnění pozvánky ===
 @router.delete("/{token}", status_code=status.HTTP_204_NO_CONTENT)
 def cancel_invitation(
     token: str,
@@ -62,6 +62,7 @@ def cancel_invitation(
     db: Session = Depends(get_db),
     ctx: UserContext = Depends(get_current_user),
 ) -> None:
+    """Cancel an invitation."""
     invitation = (
         db.query(Invitation)
         .join(Ride)
@@ -80,13 +81,13 @@ def cancel_invitation(
     db.commit()
 
 
-# === Získání pozvánky podle tokenu ===
 @router.get("/{token}", response_model=InvitationOut)
 def get_invitation(
     token: str,
     request: Request,
     db: Session = Depends(get_db),
 ) -> InvitationOut:
+    """Get invitation details by token (public endpoint, no auth required)."""
     invitation = db.query(Invitation).filter(Invitation.token == token).first()
     if not invitation:
         raise HTTPException(status_code=404, detail="Invitation not found.")
@@ -95,7 +96,6 @@ def get_invitation(
     return InvitationOut.from_orm_with_labels(invitation)
 
 
-# === Přijetí pozvánky ===
 @router.post("/{token}/accept", response_model=UserOut)
 def accept_invitation(
     token: str,
@@ -104,6 +104,7 @@ def accept_invitation(
     db: Session = Depends(get_db),
     ctx: UserContext = Depends(get_current_user),
 ) -> UserOut:
+    """Accept an invitation and become a passenger on the ride."""
     invitation = db.query(Invitation).filter(Invitation.token == token).first()
     if not invitation:
         raise HTTPException(status_code=404, detail="Invitation not found.")
@@ -137,7 +138,6 @@ def accept_invitation(
     return UserOut.model_validate(ctx.user)
 
 
-# === Odmítnutí pozvánky ===
 @router.post("/{token}/reject")
 def reject_invitation(
     token: str,
@@ -145,6 +145,7 @@ def reject_invitation(
     db: Session = Depends(get_db),
     ctx: UserContext = Depends(get_current_user),
 ) -> dict[str, str]:
+    """Reject an invitation."""
     invitation = db.query(Invitation).filter(Invitation.token == token).first()
     if not invitation:
         raise HTTPException(status_code=404, detail="Invitation not found.")
