@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta, timezone
-from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -8,21 +7,63 @@ from sqlalchemy.orm import Session
 
 from api.database import get_db
 from api.deps import UserContext, get_current_user
-from api.models import Car, Invitation, Passenger, Ride
-from api.schemas import InvitationCreate, InvitationOut, RideOut
+from api.models import Car, CarDriver, Invitation, Passenger, Ride
+from api.schemas import (
+    InvitationCreate,
+    InvitationOut,
+    PassengerSeatIn,
+    RideCreate,
+    RideOut,
+    RideUpdate,
+)
 from api.utils.enums import InvitationStatus
 from api.utils.security import generate_token
 
 router = APIRouter()
 
 
-@router.post("/", response_model=None)
-def create_ride(
-    request: Request,
-    db: Session = Depends(get_db),
-    ctx: UserContext = Depends(get_current_user),
-) -> Any:
-    raise HTTPException(status_code=501, detail="Not implemented yet")
+def _get_ride_or_404(ride_id: UUID, db: Session) -> Ride:
+    ride = db.query(Ride).filter(Ride.id == ride_id).first()
+    if not ride:
+        raise HTTPException(status_code=404, detail="Ride not found.")
+    return ride
+
+
+def _assert_ride_access(
+    ride: Ride,
+    user_id: UUID,
+    *,
+    owner_only: bool = False,
+    driver_or_owner: bool = False,
+) -> None:
+    """Check if user has access to a ride.
+
+    owner_only      - only car owner can access
+    driver_or_owner - driver or owner can access, passengers cannot
+    default         - driver, owner or passenger can access
+    """
+    is_owner = ride.car.owner_id == user_id
+    is_current_driver = ride.car_driver.driver_id == user_id
+    is_passenger = any(p.user_id == user_id for p in ride.passengers)
+
+    if owner_only:
+        if not is_owner:
+            raise HTTPException(
+                status_code=403,
+                detail="Only the car owner can perform this action.",
+            )
+    elif driver_or_owner:
+        if not is_owner and not is_current_driver:
+            raise HTTPException(
+                status_code=403,
+                detail="Only the current driver or car owner can perform this action.",
+            )
+    else:
+        if not is_owner and not is_current_driver and not is_passenger:
+            raise HTTPException(
+                status_code=403,
+                detail="You are not part of this ride.",
+            )
 
 
 @router.get("/", response_model=list[RideOut])
@@ -31,6 +72,7 @@ def get_my_rides(
     db: Session = Depends(get_db),
     ctx: UserContext = Depends(get_current_user),
 ) -> list[RideOut]:
+    """Get all rides where the user is a passenger."""
     rides = (
         db.query(Ride)
         .join(Passenger, Ride.id == Passenger.ride_id)
@@ -40,24 +82,84 @@ def get_my_rides(
     return [RideOut.model_validate(ride) for ride in rides]
 
 
-@router.get("/{ride_id}", response_model=None)
+@router.post("/", response_model=RideOut)
+def create_ride(
+    request: Request,
+    ride_in: RideCreate,
+    db: Session = Depends(get_db),
+    ctx: UserContext = Depends(get_current_user),
+) -> RideOut:
+    """Create a new ride."""
+    car = db.query(Car).filter(Car.id == ride_in.car_id).first()
+    if not car or car.owner_id != ctx.user.id:
+        raise HTTPException(
+            status_code=403,
+            detail="Only the car owner can create a ride.",
+        )
+
+    # The driver of the ride is always the car owner, but we need to ensure
+    # there's an active CarDriver record for it
+    car_driver = (
+        db.query(CarDriver)
+        .filter(
+            CarDriver.car_id == ride_in.car_id,
+            CarDriver.driver_id == ctx.user.id,
+        )
+        .first()
+    )
+    if not car_driver:
+        car_driver = CarDriver(
+            car_id=ride_in.car_id,
+            driver_id=ctx.user.id,
+            is_active=True,
+        )
+        db.add(car_driver)
+    else:
+        car_driver.is_active = True
+    db.flush()
+
+    ride = Ride(
+        car_id=ride_in.car_id,
+        car_driver_id=car_driver.id,
+        departure_time=ride_in.departure_time,
+        destination=ride_in.destination,
+    )
+    db.add(ride)
+    db.commit()
+    db.refresh(ride)
+    return RideOut.model_validate(ride)
+
+
+@router.get("/{ride_id}", response_model=RideOut)
 def get_ride(
     ride_id: UUID,
     request: Request,
     db: Session = Depends(get_db),
     ctx: UserContext = Depends(get_current_user),
-) -> Any:
-    raise HTTPException(status_code=501, detail="Not implemented yet")
+) -> RideOut:
+    """Get ride detail."""
+    ride = _get_ride_or_404(ride_id, db)
+    _assert_ride_access(ride, ctx.user.id)
+    return RideOut.model_validate(ride)
 
 
-@router.patch("/{ride_id}", response_model=None)
+@router.patch("/{ride_id}", response_model=RideOut)
 def update_ride(
     ride_id: UUID,
+    ride_in: RideUpdate,
     request: Request,
     db: Session = Depends(get_db),
     ctx: UserContext = Depends(get_current_user),
-) -> Any:
-    raise HTTPException(status_code=501, detail="Not implemented yet")
+) -> RideOut:
+    """Update ride."""
+    ride = _get_ride_or_404(ride_id, db)
+    _assert_ride_access(ride, ctx.user.id, driver_or_owner=True)
+
+    ride.departure_time = ride_in.departure_time
+    ride.destination = ride_in.destination
+    db.commit()
+    db.refresh(ride)
+    return RideOut.model_validate(ride)
 
 
 @router.delete("/{ride_id}", status_code=204)
@@ -67,17 +169,44 @@ def cancel_ride(
     db: Session = Depends(get_db),
     ctx: UserContext = Depends(get_current_user),
 ) -> Response:
-    raise HTTPException(status_code=501, detail="Not implemented yet")
+    """Cancel a ride."""
+    ride = _get_ride_or_404(ride_id, db)
+    _assert_ride_access(ride, ctx.user.id, owner_only=True)
+
+    db.delete(ride)
+    db.commit()
+    return Response(status_code=204)
 
 
-@router.post("/{ride_id}/book", response_model=None)
+@router.post("/{ride_id}/book", response_model=RideOut)
 def book_seat(
     ride_id: UUID,
+    seat_in: PassengerSeatIn,
     request: Request,
     db: Session = Depends(get_db),
     ctx: UserContext = Depends(get_current_user),
-) -> Any:
-    raise HTTPException(status_code=501, detail="Not implemented yet")
+) -> RideOut:
+    """Book a seat on a ride."""
+    ride = _get_ride_or_404(ride_id, db)
+
+    if len(ride.passengers) >= len(ride.car.seats) - 1:
+        raise HTTPException(status_code=400, detail="No available seats.")
+
+    existing = (
+        db.query(Passenger).filter_by(user_id=ctx.user.id, ride_id=ride_id).first()
+    )
+    if existing:
+        raise HTTPException(status_code=409, detail="Already booked.")
+
+    passenger = Passenger(
+        user_id=ctx.user.id,
+        ride_id=ride_id,
+        seat_position=seat_in.seat_position,
+    )
+    db.add(passenger)
+    db.commit()
+    db.refresh(ride)
+    return RideOut.model_validate(ride)
 
 
 @router.delete("/{ride_id}/book", status_code=204)
@@ -87,17 +216,16 @@ def cancel_booking(
     db: Session = Depends(get_db),
     ctx: UserContext = Depends(get_current_user),
 ) -> Response:
-    raise HTTPException(status_code=501, detail="Not implemented yet")
+    """Cancel own booking on a ride."""
+    passenger = (
+        db.query(Passenger).filter_by(user_id=ctx.user.id, ride_id=ride_id).first()
+    )
+    if not passenger:
+        raise HTTPException(status_code=404, detail="Booking not found.")
 
-
-@router.get("/car/{car_id}", response_model=None)
-def list_car_rides(
-    car_id: UUID,
-    request: Request,
-    db: Session = Depends(get_db),
-    ctx: UserContext = Depends(get_current_user),
-) -> Any:
-    raise HTTPException(status_code=501, detail="Not implemented yet")
+    db.delete(passenger)
+    db.commit()
+    return Response(status_code=204)
 
 
 @router.post("/{ride_id}/invite", response_model=InvitationOut)
@@ -108,25 +236,17 @@ def invite_passenger(
     db: Session = Depends(get_db),
     ctx: UserContext = Depends(get_current_user),
 ) -> InvitationOut:
-    """Invite a passanger to a ride."""
-    ride = (
-        db.query(Ride)
-        .join(Car, Ride.car_id == Car.id)
-        .filter(Ride.id == ride_id)
-        .first()
-    )
-    if not ride:
-        raise HTTPException(status_code=404, detail="Ride not found.")
-    if ride.car.owner_id != ctx.user.id:
-        raise HTTPException(
-            status_code=403, detail="Only car owner can invite passengers."
-        )
+    """Invite a passenger to a ride."""
+    ride = _get_ride_or_404(ride_id, db)
+    _assert_ride_access(ride, ctx.user.id, driver_or_owner=True)
+
     if (
         ctx.user.email
         and str(invitation_in.invited_email).lower() == ctx.user.email.lower()
     ):
         raise HTTPException(status_code=400, detail="You cannot invite yourself.")
-    if len(ride.passengers) >= len(ride.car.seats) - 1:  # -1 for driver!
+
+    if len(ride.passengers) >= len(ride.car.seats) - 1:
         raise HTTPException(status_code=400, detail="No available seats in this ride.")
 
     existing = (
