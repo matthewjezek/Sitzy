@@ -6,12 +6,13 @@ from sqlalchemy.orm import Session, selectinload
 from api import models
 from api.database import get_db
 from api.deps import UserContext, get_current_user
-from api.models import Car
+from api.models import Car, Ride
 from api.schemas import (
     CarBase,
     CarCreate,
     CarFullOut,
     CarOut,
+    RideOut,
 )
 
 router = APIRouter()
@@ -28,18 +29,29 @@ def list_my_cars(
     return [CarOut.from_orm_with_labels(car) for car in cars]
 
 
-# === Získání auta podle ID ===
 @router.get("/{car_id}", response_model=CarFullOut)
 def read_car_by_id(
     car_id: UUID,
     request: Request,
     db: Session = Depends(get_db),
+    ctx: UserContext = Depends(get_current_user),
 ) -> CarFullOut:
+    """Get complete info about a car by its ID."""
     car = (
-        db.query(Car).options(selectinload(Car.owner)).filter(Car.id == car_id).first()
+        db.query(Car)
+        .options(
+            selectinload(Car.owner),
+            selectinload(Car.seats),
+            selectinload(Car.drivers),
+            selectinload(Car.rides),
+        )
+        .filter(Car.id == car_id)
+        .first()
     )
     if not car:
         raise HTTPException(status_code=404, detail="Car not found.")
+    if car.owner_id != ctx.user.id:
+        raise HTTPException(status_code=403, detail="This car does not belong to you.")
 
     db.refresh(car)
     return CarFullOut.from_orm_with_labels(car)
@@ -114,3 +126,24 @@ def transfer_driver(
 ) -> dict[str, str]:
     """Transfer car driver role to another invited user."""
     raise HTTPException(status_code=501, detail="Driver transfer not implemented yet")
+
+
+@router.get("/{car_id}/rides", response_model=list[RideOut])
+def list_car_rides(
+    car_id: UUID,
+    request: Request,
+    db: Session = Depends(get_db),
+    ctx: UserContext = Depends(get_current_user),
+) -> list[RideOut]:
+    car = db.query(Car).filter(Car.id == car_id).first()
+    if not car or car.owner_id != ctx.user.id:
+        raise HTTPException(
+            status_code=403, detail="Car not found or does not belong to you."
+        )
+    rides = (
+        db.query(Ride)
+        .filter(Ride.car_id == car_id)
+        .order_by(Ride.departure_time.asc())
+        .all()
+    )
+    return [RideOut.model_validate(ride) for ride in rides]
