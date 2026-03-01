@@ -55,6 +55,13 @@ class RideCreate(BaseModel):
     destination: str
 
 
+class RideUpdate(BaseModel):
+    """Data needed to update an existing ride."""
+
+    departure_time: datetime
+    destination: str
+
+
 class RideOut(BaseModel):
     """Info about a ride, used in API responses."""
 
