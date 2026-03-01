@@ -1,4 +1,3 @@
-import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
@@ -55,7 +54,10 @@ def read_car_by_id(
     if not car:
         raise HTTPException(status_code=404, detail="Car not found.")
     if car.owner_id != ctx.user.id:
-        logger.warning("Car access denied - not owner", extra={"user_id": str(ctx.user.id), "car_id": str(car_id)})
+        logger.warning(
+            "Car access denied - not owner",
+            extra={"user_id": str(ctx.user.id), "car_id": str(car_id)},
+        )
         raise HTTPException(status_code=403, detail="This car does not belong to you.")
 
     db.refresh(car)
@@ -77,7 +79,14 @@ def create_car(
     db.add(new_car)
     db.commit()
     db.refresh(new_car)
-    logger.info("Car created", extra={"user_id": str(ctx.user.id), "car_id": str(new_car.id), "name": new_car.name})
+    logger.info(
+        "Car created",
+        extra={
+            "user_id": str(ctx.user.id),
+            "car_id": str(new_car.id),
+            "name": new_car.name,
+        },
+    )
     return CarOut.from_orm_with_labels(new_car)
 
 
@@ -92,7 +101,10 @@ def change_car(
     """Update car info."""
     car = db.query(models.Car).filter(models.Car.id == car_id).first()
     if not car or car.owner_id != ctx.user.id:
-        logger.warning("Car update denied - not found or not owner", extra={"user_id": str(ctx.user.id), "car_id": str(car_id)})
+        logger.warning(
+            "Car update denied - not found or not owner",
+            extra={"user_id": str(ctx.user.id), "car_id": str(car_id)},
+        )
         raise HTTPException(
             status_code=404, detail="Car not found or does not belong to you."
         )
@@ -102,7 +114,9 @@ def change_car(
 
     db.commit()
     db.refresh(car)
-    logger.info("Car updated", extra={"user_id": str(ctx.user.id), "car_id": str(car_id)})
+    logger.info(
+        "Car updated", extra={"user_id": str(ctx.user.id), "car_id": str(car_id)}
+    )
     return CarOut.from_orm_with_labels(car)
 
 
@@ -116,14 +130,19 @@ def delete_car(
     """Delete a car."""
     car = db.query(models.Car).filter(models.Car.id == car_id).first()
     if not car or car.owner_id != ctx.user.id:
-        logger.warning("Car deletion denied - not found or not owner", extra={"user_id": str(ctx.user.id), "car_id": str(car_id)})
+        logger.warning(
+            "Car deletion denied - not found or not owner",
+            extra={"user_id": str(ctx.user.id), "car_id": str(car_id)},
+        )
         raise HTTPException(
             status_code=404, detail="Car not found or does not belong to you."
         )
 
     db.delete(car)
     db.commit()
-    logger.info("Car deleted", extra={"user_id": str(ctx.user.id), "car_id": str(car_id)})
+    logger.info(
+        "Car deleted", extra={"user_id": str(ctx.user.id), "car_id": str(car_id)}
+    )
     return Response(status_code=204)
 
 
@@ -148,7 +167,10 @@ def list_car_rides(
     """List of rides for a car."""
     car = db.query(Car).filter(Car.id == car_id).first()
     if not car or car.owner_id != ctx.user.id:
-        logger.warning("Car rides access denied - not found or not owner", extra={"user_id": str(ctx.user.id), "car_id": str(car_id)})
+        logger.warning(
+            "Car rides access denied - not found or not owner",
+            extra={"user_id": str(ctx.user.id), "car_id": str(car_id)},
+        )
         raise HTTPException(
             status_code=403, detail="Car not found or does not belong to you."
         )
@@ -158,5 +180,8 @@ def list_car_rides(
         .order_by(Ride.departure_time.asc())
         .all()
     )
-    logger.debug("Car rides listed", extra={"user_id": str(ctx.user.id), "car_id": str(car_id), "count": len(rides)})
+    logger.debug(
+        "Car rides listed",
+        extra={"user_id": str(ctx.user.id), "car_id": str(car_id), "count": len(rides)},
+    )
     return [RideOut.model_validate(ride) for ride in rides]
