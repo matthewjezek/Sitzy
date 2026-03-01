@@ -3,6 +3,7 @@ import axios, { AxiosError } from 'axios'
 const instance = axios.create({
   baseURL: 'http://localhost:8000',
   timeout: 10000,
+  withCredentials: true,
 })
 
 export const AUTH_EXPIRED_EVENT = 'auth:expired'
@@ -43,7 +44,7 @@ instance.interceptors.response.use(
 
     if (isRefreshing) {
       return new Promise((resolve, reject) => {
-        failedQueue.push({ resolve, reject})
+        failedQueue.push({ resolve, reject })
       }).then(token => {
         originalRequest.headers!.Authorization = `Bearer ${token}`
         return instance(originalRequest)
@@ -54,12 +55,11 @@ instance.interceptors.response.use(
     isRefreshing = true
 
     try {
-      const refreshToken = localStorage.getItem('refresh_token')
-      if (!refreshToken) throw new Error('No refresh token')
-
-      const { data } = await axios.post('http://localhost:8000/auth/refresh', {
-        refresh_token: refreshToken,
-      })
+      const { data } = await axios.post(
+        'http://localhost:8000/auth/refresh',
+        {},
+        { withCredentials: true },
+      )
 
       localStorage.setItem('access_token', data.access_token)
       processQueue(null, data.access_token)
@@ -68,7 +68,6 @@ instance.interceptors.response.use(
     } catch (err) {
       processQueue(err, null)
       localStorage.removeItem('access_token')
-      localStorage.removeItem('refresh_token')
       window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT))
       return Promise.reject(err)
     } finally {
