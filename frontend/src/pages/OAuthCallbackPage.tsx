@@ -22,7 +22,6 @@ export default function OAuthCallbackPage() {
       .get(`/auth/oauth/callback`, { params: { code, state, provider } })
       .then(({ data }) => {
         localStorage.setItem('access_token', data.access_token)
-        localStorage.setItem('refresh_token', data.refresh_token)
         navigate('/dashboard')
       })
       .catch(() => {
