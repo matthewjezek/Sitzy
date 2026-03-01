@@ -67,14 +67,14 @@ def setup_logging() -> None:
     )
 
 
-def get_logger(name: str) -> logging.LoggerAdapter:
+def get_logger(name: str) -> logging.LoggerAdapter[logging.Logger]:
     """Get a logger with support for extra fields."""
     base_logger = logging.getLogger(name)
     return logging.LoggerAdapter(base_logger, {})
 
 
 def log_with_context(
-    logger: logging.LoggerAdapter,
+    logger: logging.LoggerAdapter[logging.Logger],
     level: int,
     message: str,
     **kwargs: Any,
