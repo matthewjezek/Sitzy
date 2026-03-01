@@ -63,7 +63,9 @@ class FakeDB:
         self.commit_called = True
 
 
-def create_client(fake_db: FakeDB, current_user: UserContext | None = None) -> TestClient:
+def create_client(
+    fake_db: FakeDB, current_user: UserContext | None = None
+) -> TestClient:
     app = FastAPI()
     app.state.limiter = auth.limiter
     app.add_middleware(SlowAPIMiddleware)
@@ -113,14 +115,18 @@ def test_facebook_init_returns_authorization_url(monkeypatch: pytest.MonkeyPatch
     assert called["code_verifier"] is None
 
 
-def test_x_init_returns_authorization_url_and_stores_pkce(monkeypatch: pytest.MonkeyPatch):
+def test_x_init_returns_authorization_url_and_stores_pkce(
+    monkeypatch: pytest.MonkeyPatch,
+):
     fake_db = FakeDB()
     client = create_client(fake_db)
 
     called = {}
 
     monkeypatch.setattr(auth.state_manager, "generate_state", lambda: "state-x")
-    monkeypatch.setattr(auth.x_client, "generate_pkce", lambda: ("verifier", "challenge"))
+    monkeypatch.setattr(
+        auth.x_client, "generate_pkce", lambda: ("verifier", "challenge")
+    )
 
     def _store_state(state: str, provider: str, code_verifier=None, ttl: int = 600):
         called["state"] = state
@@ -152,7 +158,9 @@ def test_oauth_callback_creates_tokens_and_commits(monkeypatch: pytest.MonkeyPat
     social_account_id = uuid4()
     session_id = uuid4()
 
-    fake_user = SimpleNamespace(id=user_id, social_accounts=[SimpleNamespace(id=social_account_id)])
+    fake_user = SimpleNamespace(
+        id=user_id, social_accounts=[SimpleNamespace(id=social_account_id)]
+    )
     fake_session = SimpleNamespace(id=session_id)
 
     monkeypatch.setattr(
@@ -178,7 +186,9 @@ def test_oauth_callback_creates_tokens_and_commits(monkeypatch: pytest.MonkeyPat
     monkeypatch.setattr(auth, "find_or_create_user", lambda **kwargs: fake_user)
     monkeypatch.setattr(auth, "create_or_update_session", lambda **kwargs: fake_session)
     monkeypatch.setattr(auth, "create_access_token", lambda payload: "access-xyz")
-    monkeypatch.setattr(auth, "create_refresh_token", lambda user_id, session_id: "refresh-xyz")
+    monkeypatch.setattr(
+        auth, "create_refresh_token", lambda user_id, session_id: "refresh-xyz"
+    )
 
     response = client.get(
         "/auth/oauth/callback",
@@ -269,11 +279,15 @@ def test_facebook_init_rate_limit_returns_429(monkeypatch: pytest.MonkeyPatch):
     assert statuses[10] == 429
 
 
-def test_oauth_callback_rejects_invalid_or_expired_state(monkeypatch: pytest.MonkeyPatch):
+def test_oauth_callback_rejects_invalid_or_expired_state(
+    monkeypatch: pytest.MonkeyPatch,
+):
     fake_db = FakeDB()
     client = create_client(fake_db)
 
-    monkeypatch.setattr(auth.state_manager, "validate_and_consume_state", lambda state: None)
+    monkeypatch.setattr(
+        auth.state_manager, "validate_and_consume_state", lambda state: None
+    )
 
     response = client.get(
         "/auth/oauth/callback",
@@ -284,7 +298,9 @@ def test_oauth_callback_rejects_invalid_or_expired_state(monkeypatch: pytest.Mon
     assert response.json()["detail"] == "Invalid or expired state token."
 
 
-def test_oauth_callback_x_rejects_missing_pkce_verifier(monkeypatch: pytest.MonkeyPatch):
+def test_oauth_callback_x_rejects_missing_pkce_verifier(
+    monkeypatch: pytest.MonkeyPatch,
+):
     fake_db = FakeDB()
     client = create_client(fake_db)
 
@@ -310,7 +326,9 @@ def test_oauth_callback_x_success(monkeypatch: pytest.MonkeyPatch):
     user_id = uuid4()
     social_account_id = uuid4()
     session_id = uuid4()
-    fake_user = SimpleNamespace(id=user_id, social_accounts=[SimpleNamespace(id=social_account_id)])
+    fake_user = SimpleNamespace(
+        id=user_id, social_accounts=[SimpleNamespace(id=social_account_id)]
+    )
     fake_session = SimpleNamespace(id=session_id)
 
     monkeypatch.setattr(
@@ -340,7 +358,9 @@ def test_oauth_callback_x_success(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setattr(auth, "find_or_create_user", lambda **kwargs: fake_user)
     monkeypatch.setattr(auth, "create_or_update_session", lambda **kwargs: fake_session)
     monkeypatch.setattr(auth, "create_access_token", lambda payload: "x-access")
-    monkeypatch.setattr(auth, "create_refresh_token", lambda user_id, session_id: "x-refresh")
+    monkeypatch.setattr(
+        auth, "create_refresh_token", lambda user_id, session_id: "x-refresh"
+    )
 
     response = client.get(
         "/auth/oauth/callback",
@@ -359,7 +379,9 @@ def test_refresh_rejects_missing_claims(monkeypatch: pytest.MonkeyPatch):
     fake_db = FakeDB()
     client = create_client(fake_db)
 
-    monkeypatch.setattr(auth, "decode_refresh_token", lambda token: {"sub": str(uuid4())})
+    monkeypatch.setattr(
+        auth, "decode_refresh_token", lambda token: {"sub": str(uuid4())}
+    )
 
     response = client.post("/auth/refresh", json={"refresh_token": "refresh-token"})
 
@@ -438,14 +460,18 @@ def test_oauth_callback_rate_limit_returns_429(monkeypatch: pytest.MonkeyPatch):
             "avatar_url": "https://example.com/avatar.png",
         }
 
-    fake_user = SimpleNamespace(id=uuid4(), social_accounts=[SimpleNamespace(id=uuid4())])
+    fake_user = SimpleNamespace(
+        id=uuid4(), social_accounts=[SimpleNamespace(id=uuid4())]
+    )
     fake_session = SimpleNamespace(id=uuid4())
 
     monkeypatch.setattr(auth.fb_client, "get_user_info", _fake_fb_user_info)
     monkeypatch.setattr(auth, "find_or_create_user", lambda **kwargs: fake_user)
     monkeypatch.setattr(auth, "create_or_update_session", lambda **kwargs: fake_session)
     monkeypatch.setattr(auth, "create_access_token", lambda payload: "access-xyz")
-    monkeypatch.setattr(auth, "create_refresh_token", lambda user_id, session_id: "refresh-xyz")
+    monkeypatch.setattr(
+        auth, "create_refresh_token", lambda user_id, session_id: "refresh-xyz"
+    )
 
     statuses = [
         client.get(
