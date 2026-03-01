@@ -1,4 +1,3 @@
-import logging
 from datetime import datetime, timezone
 from uuid import UUID
 
@@ -31,7 +30,10 @@ def get_received_invitations(
         .order_by(Invitation.created_at.desc())
         .all()
     )
-    logger.debug("Invitations retrieved", extra={"user_id": str(ctx.user.id), "count": len(invitations)})
+    logger.debug(
+        "Invitations retrieved",
+        extra={"user_id": str(ctx.user.id), "count": len(invitations)},
+    )
     return [InvitationOut.from_orm_with_labels(inv) for inv in invitations]
 
 
@@ -77,14 +79,19 @@ def cancel_invitation(
     if not invitation:
         raise HTTPException(status_code=404, detail="Invitation not found.")
     if invitation.ride.car.owner_id != ctx.user.id:
-        logger.warning("Invitation cancellation denied", extra={"user_id": str(ctx.user.id), "token": token})
+        logger.warning(
+            "Invitation cancellation denied",
+            extra={"user_id": str(ctx.user.id), "token": token},
+        )
         raise HTTPException(
             status_code=403, detail="User is not the owner of this car."
         )
 
     db.delete(invitation)
     db.commit()
-    logger.info("Invitation cancelled", extra={"user_id": str(ctx.user.id), "token": token})
+    logger.info(
+        "Invitation cancelled", extra={"user_id": str(ctx.user.id), "token": token}
+    )
 
 
 @router.get("/{token}", response_model=InvitationOut)
@@ -115,14 +122,20 @@ def accept_invitation(
     if not invitation:
         raise HTTPException(status_code=404, detail="Invitation not found.")
     if invitation.expires_at < datetime.now(timezone.utc):
-        logger.warning("Invitation acceptance denied - expired", extra={"user_id": str(ctx.user.id), "token": token})
+        logger.warning(
+            "Invitation acceptance denied - expired",
+            extra={"user_id": str(ctx.user.id), "token": token},
+        )
         raise HTTPException(status_code=410, detail="Invitation has expired.")
     if invitation.status != InvitationStatus.PENDING:
         raise HTTPException(
             status_code=400, detail="Invitation has already been processed."
         )
     if not ctx.user.email or invitation.invited_email.lower() != ctx.user.email.lower():
-        logger.warning("Invitation acceptance denied - email mismatch", extra={"user_id": str(ctx.user.id), "token": token})
+        logger.warning(
+            "Invitation acceptance denied - email mismatch",
+            extra={"user_id": str(ctx.user.id), "token": token},
+        )
         raise HTTPException(status_code=403, detail="This is not your invitation.")
 
     existing = (
@@ -131,7 +144,10 @@ def accept_invitation(
         .first()
     )
     if existing:
-        logger.warning("Invitation acceptance denied - already passenger", extra={"user_id": str(ctx.user.id), "ride_id": str(invitation.ride_id)})
+        logger.warning(
+            "Invitation acceptance denied - already passenger",
+            extra={"user_id": str(ctx.user.id), "ride_id": str(invitation.ride_id)},
+        )
         raise HTTPException(
             status_code=400, detail="User is already a passenger on this ride."
         )
@@ -144,7 +160,14 @@ def accept_invitation(
     )
     db.add(passenger)
     db.commit()
-    logger.info("Invitation accepted", extra={"user_id": str(ctx.user.id), "ride_id": str(invitation.ride_id), "token": token})
+    logger.info(
+        "Invitation accepted",
+        extra={
+            "user_id": str(ctx.user.id),
+            "ride_id": str(invitation.ride_id),
+            "token": token,
+        },
+    )
     return UserOut.model_validate(ctx.user)
 
 
@@ -164,10 +187,15 @@ def reject_invitation(
             status_code=400, detail="Invitation has already been processed."
         )
     if not ctx.user.email or invitation.invited_email.lower() != ctx.user.email.lower():
-        logger.warning("Invitation rejection denied - email mismatch", extra={"user_id": str(ctx.user.id), "token": token})
+        logger.warning(
+            "Invitation rejection denied - email mismatch",
+            extra={"user_id": str(ctx.user.id), "token": token},
+        )
         raise HTTPException(status_code=403, detail="This is not your invitation.")
 
     invitation.status = InvitationStatus.REJECTED
     db.commit()
-    logger.info("Invitation rejected", extra={"user_id": str(ctx.user.id), "token": token})
+    logger.info(
+        "Invitation rejected", extra={"user_id": str(ctx.user.id), "token": token}
+    )
     return {"detail": "Invitation has been successfully rejected."}
