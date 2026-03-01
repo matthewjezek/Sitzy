@@ -45,25 +45,41 @@ docker-compose up redis
 ### Facebook App registrace
 
 1. Jdi na [developers.facebook.com](https://developers.facebook.com)
-2. Vytvoř novou aplikaci → **Consumer**
-3. Přidej produkt **Facebook Login**
-4. Nastav **Valid OAuth Redirect URIs**:
-   - Dev: `http://localhost:5173/auth/callback`
-   - Prod: `https://yourdomain.com/auth/callback`
+2. Vytvoř novou aplikaci → use case **Authenticate and request data
+from users with Facebook Login**
+3. Zvol **"I don't want to connect a business portfolio yet."**
+4. Jdi do **App Settings → Basic**
 5. Zkopíruj `App ID` → `FACEBOOK_CLIENT_ID`
 6. Zkopíruj `App Secret` → `FACEBOOK_CLIENT_SECRET`
+
+> **Poznámka:** V development módu jsou `http://localhost` redirect URI
+> povoleny automaticky – není potřeba je přidávat ručně.
+>
+> **Business verification + App Review** jsou vyžadovány pouze pro produkční
+přístup k datům cizích uživatelů.
+Pro vývoj a testování (vlastní účet + max 25 testerů) není potřeba.
 
 ### X (Twitter) App registrace
 
 1. Jdi na [developer.twitter.com](https://developer.twitter.com)
-2. Vytvoř nový projekt + aplikaci
-3. Nastav **OAuth 2.0** → **Type of App: Web App**
-4. Nastav **Callback URI**:
-   - Dev: `http://localhost:5173/auth/callback`
-   - Prod: `https://yourdomain.com/auth/callback`
-5. Povol **Read** permissions
-6. Zkopíruj `Client ID` → `X_CLIENT_ID`
-7. Zkopíruj `Client Secret` → `X_CLIENT_SECRET`
+2. Vytvoř nový **Project** + **App**
+3. V nastavení aplikace najdi **User authentication settings** → **Set up**
+4. Vyplň:
+   - **App permissions**: Read
+   - **Type of App**: Web App, Automated App or Bot
+   - **Callback URI**: `http://localhost:5173/auth/callback`
+   - **Website URL**: `http://localhost:5173`
+5. Ulož nastavení
+6. Jdi do **Keys and Tokens** → sekce **OAuth 2.0 Client ID and Client Secret**
+7. Zkopíruj `Client ID` → `X_CLIENT_ID`
+8. Zkopíruj `Client Secret` → `X_CLIENT_SECRET`
+
+> **Poznámka:** Na rozdíl od Facebooku X nevyžaduje localhost automaticky –
+> Callback URI musíš přidat ručně.
+>
+> **Pozor:** X vygeneruje oba klíče nadepsané jako "Client Secret".
+> `Client ID` je kratší řetězec (cca 20–30 znaků),
+> `Client Secret` je delší.
 
 ### Generování SECRET_KEY
 
