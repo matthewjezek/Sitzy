@@ -54,7 +54,6 @@ async def validation_exception_handler(
     )
 
 
-
 app.include_router(health.router, tags=["health"])
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(cars.router, prefix="/cars", tags=["cars"])
