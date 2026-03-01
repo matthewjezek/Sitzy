@@ -11,7 +11,7 @@ from api.config import settings
 from api.database import get_db
 from api.models import SocialSession, User
 
-# Cesta k tokenu (standardní schema „Bearer <token>“)
+# Token path (default schema "Bearer <token>")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
