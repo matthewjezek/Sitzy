@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Literal
@@ -14,11 +15,13 @@ from sqlalchemy.orm import Session
 
 from api import models
 from api.config import settings
+from api.utils.logging_config import get_logger
 from api.utils.security import generate_token
 
 Provider = Literal["x", "facebook"]
 
 _redis = redis_lib.from_url(settings.redis_url, decode_responses=True)  # type: ignore
+logger = get_logger(__name__)
 
 
 class OAuthStateManager:
@@ -43,6 +46,7 @@ class OAuthStateManager:
         in Redis."""
         data = {"provider": provider, "code_verifier": code_verifier}
         _redis.set(self._key(state), json.dumps(data), ex=ttl)
+        logger.debug("OAuth state stored", extra={"provider": provider, "has_pkce": code_verifier is not None, "ttl": ttl})
 
     def validate_and_consume_state(
         self, state: str
@@ -51,8 +55,10 @@ class OAuthStateManager:
         then delete it."""
         raw = _redis.getdel(self._key(state))
         if not raw:
+            logger.warning("OAuth state validation failed - state not found")
             return None
         data = json.loads(raw)
+        logger.debug("OAuth state validated and consumed", extra={"provider": data.get("provider")})
         return data["provider"], data.get("code_verifier")
 
 
@@ -85,20 +91,25 @@ class XOAuthClient:
     def exchange_code(self, code: str, code_verifier: str) -> dict[str, str]:
         """Exchange authorization code for access token."""
         with httpx.Client(timeout=httpx.Timeout(5.0)) as client:
-            response = client.post(
-                self.TOKEN_URL,
-                data={
-                    "grant_type": "authorization_code",
-                    "code": code,
-                    "redirect_uri": str(settings.x_redirect_uri),
-                    "code_verifier": code_verifier,
-                    "client_id": settings.x_client_id,
-                },
-                auth=(settings.x_client_id, settings.x_client_secret),
-            )
-            response.raise_for_status()
-            result: dict[str, str] = response.json()
-            return result
+            try:
+                response = client.post(
+                    self.TOKEN_URL,
+                    data={
+                        "grant_type": "authorization_code",
+                        "code": code,
+                        "redirect_uri": str(settings.x_redirect_uri),
+                        "code_verifier": code_verifier,
+                        "client_id": settings.x_client_id,
+                    },
+                    auth=(settings.x_client_id, settings.x_client_secret),
+                )
+                response.raise_for_status()
+                result: dict[str, str] = response.json()
+                logger.info("X OAuth token exchange successful")
+                return result
+            except httpx.HTTPError as e:
+                logger.error("X OAuth token exchange failed", extra={"error": str(e)})
+                raise
 
     async def get_user_info(self, access_token: str) -> dict[str, str | None]:
         """Fetch user profile from X API."""
@@ -138,18 +149,23 @@ class FacebookOAuthClient:
     def exchange_code(self, code: str) -> dict[str, str]:
         """Exchange authorization code for access token."""
         with httpx.Client(timeout=httpx.Timeout(5.0)) as client:
-            response = client.get(
-                self.TOKEN_URL,
-                params={
-                    "client_id": settings.facebook_client_id,
-                    "client_secret": settings.facebook_client_secret,
-                    "redirect_uri": str(settings.facebook_redirect_uri),
-                    "code": code,
-                },
-            )
-            response.raise_for_status()
-            result: dict[str, str] = response.json()
-            return result
+            try:
+                response = client.get(
+                    self.TOKEN_URL,
+                    params={
+                        "client_id": settings.facebook_client_id,
+                        "client_secret": settings.facebook_client_secret,
+                        "redirect_uri": str(settings.facebook_redirect_uri),
+                        "code": code,
+                    },
+                )
+                response.raise_for_status()
+                result: dict[str, str] = response.json()
+                logger.info("Facebook OAuth token exchange successful")
+                return result
+            except httpx.HTTPError as e:
+                logger.error("Facebook OAuth token exchange failed", extra={"error": str(e)})
+                raise
 
     async def get_user_info(self, access_token: str) -> dict[str, str | None]:
         """Fetch user profile from Facebook Graph API."""
@@ -186,6 +202,7 @@ def find_or_create_user(
         .first()
     )
     if social_account:
+        logger.debug("Existing user found by social account", extra={"provider": provider, "user_id": str(social_account.user_id)})
         return social_account.user
 
     user = (
@@ -197,6 +214,9 @@ def find_or_create_user(
         user = models.User(email=email, full_name=full_name, avatar_url=avatar_url)
         db.add(user)
         db.flush()
+        logger.info("New user created", extra={"provider": provider, "email": email, "user_id": str(user.id)})
+    else:
+        logger.info("User found by email", extra={"provider": provider, "email": email, "user_id": str(user.id)})
 
     social_account = models.SocialAccount(
         user_id=user.id,
@@ -206,6 +226,7 @@ def find_or_create_user(
     )
     db.add(social_account)
     db.flush()
+    logger.debug("Social account created", extra={"provider": provider, "user_id": str(user.id)})
     return user
 
 
@@ -230,4 +251,5 @@ def create_or_update_session(
     )
     db.add(session)
     db.flush()
+    logger.info("Session created", extra={"user_id": str(user_id), "session_id": str(session.id), "expires_in": expires_in})
     return session

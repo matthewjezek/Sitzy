@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
@@ -17,9 +18,11 @@ from api.schemas import (
     RideUpdate,
 )
 from api.utils.enums import InvitationStatus
+from api.utils.logging_config import get_logger
 from api.utils.security import generate_token
 
 router = APIRouter()
+logger = get_logger(__name__)
 
 
 def _get_ride_or_404(ride_id: UUID, db: Session) -> Ride:
@@ -80,6 +83,7 @@ def get_my_rides(
         .filter(Passenger.user_id == ctx.user.id)
         .all()
     )
+    logger.debug("Rides retrieved", extra={"user_id": str(ctx.user.id), "count": len(rides)})
     return [RideOut.model_validate(ride) for ride in rides]
 
 
@@ -93,6 +97,7 @@ def create_ride(
     """Create a new ride."""
     car = db.query(Car).filter(Car.id == ride_in.car_id).first()
     if not car or car.owner_id != ctx.user.id:
+        logger.warning("Ride creation denied - not car owner", extra={"user_id": str(ctx.user.id), "car_id": str(ride_in.car_id)})
         raise HTTPException(
             status_code=403,
             detail="Only the car owner can create a ride.",
@@ -128,6 +133,7 @@ def create_ride(
     db.add(ride)
     db.commit()
     db.refresh(ride)
+    logger.info("Ride created", extra={"user_id": str(ctx.user.id), "ride_id": str(ride.id), "car_id": str(ride.car_id)})
     return RideOut.model_validate(ride)
 
 
@@ -176,6 +182,7 @@ def cancel_ride(
 
     db.delete(ride)
     db.commit()
+    logger.info("Ride cancelled", extra={"user_id": str(ctx.user.id), "ride_id": str(ride_id)})
     return Response(status_code=204)
 
 
@@ -191,12 +198,14 @@ def book_seat(
     ride = _get_ride_or_404(ride_id, db)
 
     if len(ride.passengers) >= len(ride.car.seats) - 1:
+        logger.warning("Seat booking failed - no available seats", extra={"user_id": str(ctx.user.id), "ride_id": str(ride_id)})
         raise HTTPException(status_code=400, detail="No available seats.")
 
     existing = (
         db.query(Passenger).filter_by(user_id=ctx.user.id, ride_id=ride_id).first()
     )
     if existing:
+        logger.warning("Seat booking failed - already booked", extra={"user_id": str(ctx.user.id), "ride_id": str(ride_id)})
         raise HTTPException(status_code=409, detail="Already booked.")
 
     passenger = Passenger(
@@ -207,6 +216,7 @@ def book_seat(
     db.add(passenger)
     db.commit()
     db.refresh(ride)
+    logger.info("Passenger booked seat", extra={"user_id": str(ctx.user.id), "ride_id": str(ride_id), "seat_position": seat_in.seat_position})
     return RideOut.model_validate(ride)
 
 

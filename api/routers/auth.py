@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timezone
 from uuid import UUID
 
@@ -18,6 +19,7 @@ from api.services.oauth_service import (
     find_or_create_user,
 )
 from api.utils.limiter import limiter
+from api.utils.logging_config import get_logger
 from api.utils.security import (
     create_access_token,
     create_refresh_token,
@@ -25,6 +27,7 @@ from api.utils.security import (
 )
 
 router = APIRouter(tags=["auth"])
+logger = get_logger(__name__)
 state_manager = OAuthStateManager()
 x_client = XOAuthClient()
 fb_client = FacebookOAuthClient()
@@ -37,6 +40,7 @@ def facebook_init(request: Request) -> dict[str, str]:
     state = state_manager.generate_state()
     state_manager.store_state(state, provider="facebook")
     authorization_url = fb_client.get_authorization_url(state)
+    logger.info("Facebook OAuth initialization", extra={"provider": "facebook"})
     return {"authorization_url": authorization_url, "state": state}
 
 
@@ -48,6 +52,7 @@ def x_init(request: Request) -> dict[str, str]:
     code_verifier, code_challenge = x_client.generate_pkce()
     state_manager.store_state(state, provider="x", code_verifier=code_verifier)
     authorization_url = x_client.get_authorization_url(state, code_challenge)
+    logger.info("X OAuth initialization", extra={"provider": "x"})
     return {"authorization_url": authorization_url, "state": state}
 
 
@@ -63,12 +68,17 @@ async def oauth_callback(
     """Handle OAuth callback and create session."""
     result = state_manager.validate_and_consume_state(state)
     if not result or result[0] != provider:
+        logger.warning(
+            "OAuth callback with invalid state",
+            extra={"provider": provider, "state_valid": result is not None},
+        )
         raise HTTPException(status_code=400, detail="Invalid or expired state token.")
 
     _, code_verifier = result
 
     if provider == "x":
         if not code_verifier:
+            logger.warning("OAuth callback missing PKCE code verifier", extra={"provider": "x"})
             raise HTTPException(status_code=400, detail="Missing PKCE code verifier.")
         token_data = x_client.exchange_code(code, code_verifier)
         user_info = await x_client.get_user_info(token_data["access_token"])
@@ -78,6 +88,7 @@ async def oauth_callback(
 
     raw_id = user_info.get("id")
     if not raw_id:
+        logger.error("Failed to fetch user profile", extra={"provider": provider})
         raise HTTPException(status_code=502, detail="Failed to fetch user profile.")
     social_id: str = str(raw_id)
     email = user_info.get("email") or f"{social_id}@{provider}.invalid"
@@ -110,6 +121,11 @@ async def oauth_callback(
     )
     refresh_token = create_refresh_token(user.id, session.id)
 
+    logger.info(
+        "OAuth callback successful",
+        extra={"provider": provider, "user_id": str(user.id), "session_id": str(session.id)},
+    )
+
     return {
         "access_token": access_token,
         "refresh_token": refresh_token,
@@ -134,11 +150,13 @@ def refresh_access_token(
     try:
         payload = decode_refresh_token(refresh_token)
     except JWTError:
+        logger.warning("Refresh token decode failed - invalid token")
         raise credentials_exception
 
     user_id = payload.get("sub")
     session_id = payload.get("session_id")
     if not user_id or not session_id:
+        logger.warning("Refresh token missing required claims", extra={"has_user_id": user_id is not None, "has_session_id": session_id is not None})
         raise credentials_exception
 
     session = (
@@ -151,9 +169,11 @@ def refresh_access_token(
         .first()
     )
     if not session:
+        logger.warning("Refresh token session not found or revoked", extra={"session_id": session_id, "user_id": user_id})
         raise credentials_exception
 
     access_token = create_access_token({"sub": user_id, "session_id": session_id})
+    logger.info("Token refreshed", extra={"user_id": user_id, "session_id": session_id})
     return {"access_token": access_token, "token_type": "bearer"}
 
 
@@ -168,9 +188,13 @@ def revoke_session(
     if session:
         session.revoked_at = datetime.now(timezone.utc)
         db.commit()
+        logger.info("Session revoked", extra={"user_id": str(ctx.user.id), "session_id": str(ctx.session_id)})
+    else:
+        logger.warning("Revoke attempted on non-existent session", extra={"session_id": str(ctx.session_id)})
 
 
 @router.get("/me", response_model=UserOut)
 def read_me(ctx: UserContext = Depends(get_current_user)) -> UserOut:
     """Return current authenticated user."""
+    logger.debug("User info requested", extra={"user_id": str(ctx.user.id)})
     return UserOut.model_validate(ctx.user)
