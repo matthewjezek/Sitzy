@@ -40,7 +40,9 @@ def check_redis() -> dict[str, str]:
 
         from api.config import settings
 
-        redis_client = redis_lib.from_url(settings.redis_url, decode_responses=True)  # type: ignore
+        redis_client = redis_lib.from_url(
+            settings.redis_url, decode_responses=True
+        )  # type: ignore
         redis_client.ping()
         log_with_context(logger, logging.DEBUG, "Redis health check passed")
         return {"status": "connected"}
