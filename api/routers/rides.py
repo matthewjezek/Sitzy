@@ -15,6 +15,7 @@ from api.schemas import (
     RideCreate,
     RideOut,
     RideUpdate,
+    TransferDriverIn,
 )
 from api.utils.enums import InvitationStatus
 from api.utils.logging_config import get_logger
@@ -25,9 +26,9 @@ logger = get_logger(__name__)
 
 
 def _get_ride_or_404(ride_id: UUID, db: Session) -> Ride:
+    """Helper to get a ride by ID or raise 404 if not found."""
     ride = db.query(Ride).filter(Ride.id == ride_id).first()
     if not ride:
-        """Helper to get a ride by ID or raise 404 if not found."""
         raise HTTPException(status_code=404, detail="Ride not found.")
     return ride
 
@@ -309,3 +310,69 @@ def invite_passenger(
     db.commit()
     db.refresh(invitation)
     return InvitationOut.from_orm_with_labels(invitation)
+
+
+@router.post("/{ride_id}/transfer-driver", response_model=RideOut)
+def transfer_driver(
+    ride_id: UUID,
+    transfer_in: TransferDriverIn,
+    request: Request,
+    db: Session = Depends(get_db),
+    ctx: UserContext = Depends(get_current_user),
+) -> RideOut:
+    """Transfer driver role for a specific ride to a passenger.
+    Only car owner can transfer. New driver must be a passenger on the ride."""
+    ride = _get_ride_or_404(ride_id, db)
+    _assert_ride_access(ride, ctx.user.id, owner_only=True)
+
+    is_passenger = any(p.user_id == transfer_in.new_driver_id for p in ride.passengers)
+    if not is_passenger:
+        raise HTTPException(
+            status_code=400,
+            detail="New driver must be a passenger on this ride.",
+        )
+    
+    if ride.car_driver.driver_id == transfer_in.new_driver_id:
+        raise HTTPException(
+            status_code=400,
+            detail="This passenger is already the driver.",
+        )
+
+    current_driver = ride.car_driver
+    if current_driver.driver_id != ride.car.owner_id:
+        current_driver.is_active = False
+        current_driver.revoked_at = datetime.now(timezone.utc)
+
+    new_car_driver = (
+        db.query(CarDriver)
+        .filter(
+            CarDriver.car_id == ride.car_id,
+            CarDriver.driver_id == transfer_in.new_driver_id,
+        )
+        .first()
+    )
+    if not new_car_driver:
+        new_car_driver = CarDriver(
+            car_id=ride.car_id,
+            driver_id=transfer_in.new_driver_id,
+            is_active=True,
+        )
+        db.add(new_car_driver)
+        db.flush()
+    else:
+        new_car_driver.is_active = True
+        new_car_driver.revoked_at = None
+
+    ride.car_driver_id = new_car_driver.id
+    db.commit()
+    db.refresh(ride)
+
+    logger.info(
+        "Driver transferred",
+        extra={
+            "ride_id": str(ride_id),
+            "new_driver_id": str(transfer_in.new_driver_id),
+            "owner_id": str(ctx.user.id),
+        },
+    )
+    return RideOut.model_validate(ride)

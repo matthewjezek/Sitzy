@@ -146,17 +146,6 @@ def delete_car(
     return Response(status_code=204)
 
 
-@router.post("/{car_id}/transfer-driver")
-def transfer_driver(
-    car_id: UUID,
-    request: Request,
-    db: Session = Depends(get_db),
-    ctx: UserContext = Depends(get_current_user),
-) -> dict[str, str]:
-    """Transfer car driver role to another invited user."""
-    raise HTTPException(status_code=501, detail="Driver transfer not implemented yet")
-
-
 @router.get("/{car_id}/rides", response_model=list[RideOut])
 def list_car_rides(
     car_id: UUID,

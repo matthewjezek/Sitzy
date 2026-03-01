@@ -46,6 +46,12 @@ class CarDriverOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class TransferDriverIn(BaseModel):
+    """Data needed to transfer car driver role to another passenger."""
+
+    new_driver_id: UUID
+
+
 # === Ride ===
 class RideCreate(BaseModel):
     """Data needed to create a new ride."""
