@@ -1,5 +1,3 @@
-import os
-
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
@@ -9,12 +7,18 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
+from api.config import settings
 from api.routers import auth, cars, invitations, rides
 from api.utils.limiter import limiter
 
 load_dotenv()
 
-app = FastAPI(title="Sitzy API")
+app = FastAPI(
+    title="Sitzy API",
+    docs_url=None if settings.environment == "production" else "/docs",
+    redoc_url=None if settings.environment == "production" else "/redoc",
+    openapi_url=None if settings.environment == "production" else "/openapi.json",
+)
 app.state.limiter = limiter
 
 app.add_middleware(SlowAPIMiddleware)
@@ -23,17 +27,12 @@ app.add_exception_handler(
     _rate_limit_exceeded_handler,  # type: ignore
 )
 
-# CORS configuration
-origins = [
-    os.getenv("FRONTEND_ORIGIN", "http://localhost:5173"),
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=[settings.frontend_origin],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PATCH", "DELETE"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
 
