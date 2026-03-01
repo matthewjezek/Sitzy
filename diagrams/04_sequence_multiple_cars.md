@@ -37,13 +37,13 @@ sequenceDiagram
     Database->>Backend: ✅ Bob je pasažér na jízdě
 
     Alice->>Frontend: Převede řízení na Boba
-    Frontend->>Backend: POST /cars/1/transfer-driver<br/>{new_driver_id=Bob}
-    Backend->>Database: SELECT invitations<br/>WHERE ride.car_id=1 AND user.id=Bob
-    <br/>AND status='accepted'
-    Database->>Backend: ✅ Bob má přijatou pozvánku
+    Frontend->>Backend: POST /rides/42/transfer-driver<br/>{new_driver_id: Bob}
+    Backend->>Database: SELECT passengers<br/>WHERE ride.car_id=1 AND user.id=Bob
+    Database->>Backend: ✅ Bob je pasažér na jízdě
     Backend->>Database: UPDATE car_drivers<br/>SET is_active=false, revoked_at=now()
     <br/>WHERE car_id=1 AND is_active=true
-    Backend->>Database: INSERT car_drivers<br/>(car_id=1, driver_id=Bob, is_active=true)
+    Backend->>Database: INSERT/UPDATE car_drivers<br/>(car_id=1, driver_id=Bob,
+    is_active=true)
     Database->>Backend: ✅ Bob je nový aktivní řidič
 
     Note over Alice,Database: ✅ Flow v praxi:
@@ -51,7 +51,7 @@ sequenceDiagram
     <br/>2. Vytvoří jízdu (stává se řidičem)
     <br/>3. Pozve Boba a Charlieho
     <br/>4. Bob přijme → stane se pasažérem
-    <br/>5. Alice převede řízení na Boba<br/>(Bob musel mít přijatou pozvánku)
+    <br/>5. Alice převede řízení na Boba<br/>(Bob musí být pasažér)
 ```
 
 ## Scénář:
@@ -59,14 +59,15 @@ sequenceDiagram
 1. **Alice** vytvoří auto → zatím žádný CarDriver záznam
 2. **Alice** vytvoří jízdu → při tom se vytvoří CarDriver (první řidič)
 3. **Alice** pošle pozvánky **Bobovi** a **Charliemu** na konkrétní jízdu
-4. **Bob** přijme pozvánku → stává se pasažérem na jízdě (status=ACCEPTED)
+4. **Bob** přijme pozvánku → stává se pasažérem na jízdě
 5. **Alice** převede řízení na **Boba** → Bob se stává aktivním řidičem
+(kontroluje se, že je pasažér)
 6. Historie v `car_drivers`: Alice (revoked) → Bob (active)
 
 ## Výhody:
 
 - ✅ CarDriver vzniká až při vytvoření jízdy (když je skutečně potřeba)
-- ✅ Řízení lze převést pouze na uživatele s přijatou pozvánkou
+- ✅ Řízení lze převést pouze na pasažéra (jednoduchá kontrola)
 - ✅ Historie přenosů řízení (`car_drivers`)
 - ✅ Jen jeden aktivní řidič na auto (`is_active=true`)
 - ✅ Flexibilní delegování odpovědnosti
