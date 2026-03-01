@@ -51,7 +51,6 @@ class RideCreate(BaseModel):
     """Data needed to create a new ride."""
 
     car_id: UUID
-    car_driver_id: UUID
     departure_time: datetime
     destination: str
 
