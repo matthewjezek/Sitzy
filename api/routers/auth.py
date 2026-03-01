@@ -1,11 +1,11 @@
-import logging
 from datetime import datetime, timezone
 from uuid import UUID
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from jose import JWTError
 from sqlalchemy.orm import Session
 
+from api.config import settings
 from api.database import get_db
 from api.deps import UserContext, get_current_user
 from api.models import SocialSession
@@ -33,6 +33,30 @@ x_client = XOAuthClient()
 fb_client = FacebookOAuthClient()
 
 
+def _set_refresh_cookie(response: Response, refresh_token: str) -> None:
+    """Set refresh token as HttpOnly, SameSite=Lax cookie."""
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        secure=settings.environment == "production",
+        samesite="lax",
+        max_age=settings.refresh_token_expire_days * 24 * 3600,
+        path="/auth",
+    )
+
+
+def _clear_refresh_cookie(response: Response) -> None:
+    """Clear refresh token cookie on logout."""
+    response.delete_cookie(
+        key="refresh_token",
+        httponly=True,
+        secure=settings.environment == "production",
+        samesite="lax",
+        path="/auth",
+    )
+
+
 @router.post("/oauth/facebook/init", response_model=dict[str, str])
 @limiter.limit("10/minute")
 def facebook_init(request: Request) -> dict[str, str]:
@@ -45,7 +69,7 @@ def facebook_init(request: Request) -> dict[str, str]:
 
 
 @router.post("/oauth/x/init", response_model=dict[str, str])
-@limiter.limit("10/minute")
+@limiter.limit("5/minute")
 def x_init(request: Request) -> dict[str, str]:
     """Initialize X OAuth flow with PKCE."""
     state = state_manager.generate_state()
@@ -60,6 +84,7 @@ def x_init(request: Request) -> dict[str, str]:
 @limiter.limit("5/minute")
 async def oauth_callback(
     request: Request,
+    response: Response,
     code: str = Query(...),
     state: str = Query(...),
     provider: Provider = Query(...),
@@ -78,7 +103,9 @@ async def oauth_callback(
 
     if provider == "x":
         if not code_verifier:
-            logger.warning("OAuth callback missing PKCE code verifier", extra={"provider": "x"})
+            logger.warning(
+                "OAuth callback missing PKCE code verifier", extra={"provider": "x"}
+            )
             raise HTTPException(status_code=400, detail="Missing PKCE code verifier.")
         token_data = x_client.exchange_code(code, code_verifier)
         user_info = await x_client.get_user_info(token_data["access_token"])
@@ -121,14 +148,19 @@ async def oauth_callback(
     )
     refresh_token = create_refresh_token(user.id, session.id)
 
+    _set_refresh_cookie(response, refresh_token)
+
     logger.info(
         "OAuth callback successful",
-        extra={"provider": provider, "user_id": str(user.id), "session_id": str(session.id)},
+        extra={
+            "provider": provider,
+            "user_id": str(user.id),
+            "session_id": str(session.id),
+        },
     )
 
     return {
         "access_token": access_token,
-        "refresh_token": refresh_token,
         "token_type": "bearer",
     }
 
@@ -137,15 +169,19 @@ async def oauth_callback(
 @limiter.limit("30/minute")
 def refresh_access_token(
     request: Request,
-    refresh_token: str = Body(..., embed=True),
+    response: Response,
     db: Session = Depends(get_db),
 ) -> dict[str, str]:
-    """Issue new access token from refresh token."""
+    """Issue new access token from refresh token cookie."""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Invalid refresh token.",
         headers={"WWW-Authenticate": "Bearer"},
     )
+
+    refresh_token = request.cookies.get("refresh_token")
+    if not refresh_token:
+        raise credentials_exception
 
     try:
         payload = decode_refresh_token(refresh_token)
@@ -156,7 +192,13 @@ def refresh_access_token(
     user_id = payload.get("sub")
     session_id = payload.get("session_id")
     if not user_id or not session_id:
-        logger.warning("Refresh token missing required claims", extra={"has_user_id": user_id is not None, "has_session_id": session_id is not None})
+        logger.warning(
+            "Refresh token missing required claims",
+            extra={
+                "has_user_id": user_id is not None,
+                "has_session_id": session_id is not None,
+            },
+        )
         raise credentials_exception
 
     session = (
@@ -169,28 +211,45 @@ def refresh_access_token(
         .first()
     )
     if not session:
-        logger.warning("Refresh token session not found or revoked", extra={"session_id": session_id, "user_id": user_id})
+        logger.warning(
+            "Refresh token session not found or revoked",
+            extra={"session_id": session_id, "user_id": user_id},
+        )
         raise credentials_exception
 
     access_token = create_access_token({"sub": user_id, "session_id": session_id})
+
+    new_refresh_token = create_refresh_token(UUID(user_id), UUID(session_id))
+    _set_refresh_cookie(response, new_refresh_token)
+
     logger.info("Token refreshed", extra={"user_id": user_id, "session_id": session_id})
     return {"access_token": access_token, "token_type": "bearer"}
 
 
 @router.post("/revoke", status_code=status.HTTP_204_NO_CONTENT)
+@limiter.limit("10/minute")
 def revoke_session(
     request: Request,
+    response: Response,
     ctx: UserContext = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> None:
-    """Revoke current session (logout)."""
+    """Revoke current session and clear refresh token cookie."""
     session = db.query(SocialSession).filter(SocialSession.id == ctx.session_id).first()
     if session:
         session.revoked_at = datetime.now(timezone.utc)
         db.commit()
-        logger.info("Session revoked", extra={"user_id": str(ctx.user.id), "session_id": str(ctx.session_id)})
+        logger.info(
+            "Session revoked",
+            extra={"user_id": str(ctx.user.id), "session_id": str(ctx.session_id)},
+        )
     else:
-        logger.warning("Revoke attempted on non-existent session", extra={"session_id": str(ctx.session_id)})
+        logger.warning(
+            "Revoke attempted on non-existent session",
+            extra={"session_id": str(ctx.session_id)},
+        )
+
+    _clear_refresh_cookie(response)
 
 
 @router.get("/me", response_model=UserOut)
