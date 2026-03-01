@@ -11,8 +11,7 @@ graph TB
         UC6["Obsadit sedadlo"]
         UC7["Plánovat jízdu"]
         UC8["Převést řízení<br/>na jiného uživatele"]
-        UC9["Přijmout roli řidiče"]
-        UC10["Zobrazit palubní desku"]
+        UC10["Zobrazit palubní desku<br/>(budoucí feature)"]
         UC11["Spravovat auta"]
     end
     
@@ -33,24 +32,27 @@ graph TB
     Passenger --> UC2
     Passenger --> UC5
     Passenger --> UC6
-    Passenger --> UC9
     Passenger --> UC10
     
     System -->|validates| UC1
     System -->|verifies| UC2
     
-    UC3 -.->|automaticky je řidič| Driver
     UC3 -->|umožňuje| UC4
+    UC3 -->|umožňuje| UC7
     UC4 -->|vede k| UC5
     UC5 -->|vyžaduje| UC6
     UC8 -->|vyžaduje pozvánku| UC5
-    UC8 -->|vede k| UC9
-    UC9 -.->|becomes| Driver
     
     style Sitzy fill:#e3f2fd
     style Driver fill:#c8e6c9
     style Passenger fill:#c8e6c9
     style System fill:#fff9c4
+    style UC10 fill:#ffe0b2
 ```
 
-**Poznámka:** Majitel se automaticky stává prvním řidičem při vytvoření auta.
+**Poznámky:**
+
+- Majitel auta vytváří jízdy (UC7), při kterých se automaticky stává řidičem
+- UC8 (Transfer řízení) vyžaduje, aby nový řidič měl přijatou pozvánku
+- UC10 (Dashboard) je označen jako budoucí feature
+- Přijetí role řidiče (UC9) je součástí UC8 - není potřeba samostatný use case

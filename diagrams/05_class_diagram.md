@@ -9,10 +9,6 @@ classDiagram
         -string avatar_url
         -datetime created_at
         -datetime updated_at
-        +register()
-        +login()
-        +get_cars()
-        +get_driven_cars()
     }
 
     class SocialAccount {
@@ -22,33 +18,27 @@ classDiagram
         -string social_id
         -string email
         -datetime linked_at
-        +link_account()
-        +unlink_account()
     }
 
     class SocialSession {
         -UUID id
+        -UUID user_id
         -UUID social_account_id
         -string access_token
         -string refresh_token
         -datetime expires_at
+        -datetime created_at
+        -datetime revoked_at
         -string user_agent
-        +is_expired()
-        +revoke()
-        +refresh_token()
     }
 
     class Car {
         -UUID id
         -UUID owner_id
         -string name
-        -string layout
+        -CarLayout layout
         -datetime created_at
         -datetime updated_at
-        +add_driver(driver: User)
-        +remove_driver(driver: User)
-        +create_ride(driver: User)
-        +get_active_driver()
     }
 
     class CarDriver {
@@ -58,9 +48,6 @@ classDiagram
         -boolean is_active
         -datetime assigned_at
         -datetime revoked_at
-        +activate()
-        +deactivate()
-        +is_valid()
     }
 
     class Ride {
@@ -70,10 +57,6 @@ classDiagram
         -datetime departure_time
         -string destination
         -datetime created_at
-        +add_passenger(user: User, seat: int)
-        +remove_passenger(user: User)
-        +is_past()
-        +get_empty_seats()
     }
 
     class Passenger {
@@ -81,30 +64,26 @@ classDiagram
         -UUID user_id
         -UUID ride_id
         -int seat_position
-        +cancel()
     }
 
     class Seat {
         -UUID car_id
         -int position
-        +is_occupied(ride: Ride)
     }
 
     class Invitation {
         -UUID id
-        -UUID car_id
+        -UUID ride_id
         -string invited_email
         -string token
-        -string status
+        -InvitationStatus status
         -datetime created_at
         -datetime expires_at
-        +accept()
-        +decline()
-        +is_expired()
     }
 
     User "1" -- "N" Car : owns
     User "1" -- "N" SocialAccount : has
+    User "1" -- "N" SocialSession : has
     User "1" -- "N" CarDriver : drives
     User "1" -- "N" Passenger : books
     
@@ -113,32 +92,30 @@ classDiagram
     Car "1" -- "N" CarDriver : has
     Car "1" -- "N" Ride : has
     Car "1" -- "N" Seat : contains
-    Car "1" -- "N" Invitation : sends
     
     CarDriver "1" -- "N" Ride : records
     
     Ride "1" -- "N" Passenger : includes
+    Ride "1" -- "N" Invitation : sends
 ```
-
-## Klíčové třídy:
-
-### 🔐 Autentizace
-
-- **User** - základní profil uživatele
-- **SocialAccount** - propojení s OAuth providerem
-- **SocialSession** - dočasné tokeny
-
-### 🚗 Doména aplikace
-
-- **Car** - auta vlastněná uživateli
-- **CarDriver** - historie přiřazení řidičů
-- **Ride** - konkrétní jízdy
-- **Seat** - definice sedadel v autě
-- **Passenger** - účast uživatele na jízdě
-- **Invitation** - pozvánky k jízdě
 
 ## Poznámky:
 
+### 📐 Architektura
+
+- **Data modely** - definovány pomocí SQLAlchemy ORM
+- **Business logika** - implementována v routerech (FastAPI), ne na modelech
+- **Schémata** - Pydantic modely pro validaci a serializaci
+
+### 🔑 Klíčové vlastnosti
+
 - Všechny modely používají **UUID** jako primární klíč
 - **Seat** má composite PK `(car_id, position)`
-- Stavy jsou odvozovány z času (nepotřebujeme `status` fieldy)
+- **CarDriver** vzniká až při vytvoření první jízdy, ne při vytvoření auta
+- Pouze jeden `is_active=true` CarDriver na auto
+
+### 🔐 OAuth Flow
+
+- **SocialAccount** - trvalé propojení s OAuth providerem (Facebook, X)
+- **SocialSession** - dočasné tokeny s dual FK na User i SocialAccount
+- `User.email` je nullable (X neposkytuje vždy email)
