@@ -1,6 +1,8 @@
 # 🇨🇿 Sitzy
 
-**Sitzy** je webová aplikace pro správu pasažérů a rozložení sedaček v autě. Umožňuje snadno naplánovat, kdo kde sedí, a sdílet schéma auta s ostatními účastníky jízdy.
+**Sitzy** je webová aplikace pro správu pasažérů a rozložení sedaček v autě.
+Umožňuje snadno naplánovat, kdo kde sedí, a sdílet schéma auta s ostatními
+účastníky jízdy.
 
 ## 🚗 Hlavní funkce
 
@@ -32,38 +34,41 @@ npm install
 npm run dev
 ```
 
----
+## OAuth Setup
 
-# 🗺️ Sitzy
-
-**Sitzy** is a web app for organizing passengers and seat layout in a car. It helps you plan who sits where and share that setup with others before a ride.
-
-## 🚗 Key Features
-
-- Interactive seat layout based on car type (sedan, coupe, minivan)
-- One-time ride planning
-- Add and manage passengers, assign seats
-- Invite others via user ID (e.g., email)
-- Join multiple cars as a guest
-
-## 🧪 Upcoming / Prototype Features
-
-- Friend list for easier inviting
-- Optional driver identification
-- Easter egg dev mode: "Sedaq" 😉
-
-## 🧰 Tech Stack (planned)
-
-- [React](https://reactjs.org/) + [Tailwind CSS](https://tailwindcss.com/)
-- [TypeScript](https://www.typescriptlang.org/)
-- [Vite](https://vitejs.dev/)
-- Firebase / Supabase (optional, for data sync)
-
-## ▶️ Getting Started
+### Lokální spuštění s Redisem
 
 ```bash
-git clone https://github.com/your-user/sitzy.git
-cd sitzy
-npm install
-npm run dev
+docker-compose up redis
 ```
+
+### Facebook App registrace
+
+1. Jdi na [developers.facebook.com](https://developers.facebook.com)
+2. Vytvoř novou aplikaci → **Consumer**
+3. Přidej produkt **Facebook Login**
+4. Nastav **Valid OAuth Redirect URIs**:
+   - Dev: `http://localhost:5173/auth/callback`
+   - Prod: `https://yourdomain.com/auth/callback`
+5. Zkopíruj `App ID` → `FACEBOOK_CLIENT_ID`
+6. Zkopíruj `App Secret` → `FACEBOOK_CLIENT_SECRET`
+
+### X (Twitter) App registrace
+
+1. Jdi na [developer.twitter.com](https://developer.twitter.com)
+2. Vytvoř nový projekt + aplikaci
+3. Nastav **OAuth 2.0** → **Type of App: Web App**
+4. Nastav **Callback URI**:
+   - Dev: `http://localhost:5173/auth/callback`
+   - Prod: `https://yourdomain.com/auth/callback`
+5. Povol **Read** permissions
+6. Zkopíruj `Client ID` → `X_CLIENT_ID`
+7. Zkopíruj `Client Secret` → `X_CLIENT_SECRET`
+
+### Generování SECRET_KEY
+
+```bash
+python -c "import secrets; print(secrets.token_hex(32))"
+```
+
+Spusť dvakrát – jednou pro `SECRET_KEY`, jednou pro `REFRESH_SECRET_KEY`.
