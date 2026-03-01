@@ -46,7 +46,9 @@ class Settings(BaseSettings):
     def https_in_production(cls, v: AnyUrl, info: ValidationInfo) -> AnyUrl:
         env = info.data.get("environment", "development")
         if env == "production" and not str(v).startswith("https://"):
-            raise ValueError("Redirect URI must start with https:// in production environment.")
+            raise ValueError(
+                "Redirect URI must start with https:// in production environment."
+            )
         return v
 
     @field_validator("secret_key", "refresh_secret_key")
