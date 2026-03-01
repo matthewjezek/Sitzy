@@ -25,6 +25,7 @@ router = APIRouter()
 def _get_ride_or_404(ride_id: UUID, db: Session) -> Ride:
     ride = db.query(Ride).filter(Ride.id == ride_id).first()
     if not ride:
+        """Helper to get a ride by ID or raise 404 if not found."""
         raise HTTPException(status_code=404, detail="Ride not found.")
     return ride
 
@@ -38,9 +39,9 @@ def _assert_ride_access(
 ) -> None:
     """Check if user has access to a ride.
 
-    owner_only      - only car owner can access
-    driver_or_owner - driver or owner can access, passengers cannot
-    default         - driver, owner or passenger can access
+    - owner_only      — only car owner can access
+    - driver_or_owner — driver or owner can access, passengers cannot
+    - default         — driver, owner or passenger can access
     """
     is_owner = ride.car.owner_id == user_id
     is_current_driver = ride.car_driver.driver_id == user_id
