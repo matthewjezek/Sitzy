@@ -18,13 +18,13 @@ from api.schemas import (
 router = APIRouter()
 
 
-# === Seznam mých aut (kde jsem vlastníkem) ===
 @router.get("/", response_model=list[CarOut])
 def list_my_cars(
     request: Request,
     db: Session = Depends(get_db),
     ctx: UserContext = Depends(get_current_user),
 ) -> list[CarOut]:
+    """List of cars owned by the current user."""
     cars = db.query(Car).filter(Car.owner_id == ctx.user.id).all()
     return [CarOut.from_orm_with_labels(car) for car in cars]
 
@@ -57,7 +57,6 @@ def read_car_by_id(
     return CarFullOut.from_orm_with_labels(car)
 
 
-# === Vytvoření nového auta ===
 @router.post(
     "/",
     response_model=CarOut,
@@ -68,6 +67,7 @@ def create_car(
     db: Session = Depends(get_db),
     ctx: UserContext = Depends(get_current_user),
 ) -> CarOut:
+    """Create a new car"""
     new_car = models.Car(**car_in.model_dump(), owner_id=ctx.user.id)
     db.add(new_car)
     db.commit()
@@ -75,7 +75,6 @@ def create_car(
     return CarOut.from_orm_with_labels(new_car)
 
 
-# === Úpravy auta ===
 @router.patch("/{car_id}", response_model=CarOut)
 def change_car(
     request: Request,
@@ -84,6 +83,7 @@ def change_car(
     db: Session = Depends(get_db),
     ctx: UserContext = Depends(get_current_user),
 ) -> CarOut:
+    """Update car info."""
     car = db.query(models.Car).filter(models.Car.id == car_id).first()
     if not car or car.owner_id != ctx.user.id:
         raise HTTPException(
@@ -98,7 +98,6 @@ def change_car(
     return CarOut.from_orm_with_labels(car)
 
 
-# === Smazání auta ===
 @router.delete("/{car_id}", status_code=204)
 def delete_car(
     request: Request,
@@ -106,6 +105,7 @@ def delete_car(
     db: Session = Depends(get_db),
     ctx: UserContext = Depends(get_current_user),
 ) -> Response:
+    """Delete a car."""
     car = db.query(models.Car).filter(models.Car.id == car_id).first()
     if not car or car.owner_id != ctx.user.id:
         raise HTTPException(
@@ -135,6 +135,7 @@ def list_car_rides(
     db: Session = Depends(get_db),
     ctx: UserContext = Depends(get_current_user),
 ) -> list[RideOut]:
+    """List of rides for a car."""
     car = db.query(Car).filter(Car.id == car_id).first()
     if not car or car.owner_id != ctx.user.id:
         raise HTTPException(
