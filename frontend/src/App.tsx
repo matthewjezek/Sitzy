@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router'
 import LoginPage from './pages/LoginPage'
-import RegisterPage from './pages/RegisterPage'
 import DashboardPage from './pages/DashboardPage'
 import CarPage from './pages/CarPage'
 import { CreateCarPage } from './pages/CreateCarPage'
@@ -15,8 +14,20 @@ import SeatPageNew from './pages/SeatPageNew'
 import SettingsPage from "./pages/SettingsPage";
 import AnonymousRoute from './utils/AnonymousRoute'
 import DialogExamples from './examples/DialogExamples'
+import { useEffect } from 'react'
+import { AUTH_EXPIRED_EVENT } from './api/axios'
+import { useNavigate } from 'react-router'
+import OAuthCallbackPage from './pages/OAuthCallbackPage'
 
 function App() {
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    const handler = () => navigate('/login?expired=1')
+    window.addEventListener(AUTH_EXPIRED_EVENT, handler)
+    return () => window.removeEventListener(AUTH_EXPIRED_EVENT, handler)
+  }, [navigate])
+  
   return (
     <Router>
       <Routes>
@@ -27,7 +38,7 @@ function App() {
         {/* Veřejné stránky */}
         <Route element={<AnonymousRoute />}>
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/auth/callback" element={<OAuthCallbackPage />} />  {/* ✅ veřejná route */}
         </Route>
         {/* Stránky pod layoutem */}
         <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
