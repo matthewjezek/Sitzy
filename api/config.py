@@ -46,7 +46,15 @@ class Settings(BaseSettings):
     def https_in_production(cls, v: AnyUrl, info: ValidationInfo) -> AnyUrl:
         env = info.data.get("environment", "development")
         if env == "production" and not str(v).startswith("https://"):
-            raise ValueError("Redirect URI musí být v produkci HTTPS.")
+            raise ValueError("Redirect URI must start with https:// in production environment.")
+        return v
+
+    @field_validator("secret_key", "refresh_secret_key")
+    @classmethod
+    def keys_must_differ(cls, v: str, info: ValidationInfo) -> str:
+        other = info.data.get("secret_key")
+        if info.field_name == "refresh_secret_key" and other and v == other:
+            raise ValueError("SECRET_KEY and REFRESH_SECRET_KEY must be different.")
         return v
 
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=True)
