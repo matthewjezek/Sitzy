@@ -13,16 +13,10 @@ if TYPE_CHECKING:
 
 # === User ===
 class UserBase(BaseModel):
-    """Base user info, used in both input and output schemas."""
-
-    email: EmailStr | None = (
-        None  # X ussually doesn't provide email, but if it does, we want to store it
-    )
+    email: EmailStr | None = None
 
 
 class UserOut(BaseModelWithLabels["UserOut"], UserBase):
-    """User info returned in API responses."""
-
     id: UUID
     full_name: str | None = None
     avatar_url: str | None = None
@@ -34,8 +28,6 @@ class UserOut(BaseModelWithLabels["UserOut"], UserBase):
 
 # === Car Driver ===
 class CarDriverOut(BaseModel):
-    """Info about a driver of a car, used in CarFullOut."""
-
     id: UUID
     car_id: UUID
     driver_id: UUID
@@ -47,57 +39,20 @@ class CarDriverOut(BaseModel):
 
 
 class TransferDriverIn(BaseModel):
-    """Data needed to transfer car driver role to another passenger."""
-
     new_driver_id: UUID
-
-
-# === Ride ===
-class RideCreate(BaseModel):
-    """Data needed to create a new ride."""
-
-    car_id: UUID
-    departure_time: datetime
-    destination: str
-
-
-class RideUpdate(BaseModel):
-    """Data needed to update an existing ride."""
-
-    departure_time: datetime
-    destination: str
-
-
-class RideOut(BaseModel):
-    """Info about a ride, used in API responses."""
-
-    id: UUID
-    car_id: UUID
-    car_driver_id: UUID
-    departure_time: datetime
-    destination: str
-    created_at: datetime
-
-    model_config = ConfigDict(from_attributes=True)
 
 
 # === Car ===
 class CarBase(BaseModel):
-    """Base car info, used in both input and output schemas."""
-
     name: str
     layout: CarLayout
 
 
 class CarCreate(CarBase):
-    """Data needed to create a new car."""
-
     pass
 
 
 class CarOut(BaseModelWithLabels["CarOut"], CarBase):
-    """Info about a car, used in API responses."""
-
     id: UUID
     owner_id: UUID
     owner_name: str | None = None
@@ -112,9 +67,7 @@ class CarOut(BaseModelWithLabels["CarOut"], CarBase):
         return cls(
             id=car.id,
             owner_id=car.owner_id,
-            owner_name=(
-                car.owner.full_name if car.owner else None
-            ),  # ✅ full_name místo email
+            owner_name=car.owner.full_name if car.owner else None,
             created_at=car.created_at,
             updated_at=car.updated_at,
             name=car.name,
@@ -124,8 +77,6 @@ class CarOut(BaseModelWithLabels["CarOut"], CarBase):
 
 # === Seat ===
 class SeatOut(BaseModelWithLabels["SeatOut"]):
-    """Info about a seat in a car, used in CarFullOut."""
-
     car_id: UUID
     position: int
 
@@ -140,11 +91,77 @@ class SeatOut(BaseModelWithLabels["SeatOut"]):
         )
 
 
+# === Passenger ===
+class PassengerSeatIn(BaseModel):
+    seat_position: int
+
+
+class PassengerSeatInOptional(BaseModel):
+    seat_position: int | None = None
+
+
+class PassengerOut(BaseModel):
+    user_id: UUID
+    seat_position: int
+    full_name: str | None = None
+    avatar_url: str | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+    @classmethod
+    def from_passenger(cls, passenger: object) -> "PassengerOut":
+        from .models import Passenger
+        p = cast("Passenger", passenger)
+        return cls(
+            user_id=p.user_id,
+            seat_position=p.seat_position,
+            full_name=p.user.full_name if p.user else None,
+            avatar_url=p.user.avatar_url if p.user else None,
+        )
+
+
+# === Ride ===
+class RideCreate(BaseModel):
+    car_id: UUID
+    departure_time: datetime
+    destination: str
+
+
+class RideUpdate(BaseModel):
+    departure_time: datetime
+    destination: str
+
+
+class RideOut(BaseModel):
+    id: UUID
+    car_id: UUID
+    car_driver_id: UUID
+    departure_time: datetime
+    destination: str
+    created_at: datetime
+    passengers: list[PassengerOut] = []
+    car: CarOut | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+    @classmethod
+    def from_ride(cls, ride: object) -> "RideOut":
+        from .models import Ride
+        r = cast("Ride", ride)
+        return cls(
+            id=r.id,
+            car_id=r.car_id,
+            car_driver_id=r.car_driver_id,
+            departure_time=r.departure_time,
+            destination=r.destination,
+            created_at=r.created_at,
+            passengers=[PassengerOut.from_passenger(p) for p in r.passengers],
+            car=CarOut.from_orm_with_labels(r.car) if r.car else None,
+        )
+
+
 # === Car Complete Info ===
 class CarFullOut(CarOut):
-    """Complete info about a car, including its seats and drivers,
-    used in API responses."""
-
     seats: list[SeatOut]
     drivers: list[CarDriverOut] = []
     rides: list[RideOut] = []
@@ -170,14 +187,10 @@ class CarFullOut(CarOut):
 
 # === Invitation ===
 class InvitationCreate(BaseModel):
-    """Data needed to create a new invitation."""
-
     invited_email: EmailStr
 
 
 class InvitationOut(BaseModelWithLabels["InvitationOut"]):
-    """Info about an invitation, used in API responses."""
-
     id: UUID
     ride_id: UUID
     invited_email: EmailStr
@@ -200,23 +213,5 @@ class InvitationOut(BaseModelWithLabels["InvitationOut"]):
             status=inv.status,
             created_at=inv.created_at,
             expires_at=inv.expires_at,
-            ride=RideOut.model_validate(inv.ride) if inv.ride else None,
+            ride=RideOut.from_ride(inv.ride) if inv.ride else None,
         )
-
-
-# === Passenger ===
-class PassengerSeatIn(BaseModel):
-    """Data needed to assign a passenger to a specific seat in a car.
-    If seat_position is not provided, the first available seat is assigned."""
-
-    seat_position: int | None = None  # Optional – backend will assign first available seat if not provided
-
-
-# === Dashboard ===
-class DashboardOut(BaseModel):
-    """Info about user's dashboard, including owned car, passenger cars
-    and pending invitations."""
-
-    owned_car: CarOut | None
-    passenger_cars: list[CarOut]
-    pending_invitations: list[InvitationOut]
