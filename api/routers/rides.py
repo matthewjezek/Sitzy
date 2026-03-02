@@ -86,7 +86,7 @@ def get_my_rides(
     logger.debug(
         "Rides retrieved", extra={"user_id": str(ctx.user.id), "count": len(rides)}
     )
-    return [RideOut.model_validate(ride) for ride in rides]
+    return [RideOut.from_ride(ride) for ride in rides]
 
 
 @router.post("/", response_model=RideOut)
@@ -146,7 +146,7 @@ def create_ride(
             "car_id": str(ride.car_id),
         },
     )
-    return RideOut.model_validate(ride)
+    return RideOut.from_ride(ride)
 
 
 @router.get("/{ride_id}", response_model=RideOut)
@@ -159,7 +159,7 @@ def get_ride(
     """Get ride detail."""
     ride = _get_ride_or_404(ride_id, db)
     _assert_ride_access(ride, ctx.user.id)
-    return RideOut.model_validate(ride)
+    return RideOut.from_ride(ride)
 
 
 @router.patch("/{ride_id}", response_model=RideOut)
@@ -178,7 +178,7 @@ def update_ride(
     ride.destination = ride_in.destination
     db.commit()
     db.refresh(ride)
-    return RideOut.model_validate(ride)
+    return RideOut.from_ride(ride)
 
 
 @router.delete("/{ride_id}", status_code=204)
@@ -208,47 +208,32 @@ def book_seat(
     db: Session = Depends(get_db),
     ctx: UserContext = Depends(get_current_user),
 ) -> RideOut:
-    """Book a seat on a ride. If seat_position is not provided,
-    the first available seat is assigned automatically."""
+    """Book a specific seat on a ride. seat_position is required."""
     ride = _get_ride_or_404(ride_id, db)
 
     occupied = {p.seat_position for p in ride.passengers}
-    occupied.add(1)
-    available = [
-        s.position for s in ride.car.seats if s.position not in occupied
-    ]
+    occupied.add(1)  # Driver seat is always occupied
+    available = [s.position for s in ride.car.seats if s.position not in occupied]
 
     if not available:
-        logger.warning(
-            "Seat booking failed - no available seats",
-            extra={"user_id": str(ctx.user.id), "ride_id": str(ride_id)},
-        )
         raise HTTPException(status_code=400, detail="No available seats.")
 
     existing = (
         db.query(Passenger).filter_by(user_id=ctx.user.id, ride_id=ride_id).first()
     )
     if existing:
-        logger.warning(
-            "Seat booking failed - already booked",
-            extra={"user_id": str(ctx.user.id), "ride_id": str(ride_id)},
-        )
         raise HTTPException(status_code=409, detail="Already booked.")
 
-    if seat_in.seat_position is None:
-        seat_position = available[0]
-    else:
-        if seat_in.seat_position not in available:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Seat {seat_in.seat_position} is not available.",
-            )
-        seat_position = seat_in.seat_position
+    if seat_in.seat_position not in available:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Seat {seat_in.seat_position} is not available.",
+        )
 
     passenger = Passenger(
         user_id=ctx.user.id,
         ride_id=ride_id,
-        seat_position=seat_position,
+        seat_position=seat_in.seat_position,
     )
     db.add(passenger)
     db.commit()
@@ -258,10 +243,10 @@ def book_seat(
         extra={
             "user_id": str(ctx.user.id),
             "ride_id": str(ride_id),
-            "seat_position": seat_position,
+            "seat_position": seat_in.seat_position,
         },
     )
-    return RideOut.model_validate(ride)
+    return RideOut.from_ride(ride)
 
 
 @router.delete("/{ride_id}/book", status_code=204)
@@ -348,7 +333,7 @@ def transfer_driver(
             status_code=400,
             detail="New driver must be a passenger on this ride.",
         )
-    
+
     if ride.car_driver.driver_id == transfer_in.new_driver_id:
         raise HTTPException(
             status_code=400,
@@ -392,4 +377,4 @@ def transfer_driver(
             "owner_id": str(ctx.user.id),
         },
     )
-    return RideOut.model_validate(ride)
+    return RideOut.from_ride(ride)
