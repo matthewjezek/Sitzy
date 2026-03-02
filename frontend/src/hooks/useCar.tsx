@@ -13,8 +13,6 @@ export interface Car {
   seats?: SeatData[];
 }
 
-export interface CarOut extends Car {}
-
 export interface CarFormData {
   name: string;
   layout: string;

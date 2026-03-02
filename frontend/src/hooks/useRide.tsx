@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
 import { isAxiosError } from 'axios'
 import instance from '../api/axios'
-import type { CarOut } from './useCar'
+import type { Car } from './useCar'
 
 export interface PassengerOut {
   user_id: string
@@ -18,7 +18,7 @@ export interface RideOut {
   destination: string
   created_at: string
   passengers: PassengerOut[]
-  car: CarOut | null
+  car: Car | null
 }
 
 export interface RideCreate {
