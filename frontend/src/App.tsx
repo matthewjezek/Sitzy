@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router'
-import { useEffect, lazy } from 'react'
+import { useEffect, lazy, Suspense } from 'react'
 import { useNavigate } from 'react-router'
 import { ToastContainer } from 'react-toastify'
 import { AUTH_EXPIRED_EVENT } from './api/axios'
@@ -10,6 +10,12 @@ import PageNotFound from './pages/PageNotFound'
 import SettingsPage from './pages/SettingsPage'
 import AnonymousRoute from './utils/AnonymousRoute'
 import OAuthCallbackPage from './pages/OAuthCallbackPage'
+import RidesPage from './pages/RidesPage'
+import RideDetailPage from './pages/RideDetailPage'
+import CreateRidePage from './pages/CreateRidePage'
+import CarsPage from './pages/CarsPage'
+import CarDetailPage from './pages/CarDetailPage'
+import CreateCarPage from './pages/CreateCarPage'
 
 const isDev = import.meta.env.MODE === 'development'
 
@@ -40,25 +46,40 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<Navigate to="/rides" replace />} />
       <Route path="*" element={<PageNotFound />} />
+
       <Route element={<AnonymousRoute />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/auth/callback" element={<OAuthCallbackPage />} />
       </Route>
+
       <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-        {/* Main pages */}
-        <Route path="/rides" element={<div>RidesPage - TODO</div>} />
-        <Route path="/rides/new" element={<div>CreateRidePage - TODO</div>} />
-        <Route path="/rides/:id" element={<div>RideDetailPage - TODO</div>} />
-        <Route path="/cars" element={<div>CarsPage - TODO</div>} />
-        <Route path="/cars/new" element={<div>CreateCarPage - TODO</div>} />
-        <Route path="/cars/:id" element={<div>CarDetailPage - TODO</div>} />
+        {/* Jízdy */}
+        <Route path="/rides" element={<RidesPage />} />
+        <Route path="/rides/new" element={<CreateRidePage />} />
+        <Route path="/rides/:id" element={<RideDetailPage />} />
+
+        {/* Auta */}
+        <Route path="/cars" element={<CarsPage />} />
+        <Route path="/cars/new" element={<CreateCarPage />} />
+        <Route path="/cars/:id" element={<CarDetailPage />} />
+        <Route path="/cars/:id/edit" element={<CreateCarPage />} />
+
+        {/* Nastavení */}
         <Route path="/settings" element={<SettingsPage />} />
 
-        {/* Dev only pages */}
-        {isDev && SeatRendererTestPage && <Route path="/test-seats" element={<SeatRendererTestPage />} />}
-        {isDev && SeatRendererDemo && <Route path="/demo-seats" element={<SeatRendererDemo />} />}
-        {isDev && SeatPositionTest && <Route path="/position-test" element={<SeatPositionTest />} />}
-        {isDev && DialogExamples && <Route path="/dialogs" element={<DialogExamples />} />}
+        {/* Dev only */}
+        {isDev && SeatRendererTestPage && (
+          <Route path="/test-seats" element={<Suspense fallback={null}><SeatRendererTestPage /></Suspense>} />
+        )}
+        {isDev && SeatRendererDemo && (
+          <Route path="/demo-seats" element={<Suspense fallback={null}><SeatRendererDemo /></Suspense>} />
+        )}
+        {isDev && SeatPositionTest && (
+          <Route path="/position-test" element={<Suspense fallback={null}><SeatPositionTest /></Suspense>} />
+        )}
+        {isDev && DialogExamples && (
+          <Route path="/dialogs" element={<Suspense fallback={null}><DialogExamples /></Suspense>} />
+        )}
       </Route>
     </Routes>
   )
