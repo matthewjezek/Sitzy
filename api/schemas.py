@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, cast
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr, field_validator
 
 from .utils.base_models import BaseModelWithLabels
 from .utils.enums import CarLayout, InvitationStatus
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 # === User ===
 class UserBase(BaseModel):
-    email: EmailStr | None = None
+    email: str | None = None
 
 
 class SocialAccountOut(BaseModel):
@@ -30,9 +30,17 @@ class UserOut(BaseModelWithLabels["UserOut"], UserBase):
     avatar_url: str | None = None
     created_at: datetime
     updated_at: datetime
-    social_accounts: list[SocialAccountOut] = []  # ✅
+    social_accounts: list[SocialAccountOut] = []
 
     model_config = ConfigDict(from_attributes=True)
+
+    @field_validator("email", mode="before")
+    @classmethod
+    def mask_fake_email(cls, v: object) -> object:
+        """Hides internal fake emails used for social accounts (ending with .invalid) from API output."""
+        if isinstance(v, str) and v.endswith(".invalid"):
+            return None
+        return v
 
 
 # === Car Driver ===
