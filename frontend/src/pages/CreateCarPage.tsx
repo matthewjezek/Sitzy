@@ -120,6 +120,8 @@ export default function CreateCarPage() {
           <input
             type="text"
             placeholder="Fabián"
+            minLength={2}
+            required
             className={`form-input ${errors.name ? 'border-red-400' : ''}`}
             {...register('name')}
           />
