@@ -7,7 +7,7 @@ export interface Car {
   id: string;
   owner_id: string;
   name: string;
-  layout: string;
+  layout: 'Sedan' | 'Coupe' | 'Minivan';
   layout_label?: string;
   owner_name?: string;
   seats?: SeatData[];
