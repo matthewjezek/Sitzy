@@ -1,37 +1,60 @@
 import { useEffect, useState } from 'react';
-import { FiUser, FiMoon, FiSun, FiLogOut, FiShield } from 'react-icons/fi';
-import { FaFacebook, FaXTwitter } from 'react-icons/fa6';
 import { isAxiosError } from 'axios';
-import { useNavigate } from 'react-router';
 import { toast } from 'react-toastify';
 import instance from '../api/axios';
-import Loader from '../components/Loader';
 
-interface User {
-  id: string;
-  full_name: string | null;
-  email: string;
-  created_at: string;
-  provider: 'facebook' | 'x';
+interface SocialAccount {
+  provider: string
+  email: string | null
+  linked_at: string
 }
 
+interface User {
+  id: string
+  full_name: string | null
+  email: string | null
+  avatar_url: string | null
+  created_at: string
+  social_accounts: SocialAccount[]
+}
+
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+
+function SettingsSkeleton() {
+  return (
+    <div className="animate-pulse flex flex-col gap-6 max-w-lg mx-auto mt-10 p-6">
+      <div className="flex items-center gap-4">
+        <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700" />
+        <div className="flex flex-col gap-2">
+          <div className="h-4 w-40 rounded bg-gray-200 dark:bg-gray-700" />
+          <div className="h-3 w-56 rounded bg-gray-200 dark:bg-gray-700" />
+        </div>
+      </div>
+      <div className="h-10 rounded-lg bg-gray-200 dark:bg-gray-700" />
+      <div className="h-10 rounded-lg bg-gray-200 dark:bg-gray-700" />
+      <div className="h-10 rounded-lg bg-gray-200 dark:bg-gray-700" />
+    </div>
+  )
+}
+
+// ─── SettingsPage ─────────────────────────────────────────────────────────────
+
 export default function SettingsPage() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
   const [darkMode, setDarkMode] = useState(
     () => localStorage.getItem('theme') === 'dark'
-  );
-  const navigate = useNavigate();
+  )
 
   useEffect(() => {
-    instance
-      .get<User>('/auth/me')
+    instance.get<User>('/auth/me')
       .then(res => setUser(res.data))
       .catch(err => {
-        const msg = isAxiosError(err)
-          ? (err.response?.data?.detail ?? 'Nepodařilo se načíst profil.')
-          : 'Nastala neočekávaná chyba.'
-        toast.error(msg)
+        toast.error(
+          isAxiosError(err)
+            ? (err.response?.data?.detail ?? 'Nepodařilo se načíst profil.')
+            : 'Nastala neočekávaná chyba.'
+        )
       })
       .finally(() => setLoading(false))
   }, [])
@@ -39,147 +62,79 @@ export default function SettingsPage() {
   const toggleDarkMode = () => {
     const next = !darkMode
     setDarkMode(next)
-    localStorage.setItem('theme', next ? 'dark' : 'light')
-    document.documentElement.classList.toggle('dark', next)
-  }
-
-  const handleLogout = async () => {
-    try {
-      await instance.post('/auth/revoke')
-    } catch {
-      // Backend cookie je smazán i při chybě – pokračujeme
+    if (next) {
+      document.documentElement.classList.add('dark')
+      localStorage.setItem('theme', 'dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+      localStorage.setItem('theme', 'light')
     }
-    localStorage.removeItem('access_token')
-    toast.success('Byl jsi odhlášen.')
-    navigate('/login')
   }
 
-  if (loading) return <Loader />
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    window.location.href = '/login'
+  }
+
+  if (loading) return <SettingsSkeleton />
 
   return (
-    <div className="page-container">
-      <div className="page-content">
-        <div className="main-card">
-          <div className="main-card-header">
-            <h1 className="text-2xl font-bold">Nastavení</h1>
-            {user?.full_name && (
-              <p className="text-violet-200 mt-1">{user.full_name}</p>
-            )}
+    <div className="max-w-lg mx-auto mt-10 p-6 flex flex-col gap-6">
+
+      {/* Profil */}
+      <div className="card p-6 flex items-center gap-4">
+        {user?.avatar_url ? (
+          <img
+            src={user.avatar_url}
+            alt="Avatar"
+            className="w-16 h-16 rounded-full object-cover"
+          />
+        ) : (
+          <div className="w-16 h-16 rounded-full bg-violet-200 dark:bg-violet-800 flex items-center justify-center text-2xl font-bold text-violet-700 dark:text-violet-200">
+            {user?.full_name?.[0]?.toUpperCase() ?? '?'}
           </div>
-          <div className="main-card-body">
-
-            {/* Profil */}
-            <div className="settings-section">
-              <div className="settings-section-header">
-                <FiUser size={20} className="text-violet-500" />
-                <h2 className="settings-section-title">Profil</h2>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">E-mail</label>
-                <input
-                  className="form-input"
-                  type="text"
-                  value={user?.email ?? ''}
-                  readOnly
-                  disabled
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Registrován</label>
-                <input
-                  className="form-input"
-                  type="text"
-                  value={
-                    user?.created_at
-                      ? new Date(user.created_at).toLocaleDateString('cs-CZ', {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric',
-                        })
-                      : ''
-                  }
-                  readOnly
-                  disabled
-                />
-              </div>
-
-              <div className="form-group mb-0">
-                <label className="form-label">Přihlášení přes</label>
-                <div className="flex items-center gap-2 mt-1">
-                  {user?.provider === 'facebook' ? (
-                    <>
-                      <FaFacebook size={20} className="text-blue-600" />
-                      <span className="font-medium text-blue-600">Facebook</span>
-                    </>
-                  ) : (
-                    <>
-                      <FaXTwitter size={20} className="dark:text-white text-gray-900" />
-                      <span className="font-medium dark:text-white text-gray-900">X</span>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Vzhled */}
-            <div className="settings-section">
-              <div className="settings-section-header">
-                {darkMode ? (
-                  <FiMoon size={20} className="text-violet-500" />
-                ) : (
-                  <FiSun size={20} className="text-violet-500" />
-                )}
-                <h2 className="settings-section-title">Vzhled</h2>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium dark:text-gray-100 text-gray-800">
-                    Tmavý režim
-                  </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Přepíná mezi světlým a tmavým vzhledem
-                  </p>
-                </div>
-                <button
-                  onClick={toggleDarkMode}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 ${
-                    darkMode ? 'bg-violet-600' : 'bg-gray-300'
-                  }`}
-                  role="switch"
-                  aria-checked={darkMode}
-                  title="Přepnout tmavý režim"
-                >
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-200 ${
-                      darkMode ? 'translate-x-6' : 'translate-x-1'
-                    }`}
-                  />
-                </button>
-              </div>
-            </div>
-
-            {/* Bezpečnost */}
-            <div className="settings-section">
-              <div className="settings-section-header">
-                <FiShield size={20} className="text-violet-500" />
-                <h2 className="settings-section-title">Bezpečnost</h2>
-              </div>
-
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-medium transition-colors"
-              >
-                <FiLogOut size={18} />
-                Odhlásit se
-              </button>
-            </div>
-
-          </div>
+        )}
+        <div>
+          <p className="font-semibold text-lg">{user?.full_name ?? 'Neznámý uživatel'}</p>
+          <p className="text-sm text-gray-500">{user?.email ?? '—'}</p>
+          {user?.social_accounts && user.social_accounts.length > 0 && (
+            <p className="text-xs text-gray-400 mt-1">
+              Přihlášen přes{' '}
+              {user.social_accounts.map(a => (
+                <span key={a.provider} className="capitalize font-medium text-violet-500">
+                  {a.provider}
+                </span>
+              )).reduce((acc, el, i) => i === 0 ? [el] : [...acc, ', ', el], [] as React.ReactNode[])}
+            </p>
+          )}
         </div>
       </div>
+
+      {/* Tmavý režim */}
+      <div className="card p-4 flex items-center justify-between">
+        <span className="font-medium">Tmavý režim</span>
+        <button
+          onClick={toggleDarkMode}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ${
+            darkMode ? 'bg-violet-600' : 'bg-gray-300 dark:bg-gray-600'
+          }`}
+        >
+          <span
+            className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-300 ${
+              darkMode ? 'translate-x-6' : 'translate-x-1'
+            }`}
+          />
+        </button>
+      </div>
+
+      {/* Odhlášení */}
+      <button
+        onClick={handleLogout}
+        className="w-full py-2 px-4 rounded-xl bg-red-500 hover:bg-red-600 text-white font-semibold transition"
+      >
+        Odhlásit se
+      </button>
+
     </div>
   )
 }
