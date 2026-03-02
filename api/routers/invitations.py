@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from api.database import get_db
 from api.deps import UserContext, get_current_user
 from api.models import Car, Invitation, Passenger, Ride
-from api.schemas import InvitationOut, PassengerSeatInOptional, UserOut
+from api.schemas import InvitationOut, PassengerSeatInOptional, RideOut, UserOut
 from api.utils.enums import InvitationStatus
 from api.utils.logging_config import get_logger
 
@@ -109,14 +109,14 @@ def get_invitation(
     return InvitationOut.from_orm_with_labels(invitation)
 
 
-@router.post("/{token}/accept", response_model=UserOut)
+@router.post("/{token}/accept", response_model=RideOut)
 def accept_invitation(
     token: str,
     seat_in: PassengerSeatInOptional,
     request: Request,
     db: Session = Depends(get_db),
     ctx: UserContext = Depends(get_current_user),
-) -> UserOut:
+) -> RideOut:
     """Accept an invitation and become a passenger on the ride.
     If seat_position is not provided, the first available seat is assigned."""
     invitation = db.query(Invitation).filter(Invitation.token == token).first()
@@ -188,16 +188,17 @@ def accept_invitation(
             "token": token,
         },
     )
-    return UserOut.model_validate(ctx.user)
+    db.refresh(ride)
+    return RideOut.from_ride(ride)
 
 
-@router.post("/{token}/reject")
+@router.post("/{token}/reject", response_model=InvitationOut)
 def reject_invitation(
     token: str,
     request: Request,
     db: Session = Depends(get_db),
     ctx: UserContext = Depends(get_current_user),
-) -> dict[str, str]:
+) -> InvitationOut:
     """Reject an invitation."""
     invitation = db.query(Invitation).filter(Invitation.token == token).first()
     if not invitation:
@@ -218,4 +219,4 @@ def reject_invitation(
     logger.info(
         "Invitation rejected", extra={"user_id": str(ctx.user.id), "token": token}
     )
-    return {"detail": "Invitation has been successfully rejected."}
+    return InvitationOut.from_orm_with_labels(invitation)
