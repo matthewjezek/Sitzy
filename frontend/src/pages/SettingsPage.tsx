@@ -72,7 +72,7 @@ export default function SettingsPage() {
   }
 
   const handleLogout = () => {
-    localStorage.removeItem('token')
+    localStorage.removeItem('access_token')
     window.location.href = '/login'
   }
 
@@ -87,6 +87,7 @@ export default function SettingsPage() {
           <img
             src={user.avatar_url}
             alt="Avatar"
+            referrerPolicy="no-referrer"
             className="w-16 h-16 rounded-full object-cover"
           />
         ) : (
