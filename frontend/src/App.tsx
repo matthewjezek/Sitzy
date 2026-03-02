@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router'
-import { useEffect } from 'react'
+import { useEffect, lazy } from 'react'
 import { useNavigate } from 'react-router'
 import { ToastContainer } from 'react-toastify'
 import { AUTH_EXPIRED_EVENT } from './api/axios'
@@ -11,17 +11,16 @@ import SettingsPage from './pages/SettingsPage'
 import AnonymousRoute from './utils/AnonymousRoute'
 import OAuthCallbackPage from './pages/OAuthCallbackPage'
 
-// ✅ Dev only stránky
 const isDev = import.meta.env.MODE === 'development'
-const SeatRendererTestPage = isDev ? (await import('./pages/SeatRendererTestPage')).default : null
-const SeatRendererDemo = isDev ? (await import('./pages/SeatRendererDemo')).default : null
-const SeatPositionTest = isDev ? (await import('./pages/SeatPositionTest')).default : null
-const DialogExamples = isDev ? (await import('./examples/DialogExamples')).default : null
+
+const SeatRendererTestPage = isDev ? lazy(() => import('./pages/SeatRendererTestPage')) : null
+const SeatRendererDemo = isDev ? lazy(() => import('./pages/SeatRendererDemo')) : null
+const SeatPositionTest = isDev ? lazy(() => import('./pages/SeatPositionTest')) : null
+const DialogExamples = isDev ? lazy(() => import('./examples/DialogExamples')) : null
 
 function AppRoutes() {
   const navigate = useNavigate()
 
-  // ✅ Dark mode init – čte localStorage při startu
   useEffect(() => {
     const theme = localStorage.getItem('theme')
     if (theme === 'dark') {
@@ -47,12 +46,12 @@ function AppRoutes() {
       </Route>
       <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
         {/* Main pages */}
-        <Route path="/rides" element={<div>RidesPage – TODO</div>} />
-        <Route path="/rides/new" element={<div>CreateRidePage – TODO</div>} />
-        <Route path="/rides/:id" element={<div>RideDetailPage – TODO</div>} />
-        <Route path="/cars" element={<div>CarsPage – TODO</div>} />
-        <Route path="/cars/new" element={<div>CreateCarPage – TODO</div>} />
-        <Route path="/cars/:id" element={<div>CarDetailPage – TODO</div>} />
+        <Route path="/rides" element={<div>RidesPage - TODO</div>} />
+        <Route path="/rides/new" element={<div>CreateRidePage - TODO</div>} />
+        <Route path="/rides/:id" element={<div>RideDetailPage - TODO</div>} />
+        <Route path="/cars" element={<div>CarsPage - TODO</div>} />
+        <Route path="/cars/new" element={<div>CreateCarPage - TODO</div>} />
+        <Route path="/cars/:id" element={<div>CarDetailPage - TODO</div>} />
         <Route path="/settings" element={<SettingsPage />} />
 
         {/* Dev only pages */}
