@@ -206,9 +206,10 @@ class InvitationOut(BaseModelWithLabels["InvitationOut"]):
 
 # === Passenger ===
 class PassengerSeatIn(BaseModel):
-    """Data needed to assign a passenger to a specific seat in a car."""
+    """Data needed to assign a passenger to a specific seat in a car.
+    If seat_position is not provided, the first available seat is assigned."""
 
-    seat_position: int
+    seat_position: int | None = None  # Optional – backend will assign first available seat if not provided
 
 
 # === Dashboard ===
