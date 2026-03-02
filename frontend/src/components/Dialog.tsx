@@ -1,5 +1,6 @@
 import { forwardRef, useState } from "react";
 import { FiBell, FiMail, FiCheck, FiX, FiClock } from "react-icons/fi";
+import { formatLocalDateTime } from "../utils/datetime";
 
 const DeleteDialog = forwardRef<HTMLDialogElement, { children: React.ReactNode; toggle: () => void; action: () => Promise<void>; }>((props, ref) => {
   const { children, toggle, action } = props;
@@ -441,13 +442,7 @@ const InvitationDialog = forwardRef<HTMLDialogElement, InvitationDialogProps>(
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Datum:</span>
                   <span className="font-medium">
-                    {new Date(invitation.date).toLocaleDateString('cs-CZ', {
-                      weekday: 'long',
-                      day: '2-digit',
-                      month: 'long',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
+                    {formatLocalDateTime(invitation.date)}
                   </span>
                 </div>
               </div>

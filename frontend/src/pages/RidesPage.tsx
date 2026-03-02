@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import { FiPlus, FiChevronRight, FiClock, FiMapPin } from 'react-icons/fi'
 import { useRide } from '../hooks/useRide'
+import { formatLocalDateTime } from '../utils/datetime'
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 
@@ -109,12 +110,7 @@ export default function RidesPage() {
                   <div className="flex items-center gap-2">
                     <FiClock size={14} className="text-gray-400 shrink-0" />
                     <p className="text-sm text-gray-500">
-                      {new Date(ride.departure_time).toLocaleString('cs-CZ', {
-                        day: 'numeric',
-                        month: 'short',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
+                      {formatLocalDateTime(ride.departure_time)}
                     </p>
                   </div>
                   {ride.car && (

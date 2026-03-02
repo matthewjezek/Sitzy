@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { FiTrash, FiUserPlus, FiMapPin, FiClock } from 'react-icons/fi'
 import { toast } from 'react-toastify'
+import { formatLocalDateTime } from '../utils/datetime'
 import { useRide } from '../hooks/useRide'
 import { useInvites } from '../hooks/useInvites'
 import { inviteSchema, type InviteFormValues } from '../utils/validation'
@@ -249,13 +250,7 @@ export default function RideDetailPage() {
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2 text-sm text-gray-500">
             <FiClock size={14} className="shrink-0 text-violet-500" />
-            {new Date(ride.departure_time).toLocaleString('cs-CZ', {
-              weekday: 'long',
-              day: 'numeric',
-              month: 'long',
-              hour: '2-digit',
-              minute: '2-digit',
-            })}
+            {formatLocalDateTime(ride.departure_time)}
           </div>
           {ride.car && (
             <div className="flex items-center gap-2 text-sm text-gray-500">

@@ -6,6 +6,7 @@ import { toast } from 'react-toastify'
 import { useRide } from '../hooks/useRide'
 import { useCar } from '../hooks/useCar'
 import { rideSchema, type RideFormValues } from '../utils/validation'
+import { localInputToUTC, nowForDatetimeInput } from '../utils/datetime'
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 
@@ -25,6 +26,7 @@ function CreateRideSkeleton() {
 
 export default function CreateRidePage() {
   const navigate = useNavigate()
+  const today = nowForDatetimeInput()
   const [searchParams] = useSearchParams()
   const preselectedCarId = searchParams.get('car_id') ?? ''
 
@@ -52,7 +54,10 @@ export default function CreateRidePage() {
   const onSubmit = async (data: RideFormValues) => {
     setSubmitting(true)
     try {
-      const result = await createRide(data)
+      const result = await createRide({
+        ...data,
+        departure_time: localInputToUTC(data.departure_time),
+      })
       if (result) {
         toast.success('Jízda byla vytvořena.')
         navigate(`/rides/${result.id}`)
@@ -107,6 +112,9 @@ export default function CreateRidePage() {
           <label className="font-medium text-sm">Čas odjezdu</label>
           <input
             type="datetime-local"
+            min={today}
+            defaultValue={today}
+            required
             className={`form-input ${errors.departure_time ? 'border-red-400' : ''}`}
             {...register('departure_time')}
           />
