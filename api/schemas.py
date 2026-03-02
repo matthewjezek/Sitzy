@@ -37,7 +37,8 @@ class UserOut(BaseModelWithLabels["UserOut"], UserBase):
     @field_validator("email", mode="before")
     @classmethod
     def mask_fake_email(cls, v: object) -> object:
-        """Hides internal fake emails used for social accounts (ending with .invalid) from API output."""
+        """Hides internal fake emails used for social accounts
+        (ending with .invalid) from API output."""
         if isinstance(v, str) and v.endswith(".invalid"):
             return None
         return v
