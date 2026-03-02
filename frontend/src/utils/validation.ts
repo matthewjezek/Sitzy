@@ -8,12 +8,12 @@ export const carSchema = z.object({
     .string()
     .min(2, 'Název musí mít alespoň 2 znaky.')
     .max(50, 'Název může mít nejvýše 50 znaků.'),
-  layout: z.enum(['sedan', 'coupe', 'minivan'], {
+  layout: z.enum(['Sedan', 'Coupe', 'Minivan'], {
     error: () => ({ message: 'Vyberte typ auta.' }),
   }),
 })
 
-export type CarFormData = z.infer<typeof carSchema>
+export type CarFormValues = z.infer<typeof carSchema>
 
 // ========================================
 // RIDE
@@ -30,12 +30,10 @@ export const rideSchema = z.object({
   destination: z
     .string()
     .min(2, 'Cíl musí mít alespoň 2 znaky.')
-    .max(100, 'Cíl může mít nejvýše 100 znaků.')
-    .optional()
-    .or(z.literal('')),
+    .max(100, 'Cíl může mít nejvýše 100 znaků.'),
 })
 
-export type RideFormData = z.infer<typeof rideSchema>
+export type RideFormValues = z.infer<typeof rideSchema>
 
 // ========================================
 // INVITE
@@ -47,7 +45,7 @@ export const inviteSchema = z.object({
     .transform(val => val.toLowerCase().trim()),
 })
 
-export type InviteFormData = z.infer<typeof inviteSchema>
+export type InviteFormValues = z.infer<typeof inviteSchema>
 
 // ========================================
 // SEAT
@@ -60,4 +58,4 @@ export const seatSchema = z.object({
     .max(7, 'Neplatné sedadlo.'),
 })
 
-export type SeatFormData = z.infer<typeof seatSchema>
+export type SeatFormValues = z.infer<typeof seatSchema>
