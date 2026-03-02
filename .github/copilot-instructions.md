@@ -120,20 +120,34 @@ Sitzy is a bilingual car seat management web app: **Czech UI/comments** with Eng
 
 ## Developer Workflows
 
-**Backend Commands (from root)**
+### Backend Commands (from root)
 ```bash
-make run      # Start FastAPI dev server (uvicorn --reload)
+make run      # Start FastAPI dev server (uvicorn --reload, :8000)
 make format   # Run black, isort, flake8, mypy
 make test     # Run pytest (api/tests/) with happy/edge markers
 ```
 
-**Frontend Commands (from frontend/)**
+**API Documentation (Development Only)**
+- **Swagger UI:** http://localhost:8000/docs — Interactive API endpoints
+- **ReDoc:** http://localhost:8000/redoc — Alternative API documentation
+- **OpenAPI JSON:** http://localhost:8000/openapi.json — Raw schema
+- Only available in `development` environment; disabled in production
+
+### Frontend Commands (from frontend/)
 ```bash
-npm run dev        # Vite dev server
+npm run dev        # Vite dev server (:5173)
 npm run build      # Production build + PWA manifest generation
 npm run typecheck  # TypeScript check w/o emit
 npm run lint       # ESLint check
 ```
+
+**Dev-Only Pages (gated by `import.meta.env.MODE === 'development'`)**
+- **Storybook-like pages** accessible during development:
+  - `/test-seats` — SeatRenderer test page
+  - `/demo-seats` — SeatRenderer demo
+  - `/position-test` — Seat position testing
+  - `/dialogs` — Dialog component examples
+- Create new dev page in `frontend/src/pages/`, lazy-load in [App.tsx](../frontend/src/App.tsx)
 
 **Database Migrations**
 ```bash
@@ -219,7 +233,47 @@ State tokens are stored in Redis with 10-minute TTL for:
 | Transfer driver | Owner | Only owner can transfer, new driver must be passenger on ride |
 | View ride | Passenger/Driver | Only participants and owner can view |
 | Cancel ride | Owner | Only owner can cancel |
+## Frontend-Backend Inconsistencies (Known Issues)
 
+⚠️ **These issues should be fixed during frontend refactoring:**
+
+### 1. GET /rides/ — Missing Owner's Own Rides
+**Problem:** Backend returns rides where user is a **passenger only**. Owner doesn't see their own rides unless they're also a passenger.  
+**Current code:** [rides.py:78-89](../api/routers/rides.py#L78-L89)  
+**Fix:** Change query to include rides where user is owner OR passenger:
+```sql
+SELECT * FROM rides 
+WHERE car_id IN (SELECT id FROM cars WHERE owner_id = user_id)
+   OR ride_id IN (SELECT ride_id FROM passengers WHERE user_id = user_id)
+```
+**Frontend impact:** `useRide().fetchMyRides()` will then correctly show all rides.
+
+### 2. POST /rides/{ride_id}/book — Seat Position Required
+**Problem:** Backend enforces `seat_position` as required in `PassengerSeatIn`, but inconsistent with invitation accept (which allows optional).  
+**Current code:** [rides.py:207](../api/routers/rides.py#L207)  
+**Fix:** Make `seat_position: Optional[int]` in `PassengerSeatIn` schema. If null, backend assigns first available seat automatically (like invitation accept does).
+
+### 3. POST /invitations/{token}/accept — Wrong Return Type
+**Problem:** Returns `UserOut` instead of ride info or confirmation.  
+**Current code:** [invitations.py:197](../api/routers/invitations.py#L197)  
+**Expected:** Should return `RideOut` or a dedicated `InvitationAcceptResponse` with ride details.  
+**Frontend:** Currently expects to refetch ride manually — should be returned in response.
+
+### 4. GET /invitations/received — Fragile Email Matching
+**Problem:** Filters by `invited_email.ilike(user.email)`, but `user.email` can be NULL (X doesn't provide email).  
+**Current code:** [invitations.py:19-28](../api/routers/invitations.py#L19-L28)  
+**Fix:** Add `invitation_email_user_id` FK to `invitations` table, or use invite links instead of email-based filtering.  
+**Why it breaks:** X users can't accept invitations if email is missing.
+
+### 5. POST /invitations/{token}/reject — No Consistency
+**Problem:** Returns `{"detail": "..."}` instead of structured response like accept.  
+**Current code:** [invitations.py:213](../api/routers/invitations.py#L213)  
+**Fix:** Return `InvitationOut` (with status=REJECTED) for consistency.
+
+### 6. Invitation Expiry Logic — Mismatched Duration
+**Problem:** Invitations expire in **7 days** (rides.py:318) but should be **24 hours** per requirements.  
+**Current code:** [rides.py:318](../api/routers/rides.py#L318)  
+**Fix:** Change `timedelta(days=7)` → `timedelta(hours=24)`.
 ## Common Pitfalls
 
 1. **Don't** use `model_validate()` directly on SQLAlchemy models for output schemas—call `from_orm_with_labels()` to get computed fields
