@@ -233,47 +233,48 @@ State tokens are stored in Redis with 10-minute TTL for:
 | Transfer driver | Owner | Only owner can transfer, new driver must be passenger on ride |
 | View ride | Passenger/Driver | Only participants and owner can view |
 | Cancel ride | Owner | Only owner can cancel |
-## Frontend-Backend Inconsistencies (Known Issues)
+## Frontend-Backend Inconsistencies & Fixes
 
-⚠️ **These issues should be fixed during frontend refactoring:**
+⚠️ **Status Summary:**
+- ✅ **#1** — FIXED: GET /rides/ now shows owner's rides
+- ℹ️ **#2** — BY DESIGN: Seat position required in POST /book (different from optional on invitation accept)
+- ✅ **#3** — FIXED: POST /accept returns RideOut
+- ✅ **#4** — HANDLED: GET /invitations/received returns empty for X users without email
+- ✅ **#5** — FIXED: POST /reject returns InvitationOut
+- ✅ **#6** — FIXED: Invitations expire in 24 hours (not 7 days)
 
-### 1. GET /rides/ — Missing Owner's Own Rides
-**Problem:** Backend returns rides where user is a **passenger only**. Owner doesn't see their own rides unless they're also a passenger.  
-**Current code:** [rides.py:78-89](../api/routers/rides.py#L78-L89)  
-**Fix:** Change query to include rides where user is owner OR passenger:
-```sql
-SELECT * FROM rides 
-WHERE car_id IN (SELECT id FROM cars WHERE owner_id = user_id)
-   OR ride_id IN (SELECT ride_id FROM passengers WHERE user_id = user_id)
-```
-**Frontend impact:** `useRide().fetchMyRides()` will then correctly show all rides.
+### Former Issue #1 (FIXED) — GET /rides/ Now Includes Owner's Rides
+**Previous:** Backend returned rides where user was passenger only.  
+**Fixed in:** [rides.py:72-96](../api/routers/rides.py#L72-L96)  
+**Solution:** Query uses `or_()` to include rides where:
+- User is car owner (`Car.owner_id == user_id`), OR
+- User is passenger (`Passenger.user_id == user_id`)
 
-### 2. POST /rides/{ride_id}/book — Seat Position Required
-**Problem:** Backend enforces `seat_position` as required in `PassengerSeatIn`, but inconsistent with invitation accept (which allows optional).  
-**Current code:** [rides.py:207](../api/routers/rides.py#L207)  
-**Fix:** Make `seat_position: Optional[int]` in `PassengerSeatIn` schema. If null, backend assigns first available seat automatically (like invitation accept does).
+### Issue #2 (BY DESIGN) — POST /rides/{ride_id}/book Requires Seat Position
+**Design:** Seat position is required when user explicitly books a seat (after already being a passenger).  
+**Compare:** In `POST /invitations/{token}/accept`, seat position is optional (system auto-assigns).  
+**Rationale:** Different UX flows — invitations are one-click passive acceptance, seat booking is explicit action.
 
-### 3. POST /invitations/{token}/accept — Wrong Return Type
-**Problem:** Returns `UserOut` instead of ride info or confirmation.  
-**Current code:** [invitations.py:197](../api/routers/invitations.py#L197)  
-**Expected:** Should return `RideOut` or a dedicated `InvitationAcceptResponse` with ride details.  
-**Frontend:** Currently expects to refetch ride manually — should be returned in response.
+### Former Issue #3 (FIXED) — POST /invitations/{token}/accept Now Returns RideOut
+**Previous:** Returned `UserOut` (confusing after accepting ride invitation).  
+**Fixed in:** [invitations.py:112-200](../api/routers/invitations.py#L112-L200)  
+**Solution:** Endpoint now returns complete `RideOut` with updated passenger list and seat layout.
 
-### 4. GET /invitations/received — Fragile Email Matching
-**Problem:** Filters by `invited_email.ilike(user.email)`, but `user.email` can be NULL (X doesn't provide email).  
-**Current code:** [invitations.py:19-28](../api/routers/invitations.py#L19-L28)  
-**Fix:** Add `invitation_email_user_id` FK to `invitations` table, or use invite links instead of email-based filtering.  
-**Why it breaks:** X users can't accept invitations if email is missing.
+### Former Issue #4 (HANDLED) — GET /invitations/received Safe for X Users
+**Previous:** Crashed if user.email was NULL (X/Twitter).  
+**Fixed in:** [invitations.py:18-27](../api/routers/invitations.py#L18-L27)  
+**Solution:** Returns empty list `[]` if user has no email (safe for X users).  
+**Long-term:** Consider adding FK `invitation_user_id` to decouple from email-based filtering.
 
-### 5. POST /invitations/{token}/reject — No Consistency
-**Problem:** Returns `{"detail": "..."}` instead of structured response like accept.  
-**Current code:** [invitations.py:213](../api/routers/invitations.py#L213)  
-**Fix:** Return `InvitationOut` (with status=REJECTED) for consistency.
+### Former Issue #5 (FIXED) — POST /invitations/{token}/reject Returns InvitationOut
+**Previous:** Returned `{"detail": "..."}` string.  
+**Fixed in:** [invitations.py:210-223](../api/routers/invitations.py#L210-L223)  
+**Solution:** Now returns structured `InvitationOut` with `status=REJECTED` for consistency.
 
-### 6. Invitation Expiry Logic — Mismatched Duration
-**Problem:** Invitations expire in **7 days** (rides.py:318) but should be **24 hours** per requirements.  
-**Current code:** [rides.py:318](../api/routers/rides.py#L318)  
-**Fix:** Change `timedelta(days=7)` → `timedelta(hours=24)`.
+### Former Issue #6 (FIXED) — Invitations Expire in 24 Hours
+**Previous:** Invitations expired in 7 days.  
+**Fixed in:** [rides.py:317](../api/routers/rides.py#L317)  
+**Solution:** Changed `timedelta(days=7)` → `timedelta(hours=24)`
 ## Common Pitfalls
 
 1. **Don't** use `model_validate()` directly on SQLAlchemy models for output schemas—call `from_orm_with_labels()` to get computed fields
