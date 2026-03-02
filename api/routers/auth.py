@@ -13,7 +13,6 @@ from api.schemas import UserOut
 from api.services.oauth_service import (
     FacebookOAuthClient,
     OAuthStateManager,
-    Provider,
     XOAuthClient,
     create_or_update_session,
     find_or_create_user,
