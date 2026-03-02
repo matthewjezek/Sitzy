@@ -42,7 +42,7 @@ export default function CreateRidePage() {
     resolver: zodResolver(rideSchema),
     defaultValues: {
       car_id: preselectedCarId,
-      departure_time: '',
+      departure_time: today,
       destination: '',
     },
   })
@@ -113,7 +113,6 @@ export default function CreateRidePage() {
           <input
             type="datetime-local"
             min={today}
-            defaultValue={today}
             required
             className={`form-input ${errors.departure_time ? 'border-red-400' : ''}`}
             {...register('departure_time')}
@@ -129,6 +128,7 @@ export default function CreateRidePage() {
           <input
             type="text"
             placeholder="Praha"
+            required
             className={`form-input ${errors.destination ? 'border-red-400' : ''}`}
             {...register('destination')}
           />
