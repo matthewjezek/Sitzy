@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from api.database import get_db
 from api.deps import UserContext, get_current_user
 from api.models import Car, Invitation, Passenger, Ride
-from api.schemas import InvitationOut, PassengerSeatInOptional, RideOut, UserOut
+from api.schemas import InvitationOut, PassengerSeatInOptional, RideOut
 from api.utils.enums import InvitationStatus
 from api.utils.logging_config import get_logger
 
