@@ -139,7 +139,7 @@ class XOAuthClient:
 
 
 class FacebookOAuthClient:
-    AUTHORIZE_URL = "https://www.facebook.com/v20.0/dialog/oauth"
+    AUTHORIZE_URL = "https://www.facebook.com/v25.0/dialog/oauth"
     TOKEN_URL = "https://graph.facebook.com/v20.0/oauth/access_token"
     USER_URL = "https://graph.facebook.com/v20.0/me"
 
