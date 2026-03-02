@@ -27,13 +27,99 @@ Unifikujeme barevné téma – navrhujeme přechod z `indigo` na teplý
     `/cars/new`), `/demo-seats`, `/test-seats`, `/position-test` (dev only,
     schovat za `ENVIRONMENT` check).
 - **Pozvánky bez samostatné stránky**: oznámení přes zvoneček v navbar
-    (dropdown s Accept/Reject přímo v UI). Po přijetí → přesměrování na
-    `/rides/:id` pro výběr sedadla přes `SeatRenderer`.
+    (dropdown s Accept/Reject přímo v UI). Po přijetí → automaticky přiřazeno
+    první volné sedadlo (backend logika), uživatel si může sedadlo přenastavit
+    na `/rides/:id`.
 - **Transfer řidiče**: tlačítko "Předat řízení" vidí pouze majitel auta
     (ne aktuální řidič pokud není majitel).
 - **`SeatRenderer` použití**: zobrazení zasedacího pořádku a obsazenosti
-    na `/rides/:id`. Pasažér si vybírá sedadlo přes `SeatRenderer` po
-    přijetí pozvánky.
+    na `/rides/:id`. Pasažér si vybírá nebo mění sedadlo přes `SeatRenderer`.
+- **`seat_position` volitelné při accept**: backend vybere první volné
+    sedadlo pokud `seat_position` není zadán (`Optional[int]` v
+    `PassengerSeatIn`).
+- **Optimistic UI + rollback**: změny se zobrazí okamžitě, zvrátí se pouze
+    při chybě backendu. Platí pro: booking sedadla, přijetí/odmítnutí
+    pozvánky, transfer řidiče, zrušení jízdy.
+- **Skeleton loading**: místo spinneru se zobrazí tvarové kostry
+    (`skeleton`) při načítání dat. Platí pro: seznam jízd, detail jízdy,
+    seznam aut, detail auta, seznam pasažérů.
+- **Stálá odezva UI**: každá akce uživatele musí mít okamžitou vizuální
+    odezvu – tlačítko se deaktivuje + zobrazí loading stav po dobu requestu.
+    Toast informuje o výsledku (úspěch/chyba).
+
+## Responsible UI vzory
+
+Tři vzory platí konzistentně napříč celou aplikací:
+
+### 1. Skeleton loading
+
+Při prvním načtení stránky nebo dat se místo spinneru zobrazí tvarová
+kostra komponenty (`animate-pulse` Tailwind třídy). Kostra odpovídá
+přibližnému tvaru skutečného obsahu – karty jízd, řádky pasažérů,
+`SeatRenderer` placeholder.
+
+```text
+Načítání jízd:
+┌─────────────────────────────┐
+│ ░░░░░░░░░░  ░░░░░░          │  ← animate-pulse šedé bloky
+│ ░░░░░░░░░░░░░░░░            │
+│ ░░░░░                       │
+└─────────────────────────────┘
+```
+
+Skeleton komponenty: `RideCardSkeleton`, `CarCardSkeleton`,
+`PassengerListSkeleton`, `SeatRendererSkeleton`.
+
+### 2. Optimistic UI + rollback
+
+Změna se projeví **okamžitě** v UI bez čekání na backend. Pokud backend
+vrátí chybu, změna se **automaticky zvrátí** a zobrazí se `toast.error`.
+
+| Akce | Optimistic | Rollback při chybě |
+| -- | -- | -- |
+| Booking sedadla | Sedadlo se označí jako obsazené | Sedadlo se uvolní |
+| Přijetí pozvánky | Pozvánka zmizí ze zvonečku | Pozvánka se vrátí |
+| Odmítnutí pozvánky | Pozvánka zmizí ze zvonečku | Pozvánka se vrátí |
+| Transfer řidiče | Nový řidič se zobrazí okamžitě | Původní řidič se vrátí |
+| Zrušení jízdy | Jízda zmizí ze seznamu | Jízda se vrátí |
+| Zrušení bookingu | Sedadlo se uvolní | Sedadlo se označí zpět |
+
+### 3. Stálá odezva tlačítek
+
+Každé tlačítko spouštějící async akci musí:
+
+- Okamžitě se deaktivovat (`disabled`) po kliknutí.
+- Zobrazit loading indikátor (spinner nebo `...` v textu).
+- Po dokončení se reaktivovat.
+- Zobrazit `toast.success` nebo `toast.error` podle výsledku.
+
+```typescript
+// Vzorový pattern pro všechna akční tlačítka:
+const [submitting, setSubmitting] = useState(false)
+
+const handleAction = async () => {
+  setSubmitting(true)
+  try {
+    // optimistic update
+    await apiCall()
+    toast.success('Hotovo.')
+  } catch {
+    // rollback
+    toast.error('Nepodařilo se.')
+  } finally {
+    setSubmitting(false)
+  }
+}
+
+<button disabled={submitting} onClick={handleAction}>
+  {submitting ? 'Ukládám...' : 'Uložit'}
+</button>
+```
+
+## Backend změny vyplývající z frontend rozhodnutí
+
+- `PassengerSeatIn.seat_position` → `Optional[int]` – pokud není zadán,
+    backend vybere první volné sedadlo v daném autě automaticky.
 
 ## Struktura stránek
 
