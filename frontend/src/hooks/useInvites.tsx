@@ -1,174 +1,118 @@
 import { useState, useEffect, useCallback } from "react";
-import instance from "../api/axios";
-import { nanoid } from "nanoid";
 import { isAxiosError } from "axios";
+import instance from "../api/axios";
 
-export type Invitation = {
+export interface Invitation {
   invited_email: string;
   status: "Pending" | "Accepted" | "Rejected";
-  created_at: Date;
+  created_at: string;
   token: string;
-  car_id: string;
-};
+  ride_id: string;
+}
 
-export type UseInvitesReturn = {
+export interface UseInvitesReturn {
   invites: Invitation[];
   loading: boolean;
   error: string | null;
   createInvite: (email: string) => Promise<void>;
-  cancelInvite: (inviteToken: string) => Promise<void>;
-  respondInvite: (inviteToken: string, accept: boolean) => Promise<void>;
+  cancelInvite: (token: string) => Promise<void>;
+  respondInvite: (token: string, accept: boolean) => Promise<void>;
   fetchInvites: () => Promise<void>;
-};
+}
 
-export function useInvites(carId?: string): UseInvitesReturn {
+export function useInvites(rideId?: string): UseInvitesReturn {
   const [invites, setInvites] = useState<Invitation[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
-  
-  const axios = instance;
 
-  // Načtení aktuálního uživatele
-  useEffect(() => {
-    const fetchCurrentUser = async () => {
-      try {
-        const res = await axios.get('/auth/me');
-        setCurrentUserEmail(res.data?.email || null);
-      } catch (err: unknown) {
-        if (isAxiosError(err)) {
-          setError(err.response?.data?.message ?? "Nepodařilo se načíst aktuálního uživatele");
-        } else {
-          setError("Nastala neočekávaná chyba");
-        }
-      }
-    };
-    fetchCurrentUser();
-  }, [axios]);
+  const handleError = (err: unknown, fallback: string) => {
+    setError(
+      isAxiosError(err)
+        ? (err.response?.data?.detail ?? fallback)
+        : "Nastala neočekávaná chyba."
+    );
+  };
 
+  // GET /invitations/ride/:rideId  nebo  GET /invitations/received
   const fetchInvites = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      const url = carId
-        ? `/cars/${carId}/invitations`
-        : `/invitations/received`
-      const res = await axios.get(url);
-      // Pokud taháme pozvánky pro aktuálního uživatele (bez carId), zobrazujeme jen čekající
-      // Přijaté/Odmítnuté by se neměly objevovat v notifikacích
+      const url = rideId
+        ? `/invitations/ride/${rideId}`
+        : `/invitations/received`;
+      const res = await instance.get<Invitation[]>(url);
       const data = Array.isArray(res.data) ? res.data : [];
       setInvites(
-        carId
+        rideId
           ? data
-          : data.filter((i: { status?: string }) => i?.status === "Pending")
+          : data.filter((i) => i.status === "Pending")
       );
-      setError(null);
-    } catch (err: unknown) {
-      if (isAxiosError(err)) {
-        setError(err.response?.data?.message ?? "Nepodařilo se vytvořit pozvánku");
-      } else {
-        setError("Nastala neočekávaná chyba");
-      }
+    } catch (err) {
+      handleError(err, "Nepodařilo se načíst pozvánky.");
     } finally {
       setLoading(false);
     }
-  }, [carId, axios]);
+  }, [rideId]);
 
-  const createInvite = async (email: string) => {
-    if (!carId) return;
-    const dummyToken = nanoid()
+  // POST /rides/:rideId/invite
+  const createInvite = useCallback(async (email: string) => {
+    if (!rideId) return;
+    setError(null);
 
-    try {
-      setError(null);
-
-      if (!email.includes("@")) {
-        setError("Zadej platný email");
-        return;
-      }
-      if (invites.some(i => i.invited_email.toLowerCase() === email.toLowerCase())) {
-        setError("E-mail je už pozván");
-        return;
-      }
-      if (currentUserEmail && email.toLowerCase() === currentUserEmail.toLowerCase()) {
-        setError("Nemůžete pozvat sebe sama");
-        return;
-      }
-
-      const dummy: Invitation = {
-        invited_email: email,
-        status: "Pending",
-        created_at: new Date(),
-        token: dummyToken,
-        car_id: carId,
-      };
-
-      setInvites(prev => [...prev, dummy]);
-
-      const localDate = new Date(); // lokální čas
-      const dateWithSeconds = localDate.toISOString(); // UTC ISO string
-
-      const res = await axios.post(`/cars/${carId}/invite`, { invited_email: email, car_id: carId, created_at: dateWithSeconds });
-      const realInvite: Invitation = res.data;
-
-      setInvites(prev =>
-        prev.map(inv => (inv.token === dummyToken ? realInvite : inv))
-      );
-    } catch (err: unknown) {
-      setInvites(prev => prev.filter(inv => inv.token !== dummyToken));
-
-      if (isAxiosError(err)) {
-        setError(err.response?.data?.message ?? "Nepodařilo se vytvořit pozvánku");
-      } else {
-        setError("Nastala neočekávaná chyba");
-      }
-    }
-  };
-
-  const cancelInvite = async (inviteToken: string) => {
-    if (!carId) return;
-    if (!invites.some(inv => inv.token === inviteToken)) {
-      setError("Pozvánka už není platná.");
+    if (invites.some((i) => i.invited_email.toLowerCase() === email.toLowerCase())) {
+      setError("Tento e-mail je již pozván.");
       return;
     }
 
     try {
-      await axios.delete(`/invitations/${inviteToken}`);
-      setInvites((prev) => prev.filter((i) => i.token !== inviteToken));
-    } catch (err: unknown) {
-      if (isAxiosError(err)) {
-        setError(err.response?.data?.message ?? "Nepodařilo se vytvořit pozvánku");
-      } else {
-        setError("Nastala neočekávaná chyba");
-      }
+      const res = await instance.post<Invitation>(`/rides/${rideId}/invite`, {
+        invited_email: email,
+      });
+      setInvites((prev) => [...prev, res.data]);
+    } catch (err) {
+      handleError(err, "Nepodařilo se vytvořit pozvánku.");
     }
-  };
+  }, [rideId, invites]);
 
-  const respondInvite = async (inviteToken: string, accept: boolean) => {
+  // DELETE /invitations/:token
+  const cancelInvite = useCallback(async (token: string) => {
+    setError(null);
+    try {
+      await instance.delete(`/invitations/${token}`);
+      setInvites((prev) => prev.filter((i) => i.token !== token));
+    } catch (err) {
+      handleError(err, "Nepodařilo se zrušit pozvánku.");
+    }
+  }, []);
+
+  // POST /invitations/:token/accept|reject
+  const respondInvite = useCallback(async (token: string, accept: boolean) => {
+    setError(null);
+    // Optimistic update
+    setInvites((prev) =>
+      prev.map((i) =>
+        i.token === token
+          ? { ...i, status: accept ? "Accepted" : "Rejected" }
+          : i
+      )
+    );
     try {
       const endpoint = accept
-        ? `/invitations/${inviteToken}/accept`
-        : `/invitations/${inviteToken}/reject`;
-      console.log('Calling endpoint:', endpoint, 'Method: POST');
-      setInvites(prev =>
-        prev.map(inv =>
-          inv.token === inviteToken ? { ...inv, status: accept ? "Accepted" : "Rejected" } : inv
+        ? `/invitations/${token}/accept`
+        : `/invitations/${token}/reject`;
+      await instance.post(endpoint);
+      setInvites((prev) => prev.filter((i) => i.token !== token));
+    } catch (err) {
+      // Rollback
+      setInvites((prev) =>
+        prev.map((i) =>
+          i.token === token ? { ...i, status: "Pending" } : i
         )
       );
-      await axios.post(endpoint);
-      setInvites(prev => prev.filter(i => i.token !== inviteToken));
-    } catch (err: unknown) {
-      setInvites(prev =>
-        prev.map(inv => 
-          inv.token === inviteToken ? { ...inv, status: "Pending" } : inv
-        )
-      );
-
-      if (isAxiosError(err)) {
-        setError(err.response?.data?.message ?? "Nepodařilo se odpovědět na pozvánku");
-      } else {
-        setError("Nastala neočekávaná chyba");
-      }
+      handleError(err, "Nepodařilo se odpovědět na pozvánku.");
     }
-  }
+  }, []);
 
   useEffect(() => {
     fetchInvites();
