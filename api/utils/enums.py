@@ -2,9 +2,9 @@ from enum import Enum
 
 
 class CarLayout(str, Enum):
-    SEDAQ = "Sedan (4 seats)"
-    TRAPAQ = "Coupé (2 seats)"
-    PRAQ = "Minivan (7 seats)"
+    SEDAQ = "Sedan"
+    TRAPAQ = "Coupe"
+    PRAQ = "Minivan"
 
 
 class InvitationStatus(str, Enum):
