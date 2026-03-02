@@ -1,192 +1,130 @@
 import { useState, useCallback } from "react";
-import instance from "../api/axios";
 import { isAxiosError } from "axios";
+import instance from "../api/axios";
 import type { SeatData } from "../components/SeatRenderer";
 
-// Základní typ pro auto
 export interface Car {
   id: string;
   owner_id: string;
   name: string;
-  date?: string;
   layout: string;
   layout_label?: string;
   owner_name?: string;
   seats?: SeatData[];
-  invitations?: Array<{
-    id: string;
-    invited_email: string;
-    status_label: string;
-  }>;
 }
 
-// Hook pro správu aut
+export interface CarOut extends Car {}
+
+export interface CarFormData {
+  name: string;
+  layout: string;
+}
+
 export function useCar() {
   const [car, setCar] = useState<Car | null>(null);
+  const [cars, setCars] = useState<Car[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notFound, setNotFound] = useState(false);
-  
-  const axios = instance;
 
-  // Načítání vlastního auta
-  const fetchMyCar = useCallback(async () => {
+  const handleError = (err: unknown, fallback: string) => {
+    setError(
+      isAxiosError(err)
+        ? (err.response?.data?.detail ?? fallback)
+        : "Nastala neočekávaná chyba."
+    );
+  };
+
+  // GET /cars/ – seznam mých aut
+  const fetchMyCars = useCallback(async () => {
     setLoading(true);
     setError(null);
     setNotFound(false);
-    
     try {
-      const res = await axios.get('/cars/my');
-      setCar(res.data);
+      const res = await instance.get<Car[]>('/cars/');
+      setCars(res.data);
       return res.data;
-    } catch (err: unknown) {
-      if (isAxiosError(err) && err.response?.status === 404) {
-        setNotFound(true);
-        setCar(null);
-      } else {
-        setError(isAxiosError(err) 
-          ? err.response?.data?.message ?? "Nepodařilo se načíst auto"
-          : "Nastala neočekávaná chyba"
-        );
-      }
-      return null;
+    } catch (err) {
+      handleError(err, 'Nepodařilo se načíst auta.');
+      return [];
     } finally {
       setLoading(false);
     }
-  }, [axios]);
+  }, []);
 
-  // Načítání auta, kde jsem cestujícím
-  const fetchPassengerCar = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    setNotFound(false);
-    
-    try {
-      const res = await axios.get('/cars/as-passenger');
-      if (res.data) {
-        setCar(res.data);
-        return res.data;
-      } else {
-        setNotFound(true);
-        setCar(null);
-        return null;
-      }
-    } catch (err: unknown) {
-      if (isAxiosError(err) && err.response?.status === 404) {
-        setNotFound(true);
-        setCar(null);
-      } else {
-        setError(isAxiosError(err) 
-          ? err.response?.data?.message ?? "Nepodařilo se načíst auto"
-          : "Nastala neočekávaná chyba"
-        );
-      }
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, [axios]);
-
-  // Načítání konkrétního auta podle ID
+  // GET /cars/:id
   const fetchCarById = useCallback(async (carId: string) => {
     setLoading(true);
     setError(null);
     setNotFound(false);
-    
     try {
-      const res = await axios.get(`/cars/${carId}`);
-      const carData = res.data;
-      setCar(carData);
-      return carData;
-    } catch (err: unknown) {
+      const res = await instance.get<Car>(`/cars/${carId}`);
+      setCar(res.data);
+      return res.data;
+    } catch (err) {
       if (isAxiosError(err) && err.response?.status === 404) {
         setNotFound(true);
         setCar(null);
       } else {
-        setError(isAxiosError(err) 
-          ? err.response?.data?.message ?? "Nepodařilo se načíst auto"
-          : "Nastala neočekávaná chyba"
-        );
+        handleError(err, 'Nepodařilo se načíst auto.');
       }
       return null;
     } finally {
       setLoading(false);
     }
-  }, [axios]);
+  }, []);
 
-  // Vytvoření nového auta
-  const createCar = useCallback(async (carData: {
-    name: string;
-    layout: string;
-    date: string;
-  }) => {
+  // POST /cars/
+  const createCar = useCallback(async (data: CarFormData) => {
     setLoading(true);
     setError(null);
-    
     try {
-      const res = await axios.post('/cars/', carData);
-      const newCar = res.data;
-      setCar(newCar);
-      return newCar;
-    } catch (err: unknown) {
-      setError(isAxiosError(err) 
-        ? err.response?.data?.message ?? "Nepodařilo se vytvořit auto"
-        : "Nastala neočekávaná chyba"
-      );
+      const res = await instance.post<Car>('/cars/', data);
+      setCar(res.data);
+      return res.data;
+    } catch (err) {
+      handleError(err, 'Nepodařilo se vytvořit auto.');
       return null;
     } finally {
       setLoading(false);
     }
-  }, [axios]);
+  }, []);
 
-  // Aktualizace auta
-  const updateCar = useCallback(async (carId: string, carData: {
-    name: string;
-    layout: string;
-    date: string;
-  }) => {
+  // PATCH /cars/:id
+  const updateCar = useCallback(async (carId: string, data: CarFormData) => {
     setLoading(true);
     setError(null);
-    
     try {
-      const res = await axios.patch(`/cars/${carId}`, carData);
-      const updatedCar = res.data;
-      setCar(updatedCar);
-      return updatedCar;
-    } catch (err: unknown) {
-      setError(isAxiosError(err) 
-        ? err.response?.data?.message ?? "Nepodařilo se aktualizovat auto"
-        : "Nastala neočekávaná chyba"
-      );
+      const res = await instance.patch<Car>(`/cars/${carId}`, data);
+      setCar(res.data);
+      return res.data;
+    } catch (err) {
+      handleError(err, 'Nepodařilo se aktualizovat auto.');
       return null;
     } finally {
       setLoading(false);
     }
-  }, [axios]);
+  }, []);
 
-  // Smazání auta
+  // DELETE /cars/:id
   const deleteCar = useCallback(async (carId: string) => {
     setLoading(true);
     setError(null);
-    
     try {
-      await axios.delete(`/cars/${carId}`);
+      await instance.delete(`/cars/${carId}`);
       setCar(null);
       return true;
-    } catch (err: unknown) {
-      setError(isAxiosError(err) 
-        ? err.response?.data?.message ?? "Nepodařilo se smazat auto"
-        : "Nastala neočekávaná chyba"
-      );
+    } catch (err) {
+      handleError(err, 'Nepodařilo se smazat auto.');
       return false;
     } finally {
       setLoading(false);
     }
-  }, [axios]);
+  }, []);
 
-  // Resetování stavu
   const resetState = useCallback(() => {
     setCar(null);
+    setCars([]);
     setLoading(false);
     setError(null);
     setNotFound(false);
@@ -194,11 +132,11 @@ export function useCar() {
 
   return {
     car,
+    cars,
     loading,
     error,
     notFound,
-    fetchMyCar,
-    fetchPassengerCar,
+    fetchMyCars,
     fetchCarById,
     createCar,
     updateCar,
