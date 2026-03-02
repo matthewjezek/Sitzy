@@ -1,62 +1,78 @@
 import { useState, useCallback } from "react";
-import axios, { isAxiosError } from "axios";
+import { isAxiosError } from "axios";
+import instance from "../api/axios";
+import type { Invitation } from "./useInvites";
 
-type Notification = {
-  id: string;
+type NotificationType = "info" | "warning" | "success" | "error" | "invite";
+
+export type Notification = {
+  id: string; // token pozvánky
   title: string;
   message: string;
-  type: "info" | "warning" | "success" | "error" | "invite";
-  created_at: Date;
+  type: NotificationType;
+  created_at: string;
   read: boolean;
 };
+
+function invitationToNotification(inv: Invitation): Notification {
+  return {
+    id: inv.token,
+    title: "Nová pozvánka",
+    message: `Byl/a jsi pozván/a na jízdu.`,
+    type: "invite",
+    created_at: inv.created_at,
+    read: inv.status !== "Pending",
+  };
+}
 
 export function useNotifications() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const handleError = (err: unknown, fallback: string) => {
+    setError(
+      isAxiosError(err)
+        ? (err.response?.data?.detail ?? fallback)
+        : "Nastala neočekávaná chyba."
+    );
+  };
+
+  // GET /invitations/received – pending
   const fetchNotifications = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
-      const res = await axios.get<Notification[]>("/notifications");
-      setNotifications(res.data);
-    } catch (err: unknown) {
-      if (isAxiosError(err)) {
-        setError(err.response?.data?.message ?? "Nepodařilo se načíst notifikace");
-      } else {
-        setError("Nastala neočekávaná chyba");
-      }
+      const res = await instance.get<Invitation[]>("/invitations/received");
+      const data = Array.isArray(res.data) ? res.data : [];
+      setNotifications(
+        data
+          .filter((i) => i.status === "Pending")
+          .map(invitationToNotification)
+      );
+    } catch (err) {
+      handleError(err, "Nepodařilo se načíst notifikace.");
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const markAsRead = useCallback(async (id: string) => {
+  // Optimistic mark as read – local state only
+  const markAsRead = useCallback((id: string) => {
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, read: true } : n))
     );
-    try {
-      await axios.post(`/notifications/${id}/read`);
-    } catch {
-      // fallback: vrátit zpět
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, read: false } : n))
-      );
-    }
   }, []);
 
-  const markAllAsRead = useCallback(async () => {
-    const prev = notifications;
+  const markAllAsRead = useCallback(() => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-    try {
-      await axios.post("/notifications/read-all");
-    } catch {
-      setNotifications(prev);
-    }
-  }, [notifications]);
+  }, []);
+
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   return {
     notifications,
+    unreadCount,
     loading,
     error,
     fetchNotifications,
