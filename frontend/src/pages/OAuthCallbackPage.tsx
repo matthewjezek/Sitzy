@@ -37,7 +37,7 @@ export default function OAuthCallbackPage() {
         toast.error('Přihlášení selhalo.')
         navigate('/login')
       })
-  }, [])
+  }, [navigate, searchParams])
 
   return (
     <div className="page-container">
