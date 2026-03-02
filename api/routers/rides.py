@@ -3,6 +3,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import Response
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from api.database import get_db
@@ -20,7 +21,6 @@ from api.schemas import (
 from api.utils.enums import InvitationStatus
 from api.utils.logging_config import get_logger
 from api.utils.security import generate_token
-from sqlalchemy import or_
 
 router = APIRouter()
 logger = get_logger(__name__)
