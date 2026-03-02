@@ -20,6 +20,7 @@ from api.schemas import (
 from api.utils.enums import InvitationStatus
 from api.utils.logging_config import get_logger
 from api.utils.security import generate_token
+from sqlalchemy import or_
 
 router = APIRouter()
 logger = get_logger(__name__)
@@ -76,11 +77,18 @@ def get_my_rides(
     db: Session = Depends(get_db),
     ctx: UserContext = Depends(get_current_user),
 ) -> list[RideOut]:
-    """Get all rides where the user is a passenger."""
+    """Get all rides where the user is a passenger or car owner."""
     rides = (
         db.query(Ride)
-        .join(Passenger, Ride.id == Passenger.ride_id)
-        .filter(Passenger.user_id == ctx.user.id)
+        .join(Car, Ride.car_id == Car.id)
+        .outerjoin(Passenger, Ride.id == Passenger.ride_id)
+        .filter(
+            or_(
+                Car.owner_id == ctx.user.id,
+                Passenger.user_id == ctx.user.id,
+            )
+        )
+        .distinct()
         .all()
     )
     logger.debug(
@@ -306,7 +314,7 @@ def invite_passenger(
         invited_email=str(invitation_in.invited_email),
         token=generate_token(32),
         status=InvitationStatus.PENDING,
-        expires_at=datetime.now(timezone.utc) + timedelta(days=7),
+        expires_at=datetime.now(timezone.utc) + timedelta(hours=24),
     )
     db.add(invitation)
     db.commit()
