@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from api.database import get_db
 from api.deps import UserContext, get_current_user
 from api.models import Car, Invitation, Passenger, Ride
-from api.schemas import InvitationOut, PassengerSeatIn, UserOut
+from api.schemas import InvitationOut, PassengerSeatInOptional, UserOut
 from api.utils.enums import InvitationStatus
 from api.utils.logging_config import get_logger
 
@@ -112,12 +112,13 @@ def get_invitation(
 @router.post("/{token}/accept", response_model=UserOut)
 def accept_invitation(
     token: str,
-    seat_in: PassengerSeatIn,
+    seat_in: PassengerSeatInOptional,
     request: Request,
     db: Session = Depends(get_db),
     ctx: UserContext = Depends(get_current_user),
 ) -> UserOut:
-    """Accept an invitation and become a passenger on the ride."""
+    """Accept an invitation and become a passenger on the ride.
+    If seat_position is not provided, the first available seat is assigned."""
     invitation = db.query(Invitation).filter(Invitation.token == token).first()
     if not invitation:
         raise HTTPException(status_code=404, detail="Invitation not found.")
@@ -152,11 +153,29 @@ def accept_invitation(
             status_code=400, detail="User is already a passenger on this ride."
         )
 
+    ride = invitation.ride
+    occupied = {p.seat_position for p in ride.passengers}
+    occupied.add(1)
+    available = [s.position for s in ride.car.seats if s.position not in occupied]
+
+    if not available:
+        raise HTTPException(status_code=400, detail="No available seats.")
+
+    if seat_in.seat_position is None:
+        seat_position = available[0]
+    else:
+        if seat_in.seat_position not in available:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Seat {seat_in.seat_position} is not available.",
+            )
+        seat_position = seat_in.seat_position
+
     invitation.status = InvitationStatus.ACCEPTED
     passenger = Passenger(
         user_id=ctx.user.id,
         ride_id=invitation.ride_id,
-        seat_position=seat_in.seat_position,
+        seat_position=seat_position,
     )
     db.add(passenger)
     db.commit()
@@ -165,6 +184,7 @@ def accept_invitation(
         extra={
             "user_id": str(ctx.user.id),
             "ride_id": str(invitation.ride_id),
+            "seat_position": seat_position,
             "token": token,
         },
     )
