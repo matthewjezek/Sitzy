@@ -1,0 +1,63 @@
+import { z } from 'zod'
+
+// ========================================
+// CAR
+// ========================================
+export const carSchema = z.object({
+  name: z
+    .string()
+    .min(2, 'Název musí mít alespoň 2 znaky.')
+    .max(50, 'Název může mít nejvýše 50 znaků.'),
+  layout: z.enum(['sedan', 'coupe', 'minivan'], {
+    error: () => ({ message: 'Vyberte typ auta.' }),
+  }),
+})
+
+export type CarFormData = z.infer<typeof carSchema>
+
+// ========================================
+// RIDE
+// ========================================
+export const rideSchema = z.object({
+  car_id: z.string().uuid('Vyberte auto.'),
+  departure_time: z
+    .string()
+    .min(1, 'Zadejte čas odjezdu.')
+    .refine(
+      val => new Date(val) > new Date(),
+      'Čas odjezdu musí být v budoucnosti.'
+    ),
+  destination: z
+    .string()
+    .min(2, 'Cíl musí mít alespoň 2 znaky.')
+    .max(100, 'Cíl může mít nejvýše 100 znaků.')
+    .optional()
+    .or(z.literal('')),
+})
+
+export type RideFormData = z.infer<typeof rideSchema>
+
+// ========================================
+// INVITE
+// ========================================
+export const inviteSchema = z.object({
+  email: z
+    .email('Zadejte platný e-mail.')
+    .min(1, 'Zadejte e-mail.')
+    .transform(val => val.toLowerCase().trim()),
+})
+
+export type InviteFormData = z.infer<typeof inviteSchema>
+
+// ========================================
+// SEAT
+// ========================================
+export const seatSchema = z.object({
+  seat_position: z
+    .number()
+    .int()
+    .min(1, 'Neplatné sedadlo.')
+    .max(7, 'Neplatné sedadlo.'),
+})
+
+export type SeatFormData = z.infer<typeof seatSchema>
