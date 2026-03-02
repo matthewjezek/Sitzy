@@ -1,6 +1,6 @@
 {
   "name": "sitzy",
-  "version": "0.0.1",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -34,6 +34,6 @@
     "tailwindcss": "^4.0.0",
     "typescript": "^5.9.2",
     "vite": "^7.1.2",
-    "vite-plugin-pwa": "^0.21.1"
+    "vite-plugin-pwa": "^1.2.0"
   }
 }
