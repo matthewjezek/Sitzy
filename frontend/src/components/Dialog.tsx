@@ -427,7 +427,7 @@ const InvitationDialog = forwardRef<HTMLDialogElement, InvitationDialogProps>(
                     viewBox="0 0 24 24"
                   >
                     <rect x="2" y="10" width="20" height="9" rx="2" />
-                    <path d="m20.772 10.156-1.368-4.105A2.995 2.995 0 0 0 16.559 4H7.441a2.995 2.995 0 0 0-2.845 2.051l-1.368 4.105A2.003" />
+                    <path d="m20.772 10.156-1.368-4.105A2.995 2.995 0 0 0 16.559 4H7.441a2.995 2.995 0 0 0-2.845 2.051l-1.368 4.105A2.003 2.003 0 0 0 2 12" />
                     <circle cx="6" cy="14.5" r="1.5" />
                     <circle cx="18" cy="14.5" r="1.5" />
                   </svg>
