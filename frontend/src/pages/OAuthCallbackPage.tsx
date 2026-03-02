@@ -10,19 +10,18 @@ export default function OAuthCallbackPage() {
   useEffect(() => {
     const code = searchParams.get('code')
     const state = searchParams.get('state')
-    const provider = searchParams.get('provider')
 
-    if (!code || !state || !provider) {
+    if (!code || !state) {
       toast.error('Neplatný callback.')
       navigate('/login')
       return
     }
 
     instance
-      .get(`/auth/oauth/callback`, { params: { code, state, provider } })
+      .get(`/auth/oauth/callback`, { params: { code, state } })
       .then(({ data }) => {
         localStorage.setItem('access_token', data.access_token)
-        navigate('/dashboard')
+        navigate('/')
       })
       .catch(() => {
         toast.error('Přihlášení selhalo.')

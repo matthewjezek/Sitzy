@@ -87,17 +87,21 @@ async def oauth_callback(
     response: Response,
     code: str = Query(...),
     state: str = Query(...),
-    provider: Provider = Query(...),
     db: Session = Depends(get_db),
 ) -> dict[str, str]:
-    """Handle OAuth callback and create session."""
+    """Handle OAuth callback and create session.
+    
+    Provider is determined from the state token (no query parameter needed).
+    """
     result = state_manager.validate_and_consume_state(state)
-    if not result or result[0] != provider:
+    if not result:
         logger.warning(
             "OAuth callback with invalid state",
-            extra={"provider": provider, "state_valid": result is not None},
+            extra={"state_valid": False},
         )
         raise HTTPException(status_code=400, detail="Invalid or expired state token.")
+    
+    provider, code_verifier = result
 
     _, code_verifier = result
 
