@@ -111,6 +111,7 @@ class PassengerOut(BaseModel):
     @classmethod
     def from_passenger(cls, passenger: object) -> "PassengerOut":
         from .models import Passenger
+
         p = cast("Passenger", passenger)
         return cls(
             user_id=p.user_id,
@@ -147,6 +148,7 @@ class RideOut(BaseModel):
     @classmethod
     def from_ride(cls, ride: object) -> "RideOut":
         from .models import Ride
+
         r = cast("Ride", ride)
         return cls(
             id=r.id,
