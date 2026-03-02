@@ -151,7 +151,7 @@ export default function Navigation() {
   const unreadCount = invites.filter(i => i.status === 'Pending').length
 
   const handleLogout = () => {
-    localStorage.removeItem('token')
+    localStorage.removeItem('access_token')
     navigate('/login')
   }
 
