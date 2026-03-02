@@ -16,12 +16,21 @@ class UserBase(BaseModel):
     email: EmailStr | None = None
 
 
+class SocialAccountOut(BaseModel):
+    provider: str
+    email: str | None = None
+    linked_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class UserOut(BaseModelWithLabels["UserOut"], UserBase):
     id: UUID
     full_name: str | None = None
     avatar_url: str | None = None
     created_at: datetime
     updated_at: datetime
+    social_accounts: list[SocialAccountOut] = []  # ✅
 
     model_config = ConfigDict(from_attributes=True)
 
