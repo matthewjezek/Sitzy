@@ -208,10 +208,17 @@ def book_seat(
     db: Session = Depends(get_db),
     ctx: UserContext = Depends(get_current_user),
 ) -> RideOut:
-    """Book a seat on a ride."""
+    """Book a seat on a ride. If seat_position is not provided,
+    the first available seat is assigned automatically."""
     ride = _get_ride_or_404(ride_id, db)
 
-    if len(ride.passengers) >= len(ride.car.seats) - 1:
+    occupied = {p.seat_position for p in ride.passengers}
+    occupied.add(1)
+    available = [
+        s.position for s in ride.car.seats if s.position not in occupied
+    ]
+
+    if not available:
         logger.warning(
             "Seat booking failed - no available seats",
             extra={"user_id": str(ctx.user.id), "ride_id": str(ride_id)},
@@ -228,10 +235,20 @@ def book_seat(
         )
         raise HTTPException(status_code=409, detail="Already booked.")
 
+    if seat_in.seat_position is None:
+        seat_position = available[0]
+    else:
+        if seat_in.seat_position not in available:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Seat {seat_in.seat_position} is not available.",
+            )
+        seat_position = seat_in.seat_position
+
     passenger = Passenger(
         user_id=ctx.user.id,
         ride_id=ride_id,
-        seat_position=seat_in.seat_position,
+        seat_position=seat_position,
     )
     db.add(passenger)
     db.commit()
@@ -241,7 +258,7 @@ def book_seat(
         extra={
             "user_id": str(ctx.user.id),
             "ride_id": str(ride_id),
-            "seat_position": seat_in.seat_position,
+            "seat_position": seat_position,
         },
     )
     return RideOut.model_validate(ride)
