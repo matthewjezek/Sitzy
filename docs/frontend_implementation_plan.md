@@ -21,6 +21,33 @@ Unifikujeme barevné téma – navrhujeme přechod z `indigo` na teplý
     `dark:` wrapper ve stránce.
 - **Selenium místo Playwright**: konzistentní s pythonovým backendem
     (pytest), jednodušší CI/CD integrace.
+- **Dashboard = Rides s filtrem**: `/dashboard` nahrazeno `/rides` –
+    zobrazuje pouze nadcházející jízdy. Žádná samostatná dashboard stránka.
+- **Stránky ke smazání**: `/dashboard`, `/create-car` (nahrazeno
+    `/cars/new`), `/demo-seats`, `/test-seats`, `/position-test` (dev only,
+    schovat za `ENVIRONMENT` check).
+- **Pozvánky bez samostatné stránky**: oznámení přes zvoneček v navbar
+    (dropdown s Accept/Reject přímo v UI). Po přijetí → přesměrování na
+    `/rides/:id` pro výběr sedadla přes `SeatRenderer`.
+- **Transfer řidiče**: tlačítko "Předat řízení" vidí pouze majitel auta
+    (ne aktuální řidič pokud není majitel).
+- **`SeatRenderer` použití**: zobrazení zasedacího pořádku a obsazenosti
+    na `/rides/:id`. Pasažér si vybírá sedadlo přes `SeatRenderer` po
+    přijetí pozvánky.
+
+## Struktura stránek
+
+```text
+/login                  → přihlášení (OAuth Facebook + X)
+/auth/callback          → OAuth callback
+/rides                  → seznam nadcházejících jízd (hlavní stránka)
+/rides/new              → plánování nové jízdy
+/rides/:id              → detail jízdy + SeatRenderer + pasažéři
+/cars                   → seznam mých aut
+/cars/new               → vytvoření auta
+/cars/:id               → detail + úprava auta
+/settings               → profil + dark mode + odhlášení
+```
 
 ## Kroky
 
@@ -56,8 +83,9 @@ Unifikujeme barevné téma – navrhujeme přechod z `indigo` na teplý
 1. Lokální validace – Zod schémata
 
     Nový soubor `frontend/src/utils/validation.ts`:
-    - `carSchema` – `name` (2–50 znaků), `layout` (enum sedan/coupé/minivan),
-        `departure_time` (musí být v budoucnosti).
+    - `carSchema` – `name` (2–50 znaků), `layout` (enum sedan/coupé/minivan).
+    - `rideSchema` – `car_id` (required), `departure_time` (musí být
+        v budoucnosti), `destination` (2–100 znaků, volitelné).
     - `inviteSchema` – `email` (validní formát, lowercase normalizace).
     - `seatSchema` – `seat_position` (1–7 dle layoutu).
 
@@ -72,25 +100,28 @@ Unifikujeme barevné téma – navrhujeme přechod z `indigo` na teplý
     - `DELETE /invitations/{token}` – beze změny.
     - `POST /invitations/{token}/accept` + `/reject` – beze změny.
 
-    `SeatPageNew.tsx`:
+    `SeatPageNew.tsx` → přesunout logiku do `/rides/:id`:
     - `POST /seats/choose` → `POST /rides/{ride_id}/book`.
     - `DELETE /seats/` → `DELETE /rides/{ride_id}/book`.
-    - `GET /cars/as-passenger` – ověřit nebo nahradit za `GET /rides/`.
+    - `GET /cars/as-passenger` → nahradit za `GET /rides/`.
 
     `useCar.tsx`:
-    - `GET /cars/my` → `GET /cars/` (vrací list, vezmi první).
-    - `fetchPassengerCar` endpoint ověřit.
+    - `GET /cars/my` → `GET /cars/`.
+    - Odstranit `fetchPassengerCar` – přesunuto do `useRide`.
 
 1. Nový hook `useRide.tsx`
 
     Nový soubor `frontend/src/hooks/useRide.tsx`:
-    - `fetchMyRides()` – `GET /rides/`.
-    - `createRide(data)` – `POST /rides/`.
+    - `fetchMyRides()` – `GET /rides/` (filtrovat nadcházející na FE).
+    - `fetchRide(id)` – `GET /rides/{id}`.
+    - `createRide(data)` – `POST /rides/` (car_id, departure_time,
+        destination).
     - `updateRide(id, data)` – `PATCH /rides/{id}`.
     - `cancelRide(id)` – `DELETE /rides/{id}`.
     - `bookSeat(rideId, seatPosition)` – `POST /rides/{rideId}/book`.
     - `cancelBooking(rideId)` – `DELETE /rides/{rideId}/book`.
-    - `transferDriver(rideId, newDriverId)` – `POST /rides/{rideId}/transfer-driver`.
+    - `transferDriver(rideId, newDriverId)` – `POST /rides/{rideId}/transfer-driver`
+        (pouze majitel auta).
 
 1. Oprava hooků – axios instance
 
@@ -99,8 +130,7 @@ Unifikujeme barevné téma – navrhujeme přechod z `indigo` na teplý
     - Zajistí že refresh token interceptor funguje i zde.
 
     `CallAPI.tsx`:
-    - Odstranit (superseded by axios interceptor) nebo refaktorovat jako
-        pure helper (bez `useNavigate`).
+    - Odstranit (superseded by axios interceptor).
 
 1. Navigation opravy
 
@@ -111,6 +141,9 @@ Unifikujeme barevné téma – navrhujeme přechod z `indigo` na teplý
         `localStorage.removeItem('access_token')` + volat `POST /auth/revoke`
         pro server-side cookie clear.
     - Přidat `title` atributy k ikonám pro accessibility (PWA requirement).
+    - Přidat zvoneček s badge počtem čekajících pozvánek.
+    - Dropdown pozvánek: Accept/Reject přímo v UI bez samostatné stránky.
+    - Po přijetí pozvánky → přesměrování na `/rides/:id`.
 
 1. SettingsPage – funkční
 
@@ -118,16 +151,49 @@ Unifikujeme barevné téma – navrhujeme přechod z `indigo` na teplý
     - Dark mode toggle přepínač (persist localStorage).
     - Zobrazit aktivní OAuth provider (Facebook/X ikonou).
     - Zobrazit datum registrace.
-    - Tlačítko "Odhlásit se ze všech zařízení" → `POST /auth/revoke`.
+    - Tlačítko "Odhlásit se" → `POST /auth/revoke` + clear localStorage.
     - Odstranit nefunkční password field.
-    - Validovat formulář přes Zod před `PATCH /auth/me`.
+    - Validovat formulář přes Zod před `PATCH /auth/me` (pokud bude
+        endpoint).
 
-1. DashboardPage – updated
+1. Rides stránky
 
-    `DashboardPage.tsx`:
-    - Zobrazit seznam nadcházejících jízd místo jedné (z `GET /rides/`).
-    - Karty jízd s `<RideStatus>` a sedadlem uživatele.
-    - Prázdný stav s CTA "Vytvořit jízdu" nebo "Čekám na pozvání".
+    `/rides` (`RidesPage.tsx`) – nahrazuje Dashboard:
+    - Seznam nadcházejících jízd z `GET /rides/` (filtr na FE:
+        `departure_time > now()`).
+    - Karta jízdy: auto, čas odjezdu, cíl, sedadlo uživatele, stav.
+    - Prázdný stav s CTA "Vytvořit jízdu".
+    - Tlačítko "+ Nová jízda" → `/rides/new`.
+
+    `/rides/new` (`CreateRidePage.tsx`):
+    - Formulář: výběr auta (dropdown `GET /cars/`), datum a čas odjezdu,
+        cíl cesty (volitelné).
+    - Validace přes Zod (`rideSchema`).
+    - Po vytvoření → přesměrování na `/rides/:id`.
+
+    `/rides/:id` (`RideDetailPage.tsx`):
+    - `SeatRenderer` – vizuál zasedacího pořádku a obsazenosti.
+    - Pasažér si vybírá sedadlo kliknutím na `SeatRenderer`.
+    - Seznam pasažérů s avatary.
+    - Tlačítko "Pozvat" → formulář s emailem (validace `inviteSchema`).
+    - Tlačítko "Předat řízení" – pouze majitel auta → modal s výběrem
+        pasažéra.
+    - Tlačítko "Zrušit jízdu" – pouze majitel auta.
+
+    `/cars` (`CarsPage.tsx`):
+    - Seznam aut z `GET /cars/`.
+    - Prázdný stav s CTA "Přidat auto".
+    - Tlačítko "+ Přidat auto" → `/cars/new`.
+
+    `/cars/new` (`CreateCarPage.tsx`):
+    - Formulář: název, layout (sedan/coupé/minivan).
+    - Validace přes Zod (`carSchema`).
+    - Po vytvoření → přesměrování na `/cars/:id`.
+
+    `/cars/:id` (`CarDetailPage.tsx`):
+    - Detail auta + úprava (název, layout).
+    - Seznam jízd tohoto auta.
+    - Tlačítko "Smazat auto".
 
 1. Selenium testovací sada
 
@@ -137,11 +203,15 @@ Unifikujeme barevné téma – navrhujeme přechod z `indigo` na teplý
     Nový soubor `selenium/test_auth_flow.py`:
     - `test_login_page_renders` – oba OAuth tlačítka viditelná.
     - `test_dark_mode_toggle` – přepnutí v Settings persistence.
-    - `test_protected_route_redirect` – `/dashboard` bez tokenu → `/login`.
-    - `test_seat_renderer_visibility` – `SeatRenderer` zobrazen na CarPage.
+    - `test_protected_route_redirect` – `/rides` bez tokenu → `/login`.
+    - `test_seat_renderer_visibility` – `SeatRenderer` zobrazen na
+        `/rides/:id`.
     - `test_logout_clears_token` – po odhlášení `access_token` odstraněn
         z localStorage.
     - `test_pwa_manifest_accessible` – `GET /manifest.webmanifest` vrací 200.
+    - `test_notification_bell_visible` – zvoneček viditelný po přihlášení.
+    - `test_invite_accept_redirects_to_ride` – přijetí pozvánky →
+        přesměrování na `/rides/:id`.
 
 ## Ověření
 
