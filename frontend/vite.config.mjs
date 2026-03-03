@@ -9,7 +9,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'icons/*.png'],
+      includeAssets: ['favicon.ico', 'favicon.svg', 'apple-touch-icon.png', 'icons/*.png', 'splash/*.png'],
       manifest: {
         name: 'Sitzy',
         short_name: 'Sitzy',
@@ -23,11 +23,7 @@ export default defineConfig({
             src: '/icons/icon-192.png',
             sizes: '192x192',
             type: 'image/png',
-          },
-          {
-            src: '/icons/icon-512.png',
-            sizes: '512x512',
-            type: 'image/png',
+            purpose: 'maskable',
           },
           {
             src: '/icons/icon-512.png',
@@ -38,7 +34,9 @@ export default defineConfig({
         ],
       },
       workbox: {
+        globIgnores: ['**/splash/**'],
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3MB
         navigateFallback: '/login',
         navigateFallbackDenylist: [/^\/api/],
         runtimeCaching: [
