@@ -2,6 +2,11 @@ import { useEffect, useState } from 'react';
 import { isAxiosError } from 'axios';
 import { toast } from 'react-toastify';
 import instance from '../api/axios';
+import {
+  applyThemePreference,
+  getThemePreference,
+  type ThemePreference,
+} from '../utils/theme';
 
 interface SocialAccount {
   provider: string
@@ -42,9 +47,8 @@ function SettingsSkeleton() {
 export default function SettingsPage() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const [darkMode, setDarkMode] = useState(
-    () => localStorage.getItem('theme') === 'dark'
-  )
+  const [themePreference, setThemePreference] = useState<ThemePreference>(() => getThemePreference())
+  const [emailNotifications, setEmailNotifications] = useState<'enabled' | 'disabled'>('enabled')
 
   useEffect(() => {
     instance.get<User>('/auth/me')
@@ -59,16 +63,9 @@ export default function SettingsPage() {
       .finally(() => setLoading(false))
   }, [])
 
-  const toggleDarkMode = () => {
-    const next = !darkMode
-    setDarkMode(next)
-    if (next) {
-      document.documentElement.classList.add('dark')
-      localStorage.setItem('theme', 'dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-      localStorage.setItem('theme', 'light')
-    }
+  const handleThemeChange = (nextTheme: ThemePreference) => {
+    setThemePreference(nextTheme)
+    applyThemePreference(nextTheme)
   }
 
   const handleLogout = () => {
@@ -111,15 +108,49 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Tmavý režim */}
-      <div className="card p-4 flex items-center justify-between">
-        <span className="font-medium">Tmavý režim</span>
-        <button
-          onClick={toggleDarkMode}
-          className={`toggle-switch ${darkMode ? 'active' : ''}`}
-        >
-          <span className="toggle-knob" />
-        </button>
+      {/* Motiv */}
+      <div className="card p-4 flex flex-col gap-3">
+        <div className="setting-row">
+          <span className="setting-label">Motiv</span>
+          <div className="setting-value-group">
+            <button
+              onClick={() => handleThemeChange('light')}
+              className={`setting-value-option ${themePreference === 'light' ? 'setting-value-option-active' : ''}`}
+            >
+              Světlý
+            </button>
+            <button
+              onClick={() => handleThemeChange('dark')}
+              className={`setting-value-option ${themePreference === 'dark' ? 'setting-value-option-active' : ''}`}
+            >
+              Tmavý
+            </button>
+            <button
+              onClick={() => handleThemeChange('system')}
+              className={`setting-value-option ${themePreference === 'system' ? 'setting-value-option-active' : ''}`}
+            >
+              Podle systému
+            </button>
+          </div>
+        </div>
+
+        <div className="setting-row">
+          <span className="setting-label">E-mail notifikace</span>
+          <div className="setting-value-group">
+            <button
+              onClick={() => setEmailNotifications('enabled')}
+              className={`setting-value-option ${emailNotifications === 'enabled' ? 'setting-value-option-active' : ''}`}
+            >
+              Zapnuto
+            </button>
+            <button
+              onClick={() => setEmailNotifications('disabled')}
+              className={`setting-value-option ${emailNotifications === 'disabled' ? 'setting-value-option-active' : ''}`}
+            >
+              Vypnuto
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Odhlášení */}

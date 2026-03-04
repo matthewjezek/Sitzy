@@ -843,6 +843,72 @@
     color: #e9d5ff;
   }
 
+  .setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .setting-label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #111827;
+    min-width: 7rem;
+  }
+
+  .dark .setting-label {
+    color: #f3f4f6;
+  }
+
+  .setting-value-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    flex: 1;
+  }
+
+  .setting-value-option {
+    padding: 0.4rem 0.75rem;
+    border-radius: 0.65rem;
+    border: 1px solid #d1d5db;
+    background-color: #ffffff;
+    color: #374151;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 200ms ease;
+  }
+
+  .setting-value-option:hover {
+    border-color: #a5b4fc;
+  }
+
+  .dark .setting-value-option {
+    background-color: #1f2937;
+    border-color: #374151;
+    color: #e5e7eb;
+  }
+
+  .dark .setting-value-option:hover {
+    border-color: rgba(165, 180, 252, 0.7);
+  }
+
+  .setting-value-option-active {
+    border-color: #4f46e5;
+    background-color: #eef2ff;
+    color: #3730a3;
+  }
+
+  .dark .setting-value-option-active {
+    border-color: #818cf8;
+    background-color: rgba(79, 70, 229, 0.2);
+    color: #c7d2fe;
+  }
+
   /* ========================================
    * EMPTY STATE
    * ======================================== */

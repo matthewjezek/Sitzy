@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router'
-import { useEffect, lazy, Suspense } from 'react'
+import { useEffect, useState, lazy, Suspense } from 'react'
 import { useNavigate } from 'react-router'
 import { ToastContainer } from 'react-toastify'
 import { AUTH_EXPIRED_EVENT } from './api/axios'
@@ -16,6 +16,12 @@ import CreateRidePage from './pages/CreateRidePage'
 import CarsPage from './pages/CarsPage'
 import CarDetailPage from './pages/CarDetailPage'
 import CreateCarPage from './pages/CreateCarPage'
+import {
+  applyThemePreference,
+  getThemePreference,
+  resolveThemePreference,
+  THEME_CHANGED_EVENT,
+} from './utils/theme'
 
 const isDev = import.meta.env.MODE === 'development'
 
@@ -28,11 +34,32 @@ function AppRoutes() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    const theme = localStorage.getItem('theme')
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+
+    const applyStoredTheme = () => {
+      const preference = getThemePreference()
+      applyThemePreference(preference)
+    }
+
+    const handleSystemThemeChange = () => {
+      if (getThemePreference() === 'system') {
+        applyThemePreference('system')
+      }
+    }
+
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'theme') {
+        applyStoredTheme()
+      }
+    }
+
+    applyStoredTheme()
+    mediaQuery.addEventListener('change', handleSystemThemeChange)
+    window.addEventListener('storage', handleStorageChange)
+
+    return () => {
+      mediaQuery.removeEventListener('change', handleSystemThemeChange)
+      window.removeEventListener('storage', handleStorageChange)
     }
   }, [])
 
@@ -86,7 +113,39 @@ function AppRoutes() {
 }
 
 function App() {
-  const isDarkMode = document.documentElement.classList.contains('dark')
+  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>(() => resolveThemePreference(getThemePreference()))
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+
+    const syncThemeState = () => {
+      const preference = getThemePreference()
+      setResolvedTheme(resolveThemePreference(preference))
+    }
+
+    const handleThemeChanged = () => syncThemeState()
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'theme') {
+        syncThemeState()
+      }
+    }
+    const handleSystemThemeChange = () => {
+      if (getThemePreference() === 'system') {
+        syncThemeState()
+      }
+    }
+
+    syncThemeState()
+    window.addEventListener(THEME_CHANGED_EVENT, handleThemeChanged)
+    window.addEventListener('storage', handleStorageChange)
+    mediaQuery.addEventListener('change', handleSystemThemeChange)
+
+    return () => {
+      window.removeEventListener(THEME_CHANGED_EVENT, handleThemeChanged)
+      window.removeEventListener('storage', handleStorageChange)
+      mediaQuery.removeEventListener('change', handleSystemThemeChange)
+    }
+  }, [])
   
   return (
     <Router>
@@ -97,7 +156,7 @@ function App() {
         hideProgressBar
         pauseOnHover
         draggable
-        theme={isDarkMode ? 'dark' : 'colored'}
+        theme={resolvedTheme === 'dark' ? 'dark' : 'colored'}
       />
     </Router>
   )
