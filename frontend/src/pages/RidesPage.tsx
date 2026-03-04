@@ -100,7 +100,7 @@ export default function RidesPage() {
             <li key={ride.id}>
               <button
                 onClick={() => navigate(`/rides/${ride.id}`)}
-                className="w-full card p-4 flex items-center gap-4 hover-border-accent text-left"
+                className="w-full card card-interactive p-4 flex items-center gap-4 hover-border-accent text-left"
               >
                 <div className="flex-1 min-w-0 flex flex-col gap-1">
                   <div className="flex items-center gap-2">

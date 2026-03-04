@@ -82,7 +82,7 @@ export default function CarsPage() {
             <li key={car.id}>
               <button
                 onClick={() => navigate(`/cars/${car.id}`)}
-                className="w-full card p-4 flex items-center gap-4 hover-border-accent text-left"
+                className="w-full card card-interactive p-4 flex items-center gap-4 hover-border-accent text-left"
               >
                 <div className="p-2 rounded-xl badge-indigo shrink-0">
                   <LayoutIcon layout={car.layout} />
