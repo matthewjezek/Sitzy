@@ -12,14 +12,14 @@ import { SedanSvg, CoupeSvg, MinivanSvg } from '../assets/icons'
 function CreateCarSkeleton() {
   return (
     <div className="animate-pulse max-w-lg mx-auto mt-10 p-6 flex flex-col gap-6">
-      <div className="h-8 w-48 rounded bg-gray-200 dark:bg-gray-700 mx-auto" />
+      <div className="h-8 w-48 rounded skeleton-dark mx-auto" />
       <div className="flex gap-4 justify-center">
         {[1, 2, 3].map(i => (
-          <div key={i} className="h-24 w-24 rounded-xl bg-gray-200 dark:bg-gray-700" />
+          <div key={i} className="h-24 w-24 rounded-xl skeleton-dark" />
         ))}
       </div>
-      <div className="h-10 rounded-lg bg-gray-200 dark:bg-gray-700" />
-      <div className="h-10 rounded-lg skeleton-indigo" />
+      <div className="h-10 rounded-lg skeleton-dark" />
+      <div className="h-10 rounded-lg skeleton-dark" />
     </div>
   )
 }
@@ -132,7 +132,7 @@ export default function CreateCarPage() {
         <button
           type="submit"
           disabled={submitting || loading}
-          className="w-full py-2 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition disabled:opacity-50"
+          className="w-full button-primary flex items-center justify-center"
         >
           {submitting ? 'Ukládám...' : isEdit ? 'Uložit změny' : 'Vytvořit auto'}
         </button>

@@ -13,11 +13,11 @@ import { localInputToUTC, nowForDatetimeInput } from '../utils/datetime'
 function CreateRideSkeleton() {
   return (
     <div className="animate-pulse max-w-lg mx-auto mt-10 p-6 flex flex-col gap-6">
-      <div className="h-8 w-48 rounded bg-gray-200 dark:bg-gray-700 mx-auto" />
-      <div className="h-10 rounded-lg bg-gray-200 dark:bg-gray-700" />
-      <div className="h-10 rounded-lg bg-gray-200 dark:bg-gray-700" />
-      <div className="h-10 rounded-lg bg-gray-200 dark:bg-gray-700" />
-      <div className="h-10 rounded-lg bg-indigo-200 dark:bg-indigo-900" />
+      <div className="h-8 w-48 rounded skeleton-dark mx-auto" />
+      <div className="h-10 rounded-lg skeleton-dark" />
+      <div className="h-10 rounded-lg skeleton-dark" />
+      <div className="h-10 rounded-lg skeleton-dark" />
+      <div className="h-10 rounded-lg skeleton-dark" />
     </div>
   )
 }
@@ -75,11 +75,11 @@ export default function CreateRidePage() {
 
       {/* Žádné auto */}
       {!carsLoading && cars.length === 0 && (
-        <div className="p-4 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 text-sm flex flex-col gap-3">
+        <div className="p-4 rounded-xl status-warning text-sm flex flex-col gap-3">
           <p>Nemáte žádné auto. Nejprve přidejte auto.</p>
           <button
             onClick={() => navigate('/cars/new')}
-            className="py-2 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition self-start"
+            className="py-2 px-4 rounded-xl button-primary self-start"
           >
             Přidat auto
           </button>
@@ -141,7 +141,7 @@ export default function CreateRidePage() {
         <button
           type="submit"
           disabled={submitting || cars.length === 0}
-          className="w-full py-2 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition disabled:opacity-50"
+          className="w-full py-2 px-4 rounded-xl button-primary flex items-center justify-center"
         >
           {submitting ? 'Vytvářím...' : 'Vytvořit jízdu'}
         </button>

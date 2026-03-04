@@ -24,10 +24,10 @@ const DeleteDialog = forwardRef<HTMLDialogElement, { children: React.ReactNode; 
           {children}
         </div>
         <div className="dialog-actions">
-          <button className="dialog-proceed-danger-button" onClick={action}>
+          <button className="button-danger" onClick={action}>
             Smazat
           </button>
-          <button className="cancel-button" onClick={toggle}>
+          <button className="dialog-cancel-button" onClick={toggle}>
             Zrušit
           </button>
         </div>
@@ -58,7 +58,7 @@ const WarningDialog = forwardRef<HTMLDialogElement, { children: React.ReactNode;
           {children}
         </div>
         <div className="dialog-actions">
-          <button className="cancel-button" onClick={toggle}>
+          <button className="dialog-cancel-button" onClick={toggle}>
             Zavřít
           </button>
         </div>
@@ -87,7 +87,7 @@ const SuccessDialog = forwardRef<HTMLDialogElement, { children: React.ReactNode;
         </div>
         {children}
         <div className="dialog-content">
-          <button className="cancel-button" onClick={toggle}>Zrušit</button>
+          <button className="dialog-cancel-button" onClick={toggle}>Zrušit</button>
         </div>
       </div>
     </dialog>
@@ -153,7 +153,7 @@ const InviteDialog = forwardRef<HTMLDialogElement, InviteDialogProps>(
         <div className="dialog-header">
           <div className="flex flex-row-reverse justify-between m-0">
             <div
-              className="w-auto m-0 p-1 text-gray-700 hover:bg-gray-200 cursor-pointer rounded"
+              className="w-auto m-0 dialog-close-button"
               onClick={toggle}
             >
               <FiX className="text-2xl md:text-lg" />
@@ -181,7 +181,7 @@ const InviteDialog = forwardRef<HTMLDialogElement, InviteDialogProps>(
                 />
                 <button 
                   type="submit"
-                  className="primary-button !px-4 !py-2"
+                  className="button-primary !px-4 !py-2"
                   disabled={loading}
                 >
                   Pozvat
@@ -207,16 +207,16 @@ const InviteDialog = forwardRef<HTMLDialogElement, InviteDialogProps>(
                   pendingInvites.map((invite) => (
                     <div
                       key={invite.token}
-                      className="flex justify-between items-center p-3 border border-gray-200 rounded-lg bg-gray-50"
+                      className="flex justify-between items-center p-3 border border-light rounded-lg dialog-bg-light"
                     >
                       <div className="flex flex-col">
                         <span className="text-sm font-medium">{invite.invited_email}</span>
                         <div className="flex items-center gap-2 mt-1">
                           <span className="text-xs text-gray-500">Status:</span>
                           <span className={`text-xs px-2 py-1 rounded ${
-                            invite.status === "Pending" ? "bg-yellow-100 text-yellow-700" :
-                            invite.status === "Accepted" ? "bg-green-100 text-green-700" :
-                            "bg-red-100 text-red-700"
+                            invite.status === "Pending" ? "status-badge-pending" :
+                            invite.status === "Accepted" ? "status-badge-accepted" :
+                            "status-badge-rejected"
                           }`}>
                             {invite.status}
                           </span>
@@ -224,7 +224,7 @@ const InviteDialog = forwardRef<HTMLDialogElement, InviteDialogProps>(
                       </div>
                       {invite.status === "Pending" && (
                         <button
-                          className="p-3 bg-red-50 hover:bg-red-100 border-red-200 rounded-2xl border-2 hover:border-red-300 text-red-600 transition-all duration-200 transform hover:scale-105 cursor-pointer flex items-center justify-center"
+                          className="p-3 dialog-cancel-button rounded-2xl border-2 transition-all duration-200 transform hover:scale-105 cursor-pointer flex items-center justify-center"
                           onClick={() => onCancel(invite.token)}
                           title="Zrušit pozvánku"
                         >
@@ -240,7 +240,7 @@ const InviteDialog = forwardRef<HTMLDialogElement, InviteDialogProps>(
 
           <div className="dialog-actions flex flex-row justify-end m-0">
             <button
-              className="cancel-button w-auto px-4 py-2 text-sm"
+              className="dialog-cancel-button w-auto px-4 py-2 text-sm"
               onClick={toggle}
             >
               Zavřít
@@ -280,7 +280,7 @@ const NotificationDialog = forwardRef<HTMLDialogElement, NotificationDialogProps
         <div className="dialog-header">
           <div className="flex flex-row-reverse justify-between m-0">
             <div
-              className="w-auto m-0 p-1 text-gray-700 hover:bg-gray-200 cursor-pointer rounded"
+              className="w-auto m-0 dialog-close-button"
               onClick={toggle}
             >
               <FiX className="text-2xl md:text-lg" />
@@ -289,7 +289,7 @@ const NotificationDialog = forwardRef<HTMLDialogElement, NotificationDialogProps
               <FiBell className="text-indigo-500" />
               <h1>Notifikace</h1>
               {unreadCount > 0 && (
-                <span className="bg-indigo-500 text-white text-xs px-2 py-1 rounded-full">
+                <span className="notification-badge">
                   {unreadCount}
                 </span>
               )}
@@ -312,7 +312,7 @@ const NotificationDialog = forwardRef<HTMLDialogElement, NotificationDialogProps
                 {unreadCount > 0 && (
                   <div className="mb-4">
                     <button
-                      className="tertiary-button !text-sm !px-3 !py-1"
+                      className="button-secondary !text-sm !px-3 !py-1"
                       onClick={onMarkAllAsRead}
                     >
                       Označit vše jako přečtené
@@ -325,8 +325,8 @@ const NotificationDialog = forwardRef<HTMLDialogElement, NotificationDialogProps
                       key={notification.id}
                       className={`p-3 rounded-xl border transition-all cursor-pointer ${
                         notification.read
-                          ? 'bg-gray-50 border-gray-200'
-                          : 'bg-indigo-50 border-indigo-200'
+                          ? 'notification-read'
+                          : 'notification-unread'
                       }`}
                       onClick={() => {
                         onMarkAsRead(notification.id);
@@ -336,10 +336,10 @@ const NotificationDialog = forwardRef<HTMLDialogElement, NotificationDialogProps
                     >
                       <div className="flex items-start gap-2">
                         <div className={`p-1 rounded-full ${
-                          notification.type === 'success' ? 'bg-green-100 text-green-600' :
-                          notification.type === 'warning' ? 'bg-yellow-100 text-yellow-600' :
-                          notification.type === 'error' ? 'bg-red-100 text-red-600' :
-                          'bg-indigo-100 text-indigo-600'
+                          notification.type === "success" ? "notification-success" :
+                          notification.type === "warning" ? "notification-warning" :
+                          notification.type === "error" ? "notification-error" :
+                          "notification-info"
                         }`}>
                           {notification.type === 'success' ? <FiCheck size={14} /> :
                            notification.type === 'warning' ? <FiClock size={14} /> :
@@ -358,7 +358,7 @@ const NotificationDialog = forwardRef<HTMLDialogElement, NotificationDialogProps
                           </p>
                         </div>
                         {!notification.read && (
-                          <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
+                          <div className="unread-indicator"></div>
                         )}
                       </div>
                     </div>
@@ -369,7 +369,7 @@ const NotificationDialog = forwardRef<HTMLDialogElement, NotificationDialogProps
           </div>
 
           <div className="dialog-actions flex flex-row justify-end m-0">
-            <button className="cancel-button w-auto px-4 py-2 text-sm" onClick={toggle}>
+            <button className="dialog-cancel-button w-auto px-4 py-2 text-sm" onClick={toggle}>
               Zavřít
             </button>
           </div>
@@ -404,7 +404,7 @@ const InvitationDialog = forwardRef<HTMLDialogElement, InvitationDialogProps>(
         <div className="dialog-header">
           <div className="flex flex-row-reverse justify-between m-0">
             <div
-              className="w-auto m-0 p-1 text-gray-700 hover:bg-gray-200 cursor-pointer rounded"
+              className="w-auto m-0 dialog-close-button"
               onClick={toggle}
             >
               <FiX className="text-2xl md:text-lg" />
@@ -457,7 +457,7 @@ const InvitationDialog = forwardRef<HTMLDialogElement, InvitationDialogProps>(
 
           <div className="dialog-actions button-group !flex-row justify-center gap-3 m-0">
             <button
-              className="secondary-button !px-4 !py-2"
+              className="button-secondary !px-4 !py-2"
               onClick={() => onDecline(invitation.token)}
               disabled={loading}
             >
@@ -465,7 +465,7 @@ const InvitationDialog = forwardRef<HTMLDialogElement, InvitationDialogProps>(
               Odmítnout
             </button>
             <button
-              className="primary-button !px-4 !py-2"
+              className="button-primary !px-4 !py-2"
               onClick={() => onAccept(invitation.token)}
               disabled={loading}
             >

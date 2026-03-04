@@ -10,13 +10,13 @@ import { SedanSvg, CoupeSvg, MinivanSvg } from '../assets/icons'
 function CarDetailSkeleton() {
   return (
     <div className="animate-pulse max-w-lg mx-auto mt-10 p-6 flex flex-col gap-6">
-      <div className="h-8 w-48 rounded bg-gray-200 dark:bg-gray-700 mx-auto" />
-      <div className="h-32 rounded-xl bg-gray-200 dark:bg-gray-700" />
-      <div className="h-10 rounded-lg bg-gray-200 dark:bg-gray-700" />
+      <div className="h-8 w-48 rounded skeleton-dark mx-auto" />
+      <div className="h-32 rounded-xl skeleton-dark" />
+      <div className="h-10 rounded-lg skeleton-dark" />
       <div className="flex gap-3">
-        <div className="flex-1 h-10 rounded-lg bg-gray-200 dark:bg-gray-700" />
-        <div className="w-10 h-10 rounded-lg bg-gray-200 dark:bg-gray-700" />
-        <div className="w-10 h-10 rounded-lg bg-gray-200 dark:bg-gray-700" />
+        <div className="flex-1 h-10 rounded-lg skeleton-dark" />
+        <div className="w-10 h-10 rounded-lg skeleton-dark" />
+        <div className="w-10 h-10 rounded-lg skeleton-dark" />
       </div>
     </div>
   )
@@ -65,7 +65,7 @@ export default function CarDetailPage() {
       <p className="text-gray-500">Auto nebylo nalezeno.</p>
       <button
         onClick={() => navigate('/cars')}
-        className="py-2 px-4 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition"
+        className="py-2 px-4 rounded-xl button-primary"
       >
         Zpět na auta
       </button>
@@ -77,7 +77,7 @@ export default function CarDetailPage() {
 
       {/* Header */}
       <div className="card p-6 flex items-center gap-4">
-        <div className="p-3 rounded-xl bg-indigo-100 dark:bg-indigo-900/30">
+        <div className="p-3 rounded-xl badge-indigo">
           <LayoutIcon layout={car.layout} />
         </div>
         <div>
@@ -92,7 +92,7 @@ export default function CarDetailPage() {
       {/* Nová jízda */}
       <button
         onClick={() => navigate(`/rides/new?car_id=${car.id}`)}
-        className="w-full py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center justify-center gap-2 transition"
+        className="w-full py-3 px-4 rounded-xl button-primary flex items-center justify-center gap-2"
       >
         <FiPlus size={20} />
         Nová jízda s tímto autem
@@ -102,14 +102,14 @@ export default function CarDetailPage() {
       <div className="flex gap-3">
         <button
           onClick={() => navigate(`/cars/${car.id}/edit`)}
-          className="flex-1 py-2 px-4 rounded-xl border-2 border-indigo-200 dark:border-indigo-800 hover:border-indigo-400 flex items-center justify-center gap-2 transition"
+          className="flex-1 py-2 px-4 rounded-xl border-2 border-accent hover:opacity-80 flex items-center justify-center gap-2 transition"
         >
           <FiEdit size={18} />
           Upravit
         </button>
         <button
           onClick={handleDelete}
-          className="py-2 px-4 rounded-xl bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 text-red-600 hover:bg-red-100 flex items-center justify-center gap-2 transition"
+          className="py-2 px-4 rounded-xl status-danger text-sm hover:opacity-80 flex items-center justify-center gap-2 transition"
         >
           <FiTrash size={18} />
           Smazat

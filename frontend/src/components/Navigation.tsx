@@ -92,7 +92,7 @@ function BellDropdown({ open, onClose, invites, loading, onRespond, responding }
       {loading && (
         <div className="flex flex-col gap-2">
           {[1, 2].map(i => (
-            <div key={i} className="animate-pulse h-16 rounded-lg bg-gray-200 dark:bg-gray-700" />
+            <div key={i} className="animate-pulse h-16 rounded-lg skeleton-dark" />
           ))}
         </div>
       )}
@@ -102,21 +102,21 @@ function BellDropdown({ open, onClose, invites, loading, onRespond, responding }
       )}
 
       {!loading && invites.map(inv => (
-        <div key={inv.token} className="flex flex-col gap-2 p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
+        <div key={inv.token} className="flex flex-col gap-2 p-3 rounded-lg list-item-bg">
           <p className="text-sm font-medium">Pozvánka na jízdu</p>
           <p className="text-xs text-gray-500">{new Date(inv.created_at).toLocaleString('cs-CZ')}</p>
           <div className="flex gap-2 mt-1">
             <button
               disabled={responding === inv.token}
               onClick={() => onRespond(inv.token, true, inv.ride_id)}
-              className="flex-1 text-sm py-1 px-3 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 transition"
+              className="flex-1 text-sm py-1 px-3 rounded-lg button-primary disabled:opacity-50"
             >
               {responding === inv.token ? 'Zpracovávám...' : 'Přijmout'}
             </button>
             <button
               disabled={responding === inv.token}
               onClick={() => onRespond(inv.token, false, inv.ride_id)}
-              className="flex-1 text-sm py-1 px-3 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 transition"
+              className="flex-1 text-sm py-1 px-3 rounded-lg button-secondary disabled:opacity-50 transition"
             >
               Odmítnout
             </button>
@@ -132,7 +132,7 @@ function BellDropdown({ open, onClose, invites, loading, onRespond, responding }
 function UnreadBadge({ count }: { count: number }) {
   if (count === 0) return null
   return (
-    <span className="absolute -top-1 -right-1 bg-indigo-500 text-white rounded-full px-1.5 py-0.5 text-xs min-w-5 flex items-center justify-center">
+    <span className="absolute -top-1 -right-1 unread-count-badge">
       {count}
     </span>
   )
@@ -225,11 +225,11 @@ export default function Navigation() {
       {/* ── Mobilní ── */}
       <div className="top-0 left-0 w-full z-50 max-w-screen-xl flex flex-wrap items-center justify-between p-4 md:hidden">
         <Link to="/rides" className="flex items-center space-x-3">
-          <span className="text-3xl font-semibold text-gray-700 dark:text-gray-200">Sitzy</span>
+          <span className="text-3xl font-semibold text-secondary">Sitzy</span>
         </Link>
         <div className="flex items-center gap-2">
           <div className="relative">
-            <button className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 relative" onClick={() => setBellOpen(o => !o)}>
+            <button className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-muted rounded-lg hover:list-item-bg relative" onClick={() => setBellOpen(o => !o)}>
               <FiBell className="nav-icon-bell" size={20} />
               <UnreadBadge count={unreadCount} />
             </button>
@@ -244,7 +244,7 @@ export default function Navigation() {
           </div>
           <button
             type="button"
-            className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
+            className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-muted rounded-lg hover:list-item-bg focus:outline-none"
             aria-controls="navbar-default"
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen(o => !o)}
@@ -259,13 +259,13 @@ export default function Navigation() {
         <div className={`top-16 left-0 w-full z-50 ${menuOpen ? '' : 'hidden'}`} id="mobile-menu">
           <ul className="font-medium flex flex-col gap-2 p-4 mt-4 rounded-xl card">
             <li><Link to="/rides" className="inline-flex items-center gap-2 py-2 px-3 rounded-md" onClick={() => setMenuOpen(false)}><RocketIcon />Jízdy</Link></li>
-            <hr className="border-gray-200 dark:border-gray-700" />
+            <hr className="border-light" />
             <li><Link to="/rides" className="inline-flex items-center gap-2 py-2 px-3 rounded-md" onClick={() => setMenuOpen(false)}><SeatIcon />Moje jízdy</Link></li>
-            <hr className="border-gray-200 dark:border-gray-700" />
+            <hr className="border-light" />
             <li><Link to="/cars" className="inline-flex items-center gap-2 py-2 px-3 rounded-md" onClick={() => setMenuOpen(false)}><CarIcon />Moje auto</Link></li>
-            <hr className="border-gray-200 dark:border-gray-700" />
+            <hr className="border-light" />
             <li><Link to="/settings" className="inline-flex items-center gap-2 py-2 px-3 rounded-md" onClick={() => setMenuOpen(false)}><SettingsIcon />Nastavení</Link></li>
-            <hr className="border-gray-200 dark:border-gray-700" />
+            <hr className="border-light" />
             <li>
               <button onClick={handleLogout} className="inline-flex items-center gap-2 py-2 px-3 rounded-md w-full">
                 <LogoutIcon />Odhlásit se

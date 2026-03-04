@@ -33,13 +33,13 @@ export default function SeatRendererTestPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#0f172a]">
+    <div className="min-h-screen container-light-bg">
       <div className="container mx-auto px-4 py-8">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+          <h1 className="text-4xl font-bold text-secondary mb-2">
             SeatRenderer - Testovací stránka
           </h1>
-          <p className="text-gray-600 dark:text-gray-300">
+          <p className="text-muted">
             SVG sedadla s CSS filtry - realističtější výběr sedadel
           </p>
         </div>
@@ -80,7 +80,7 @@ export default function SeatRendererTestPage() {
               ownerName="Jan Novák"
               mode="display"
             />
-            <div className="mt-4 p-3 bg-blue-50 rounded">
+            <div className="mt-4 p-3 dialog-bg-blue rounded">
               <p className="text-sm text-blue-700">
                 💡 Toto je informativní zobrazení pro majitele auta
               </p>
@@ -143,7 +143,7 @@ export default function SeatRendererTestPage() {
               seats={[]}
               mode="display"
             />
-            <div className="mt-4 p-3 bg-red-50 rounded">
+            <div className="mt-4 p-3 container-red-bg rounded">
               <p className="text-sm text-red-700">
                 ⚠️ Test neznámého layoutu
               </p>
@@ -181,28 +181,28 @@ export default function SeatRendererTestPage() {
                 setSelectedSeatCoupe(null);
                 setSelectedSeatMinivan(null);
               }}
-              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+              className="px-4 py-2 button-danger rounded transition-all"
             >
               Zrušit všechny výběry
             </button>
             
             <button
               onClick={() => setSelectedSeatSedan(4)}
-              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+              className="px-4 py-2 button-success rounded transition-all"
             >
               Vybrat sedadlo 4 (Sedan)
             </button>
             
             <button
               onClick={() => setSelectedSeatCoupe(2)}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+              className="px-4 py-2 button-info rounded transition-all"
             >
               Vybrat sedadlo 2 (Kupé)
             </button>
             
             <button
               onClick={() => setSelectedSeatMinivan(7)}
-              className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors"
+              className="px-4 py-2 button-info rounded transition-all"
             >
               Vybrat sedadlo 7 (Minivan)
             </button>
@@ -219,7 +219,7 @@ export default function SeatRendererTestPage() {
         </div>
 
         {/* Informace o komponentě */}
-        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <div className="mt-8 dialog-bg-blue border border-light rounded-lg p-6">
           <h3 className="text-lg font-semibold text-blue-900 mb-3">
             ℹ️ O komponentě SeatRenderer
           </h3>

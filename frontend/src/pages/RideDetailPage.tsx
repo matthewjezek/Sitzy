@@ -14,9 +14,9 @@ import { inviteSchema, type InviteFormValues } from '../utils/validation'
 function RideDetailSkeleton() {
   return (
     <div className="animate-pulse max-w-lg mx-auto mt-10 p-6 flex flex-col gap-6">
-      <div className="h-32 rounded-xl bg-gray-200 dark:bg-gray-700" />
-      <div className="h-48 rounded-xl bg-gray-200 dark:bg-gray-700" />
-      <div className="h-10 rounded-xl bg-gray-200 dark:bg-gray-700" />
+      <div className="h-32 rounded-xl skeleton-dark" />
+      <div className="h-48 rounded-xl skeleton-dark" />
+      <div className="h-10 rounded-xl skeleton-dark" />
     </div>
   )
 }
@@ -30,17 +30,17 @@ function RideStatusBadge({ departureTime }: { departureTime: string }) {
   const diffHours = diffMs / (1000 * 60 * 60)
 
   if (diffMs < 0) return (
-    <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500">
+    <span className="text-xs px-2 py-0.5 rounded-full list-item-bg text-muted">
       Proběhla
     </span>
   )
   if (diffHours < 24) return (
-    <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600">
+    <span className="text-xs px-2 py-0.5 rounded-full status-success">
       Brzy
     </span>
   )
   return (
-    <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600">
+    <span className="text-xs px-2 py-0.5 rounded-full status-info">
       Nadcházející
     </span>
   )
@@ -100,7 +100,7 @@ function InviteSection({ rideId }: { rideId: string }) {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="py-2 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center gap-2 transition disabled:opacity-50 shrink-0"
+          className="py-2 px-4 rounded-xl button-primary flex items-center gap-2 disabled:opacity-50 shrink-0"
         >
           <FiUserPlus size={16} />
           Pozvat
@@ -111,7 +111,7 @@ function InviteSection({ rideId }: { rideId: string }) {
       {loading && (
         <div className="animate-pulse flex flex-col gap-2">
           {[1, 2].map(i => (
-            <div key={i} className="h-12 rounded-lg bg-gray-200 dark:bg-gray-700" />
+            <div key={i} className="h-12 rounded-lg skeleton-dark" />
           ))}
         </div>
       )}
@@ -123,14 +123,14 @@ function InviteSection({ rideId }: { rideId: string }) {
       {!loading && invites.map(inv => (
         <div
           key={inv.token}
-          className="flex items-center justify-between gap-2 p-3 rounded-lg bg-gray-50 dark:bg-gray-800"
+          className="flex items-center justify-between gap-2 p-3 rounded-lg list-item-bg"
         >
           <div className="flex flex-col gap-0.5 min-w-0">
             <p className="text-sm font-medium truncate">{inv.invited_email}</p>
             <span className={`text-xs w-fit px-2 py-0.5 rounded-full
-              ${inv.status === 'Accepted' ? 'bg-green-100 dark:bg-green-900/30 text-green-600' : ''}
-              ${inv.status === 'Pending' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600' : ''}
-              ${inv.status === 'Rejected' ? 'bg-red-100 dark:bg-red-900/30 text-red-500' : ''}
+              ${inv.status === 'Accepted' ? 'status-success' : ''}
+              ${inv.status === 'Pending' ? 'status-pending' : ''}
+              ${inv.status === 'Rejected' ? 'status-danger' : ''}
             `}>
               {inv.status === 'Accepted' && 'Přijato'}
               {inv.status === 'Pending' && 'Čeká'}
@@ -143,14 +143,14 @@ function InviteSection({ rideId }: { rideId: string }) {
               <button
                 disabled={responding === inv.token}
                 onClick={() => handleRespond(inv.token, true)}
-                className="text-xs py-1 px-3 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 transition"
+                className="text-xs py-1 px-3 rounded-lg button-primary disabled:opacity-50"
               >
                 Přijmout
               </button>
               <button
                 disabled={responding === inv.token}
                 onClick={() => handleRespond(inv.token, false)}
-                className="text-xs py-1 px-3 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 transition"
+                className="text-xs py-1 px-3 rounded-lg button-secondary disabled:opacity-50 transition"
               >
                 Odmítnout
               </button>
@@ -177,11 +177,11 @@ function PassengersSection({ passengers }: { passengers: import('../hooks/useRid
       <h2 className="font-semibold">Pasažéři</h2>
       <ul className="flex flex-col gap-2">
         {passengers.map(p => (
-          <li key={p.user_id} className="flex items-center gap-3 p-2 rounded-lg bg-gray-50 dark:bg-gray-800">
+          <li key={p.user_id} className="flex items-center gap-3 p-2 rounded-lg list-item-bg">
             {p.avatar_url ? (
               <img src={p.avatar_url} alt={p.full_name ?? ''} className="w-8 h-8 rounded-full object-cover" />
             ) : (
-              <div className="w-8 h-8 rounded-full bg-indigo-200 dark:bg-indigo-800 flex items-center justify-center text-sm font-bold text-indigo-700 dark:text-indigo-200">
+              <div className="w-8 h-8 rounded-full initials-avatar flex items-center justify-center text-sm font-bold">
                 {p.full_name?.[0]?.toUpperCase() ?? '?'}
               </div>
             )}
@@ -230,7 +230,7 @@ export default function RideDetailPage() {
       <p className="text-gray-500">Jízda nebyla nalezena.</p>
       <button
         onClick={() => navigate('/rides')}
-        className="py-2 px-4 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition"
+        className="py-2 px-4 rounded-xl button-primary"
       >
         Zpět na jízdy
       </button>
@@ -249,12 +249,12 @@ export default function RideDetailPage() {
 
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2 text-sm text-gray-500">
-            <FiClock size={14} className="shrink-0 text-indigo-500" />
+            <FiClock size={14} className="shrink-0 text-accent" />
             {formatLocalDateTime(ride.departure_time)}
           </div>
           {ride.car && (
             <div className="flex items-center gap-2 text-sm text-gray-500">
-              <FiMapPin size={14} className="shrink-0 text-indigo-500" />
+              <FiMapPin size={14} className="shrink-0 text-accent" />
               {ride.car.name} ({ride.car.layout})
             </div>
           )}
@@ -263,7 +263,7 @@ export default function RideDetailPage() {
         {/* Smazat */}
         <button
           onClick={handleDelete}
-          className="self-end py-1.5 px-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 text-sm hover:bg-red-100 flex items-center gap-2 transition"
+          className="self-end py-1.5 px-3 rounded-lg status-danger text-sm hover:opacity-80 flex items-center gap-2 transition"
         >
           <FiTrash size={14} />
           Smazat jízdu

@@ -15,7 +15,7 @@ const PageNotFound = () => {
             Omlouváme se, ale stránku, kterou hledáte, se nepodařilo najít.
           </p>
           <div className="mt-10 flex items-center justify-center gap-x-6">
-            <button onClick={() => navigate(-1)} className="primary-button">
+            <button onClick={() => navigate(-1)} className="button-primary">
               Jít zpět
             </button>
             <a href="/rides" className="not-found-link">

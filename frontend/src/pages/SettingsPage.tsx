@@ -24,15 +24,15 @@ function SettingsSkeleton() {
   return (
     <div className="animate-pulse flex flex-col gap-6 max-w-lg mx-auto mt-10 p-6">
       <div className="flex items-center gap-4">
-        <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700" />
+        <div className="w-16 h-16 rounded-full skeleton-dark" />
         <div className="flex flex-col gap-2">
-          <div className="h-4 w-40 rounded bg-gray-200 dark:bg-gray-700" />
-          <div className="h-3 w-56 rounded bg-gray-200 dark:bg-gray-700" />
+          <div className="h-4 w-40 rounded skeleton-dark" />
+          <div className="h-3 w-56 rounded skeleton-dark" />
         </div>
       </div>
-      <div className="h-10 rounded-lg bg-gray-200 dark:bg-gray-700" />
-      <div className="h-10 rounded-lg bg-gray-200 dark:bg-gray-700" />
-      <div className="h-10 rounded-lg bg-gray-200 dark:bg-gray-700" />
+      <div className="h-10 rounded-lg skeleton-dark" />
+      <div className="h-10 rounded-lg skeleton-dark" />
+      <div className="h-10 rounded-lg skeleton-dark" />
     </div>
   )
 }
@@ -91,7 +91,7 @@ export default function SettingsPage() {
             className="w-16 h-16 rounded-full object-cover"
           />
         ) : (
-          <div className="w-16 h-16 rounded-full bg-indigo-200 dark:bg-indigo-800 flex items-center justify-center text-2xl font-bold text-indigo-700 dark:text-indigo-200">
+          <div className="w-16 h-16 rounded-full initials-avatar flex items-center justify-center text-2xl font-bold">
             {user?.full_name?.[0]?.toUpperCase() ?? '?'}
           </div>
         )}
@@ -102,7 +102,7 @@ export default function SettingsPage() {
             <p className="text-xs text-gray-400 mt-1">
               Přihlášen přes{' '}
               {user.social_accounts.map(a => (
-                <span key={a.provider} className="capitalize font-medium text-indigo-500">
+                <span key={a.provider} className="capitalize font-medium text-accent">
                   {a.provider}
                 </span>
               )).reduce((acc, el, i) => i === 0 ? [el] : [...acc, ', ', el], [] as React.ReactNode[])}
@@ -116,22 +116,16 @@ export default function SettingsPage() {
         <span className="font-medium">Tmavý režim</span>
         <button
           onClick={toggleDarkMode}
-          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ${
-            darkMode ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-gray-600'
-          }`}
+          className={`toggle-switch ${darkMode ? 'active' : ''}`}
         >
-          <span
-            className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-300 ${
-              darkMode ? 'translate-x-6' : 'translate-x-1'
-            }`}
-          />
+          <span className="toggle-knob" />
         </button>
       </div>
 
       {/* Odhlášení */}
       <button
         onClick={handleLogout}
-        className="w-full py-2 px-4 rounded-xl bg-red-500 hover:bg-red-600 text-white font-semibold transition"
+        className="w-full button-danger flex items-center justify-center"
       >
         Odhlásit se
       </button>

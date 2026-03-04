@@ -10,7 +10,7 @@ function RidesListSkeleton() {
   return (
     <div className="animate-pulse flex flex-col gap-4 max-w-lg mx-auto mt-10 p-6">
       {[1, 2, 3].map(i => (
-        <div key={i} className="h-24 rounded-xl bg-gray-200 dark:bg-gray-700" />
+        <div key={i} className="h-24 rounded-xl skeleton-dark" />
       ))}
     </div>
   )
@@ -26,20 +26,20 @@ function RideStatusBadge({ departureTime }: { departureTime: string }) {
 
   if (diffMs < 0) {
     return (
-      <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500">
+      <span className="text-xs px-2 py-0.5 rounded-full list-item-bg text-muted">
         Proběhla
       </span>
     )
   }
   if (diffHours < 24) {
     return (
-      <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600">
+      <span className="text-xs px-2 py-0.5 rounded-full status-success">
         Brzy
       </span>
     )
   }
   return (
-    <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600">
+    <span className="text-xs px-2 py-0.5 rounded-full status-info">
       Nadcházející
     </span>
   )
@@ -65,7 +65,7 @@ export default function RidesPage() {
         <h1 className="text-2xl font-bold">Jízdy</h1>
         <button
           onClick={() => navigate('/rides/new')}
-          className="py-2 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center gap-2 transition"
+          className="py-2 px-4 rounded-xl button-primary flex items-center gap-2"
         >
           <FiPlus size={18} />
           Nová jízda
@@ -74,7 +74,7 @@ export default function RidesPage() {
 
       {/* Chyba */}
       {error && (
-        <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 text-sm">
+        <div className="p-4 rounded-xl status-danger text-sm">
           {error}
         </div>
       )}
@@ -85,7 +85,7 @@ export default function RidesPage() {
           <p className="text-gray-500">Zatím nemáte žádné jízdy.</p>
           <button
             onClick={() => navigate('/rides/new')}
-            className="py-2 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center gap-2 transition"
+            className="py-2 px-6 rounded-xl button-primary flex items-center gap-2"
           >
             <FiPlus size={18} />
             Naplánovat první jízdu
@@ -100,11 +100,11 @@ export default function RidesPage() {
             <li key={ride.id}>
               <button
                 onClick={() => navigate(`/rides/${ride.id}`)}
-                className="w-full card p-4 flex items-center gap-4 hover:border-indigo-400 transition text-left"
+                className="w-full card p-4 flex items-center gap-4 hover-border-accent text-left"
               >
                 <div className="flex-1 min-w-0 flex flex-col gap-1">
                   <div className="flex items-center gap-2">
-                    <FiMapPin size={14} className="text-indigo-500 shrink-0" />
+                    <FiMapPin size={14} className="text-accent shrink-0" />
                     <p className="font-semibold truncate">{ride.destination}</p>
                   </div>
                   <div className="flex items-center gap-2">

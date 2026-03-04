@@ -33,7 +33,7 @@ export default function LoginPage() {
               <div className="form-group">
                 <button
                   onClick={() => handleOAuthLogin('x')}
-                  className="primary-button w-full"
+                  className="button-primary w-full"
                 >
                   Přihlásit se přes X
                 </button>
@@ -42,7 +42,7 @@ export default function LoginPage() {
               <div className="form-group">
                 <button
                   onClick={() => handleOAuthLogin('facebook')}
-                  className="primary-button w-full"
+                  className="button-primary w-full"
                 >
                   Přihlásit se přes Facebook
                 </button>
