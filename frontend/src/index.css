@@ -33,7 +33,6 @@
     --bg-dark: #0f172a;
     --surface-light: #ffffff;
     --surface-dark: #1f2937;
-    --accent: #CFF250;          /* lime for warnings/errors in dark */
   }
 }
 
@@ -64,11 +63,19 @@
    * LOGO
    * ======================================== */
   .logo {
-    transition: filter 200ms ease;
+    transition: opacity 200ms ease;
   }
 
-  .dark .logo {
-    filter: invert(1);
+  .logo-dark {
+    display: none;
+  }
+
+  .dark .logo-light {
+    display: none;
+  }
+
+  .dark .logo-dark {
+    display: block;
   }
 
   /* ========================================
