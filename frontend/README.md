@@ -1,69 +1,37 @@
-# React + TypeScript + Vite
+# Sitzy Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Postaven na React 19, TypeScript, Vite a Tailwind CSS v4.
 
-Currently, two official plugins are available:
+## Vývoj
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev      # Spustit Vite dev server (:5173)
+npm run build    # Produkční build s PWA manifestem
+npm run typecheck # TypeScript validace
+npm run lint     # ESLint kontrola
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Známé problémy
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Zranitelnost vite-plugin-pwa
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+`vite-plugin-pwa@1.2.0` (poslední verze) má tranzitivní zranitelnost
+přes `serialize-javascript` v build toolingu:
+
+- **Závažnost:** Vysoká (remote code execution v buildu/bundlování)
+- **Úroveň rizika:** Nízká pro produkci (pouze v čase buildu, ne v běhu aplikace)
+- **Stav:** Čekáme na opravy v `vite-plugin-pwa` a `workbox-build`
+
+Jedná se o zranitelnost v čase buildu, která ovlivňuje vývojový/CI pipeline,
+ne bezpečnost běhu aplikace. Uživatelé a nasazené aplikace nejsou ohroženy.
+
+**Možná řešení:**
+
+1. ✅ **Současný přístup:** Přijmout zranitelnost v buildě, zatímco PWA zůstává důležitá
+2. Downgradovat na starší PWA plugin (nedoporučeno — zavádí více bezpečnostních
+problémů)
+3. Odstranit PWA funkčnost úplně (nežádoucí)
+
+Sleduj
+[vite-plugin-pwa releases](https://github.com/vite-pwa/vite-plugin-pwa/releases)
+pro aktualizace.
