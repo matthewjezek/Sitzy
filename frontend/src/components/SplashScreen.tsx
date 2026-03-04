@@ -86,8 +86,8 @@ export default function SplashScreen({ onComplete, duration = 2000 }: SplashScre
   }, [duration, onComplete])
 
   return (
-    <div className="fixed inset-0 bg-[#0f172a] flex items-center justify-center z-50">
-      <svg viewBox="0 0 325 122" className="w-full max-w-md px-8">
+    <div className="relative w-full flex items-center justify-center">
+      <svg viewBox="0 0 325 122" overflow="visible" className="w-full max-w-md px-8">
         {/* 'SIT' letters */}
         <path
           id="letters-sit"
