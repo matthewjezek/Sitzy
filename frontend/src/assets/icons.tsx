@@ -1,7 +1,7 @@
 export const SedanSvg = () => (
   <svg
-    width="56"
-    height="56"
+    width="112"
+    height="112"
     viewBox="0 0 1280 640"
     fill="currentColor"
     aria-hidden="true"
@@ -20,8 +20,8 @@ export const SedanSvg = () => (
 
 export const CoupeSvg = () => (
   <svg
-    width="56"
-    height="56"
+    width="112"
+    height="112"
     viewBox="0 0 1280 640"
     fill="currentColor"
     aria-hidden="true"
@@ -40,8 +40,8 @@ export const CoupeSvg = () => (
 
 export const MinivanSvg = () => (
   <svg
-    width="56"
-    height="56"
+    width="112"
+    height="112"
     viewBox="0 0 800 800"
     version="1.1"
     xmlns="http://www.w3.org/2000/svg"
