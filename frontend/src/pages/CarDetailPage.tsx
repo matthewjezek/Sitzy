@@ -102,14 +102,14 @@ export default function CarDetailPage() {
       <div className="flex gap-3">
         <button
           onClick={() => navigate(`/cars/${car.id}/edit`)}
-          className="flex-1 py-2 px-4 rounded-xl border-2 border-accent hover:opacity-80 flex items-center justify-center gap-2 transition"
+          className="flex-1 py-2 px-4 rounded-xl button-secondary hover-opacity-80 flex items-center justify-center gap-2"
         >
           <FiEdit size={18} />
           Upravit
         </button>
         <button
           onClick={handleDelete}
-          className="py-2 px-4 rounded-xl status-danger text-sm hover:opacity-80 flex items-center justify-center gap-2 transition"
+          className="py-2 px-4 rounded-xl button-danger hover-opacity-80 flex items-center justify-center gap-2"
         >
           <FiTrash size={18} />
           Smazat

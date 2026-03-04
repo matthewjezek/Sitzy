@@ -100,7 +100,7 @@ function InviteSection({ rideId }: { rideId: string }) {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="py-2 px-4 rounded-xl button-primary flex items-center gap-2 disabled:opacity-50 shrink-0"
+          className="py-2 px-4 rounded-xl button-primary flex items-center gap-2 shrink-0"
         >
           <FiUserPlus size={16} />
           Pozvat
@@ -143,14 +143,14 @@ function InviteSection({ rideId }: { rideId: string }) {
               <button
                 disabled={responding === inv.token}
                 onClick={() => handleRespond(inv.token, true)}
-                className="text-xs py-1 px-3 rounded-lg button-primary disabled:opacity-50"
+                className="text-xs py-1 px-3 rounded-lg button-primary"
               >
                 Přijmout
               </button>
               <button
                 disabled={responding === inv.token}
                 onClick={() => handleRespond(inv.token, false)}
-                className="text-xs py-1 px-3 rounded-lg button-secondary disabled:opacity-50 transition"
+                className="text-xs py-1 px-3 rounded-lg button-secondary"
               >
                 Odmítnout
               </button>
@@ -263,7 +263,7 @@ export default function RideDetailPage() {
         {/* Smazat */}
         <button
           onClick={handleDelete}
-          className="self-end py-1.5 px-3 rounded-lg status-danger text-sm hover:opacity-80 flex items-center gap-2 transition"
+          className="self-end py-1.5 px-3 rounded-lg status-danger text-sm hover-opacity-80 flex items-center gap-2"
         >
           <FiTrash size={14} />
           Smazat jízdu

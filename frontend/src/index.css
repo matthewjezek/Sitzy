@@ -1037,11 +1037,54 @@
     border-color: #a5b4fc;
   }
 
+  .hover-opacity-80 {
+    transition: opacity 200ms ease;
+  }
+
+  .hover-opacity-80:hover {
+    opacity: 0.8;
+  }
+
+  .opacity-50 {
+    opacity: 0.5;
+  }
+
+  .hover-scale-105 {
+    transition: transform 200ms ease;
+  }
+
+  .hover-scale-105:hover {
+    transform: scale(1.05);
+  }
+
+  .hover-text-gray-600 {
+    color: #4b5563;
+    transition: color 200ms ease;
+  }
+
+  .hover-text-gray-600:hover {
+    color: #4b5563;
+  }
+
+  .hover-list-bg {
+    transition: background-color 200ms ease;
+  }
+
+  .hover-list-bg:hover {
+    background-color: #f3f4f6;
+  }
+
+  .dark .hover-list-bg:hover {
+    background-color: #374151;
+  }
+
   /* ========================================
    * COMPONENT-SPECIFIC
    * ======================================== */
   .button-secondary {
     background-color: #e5e7eb;
+    cursor: pointer;
+    transition: all 200ms ease;
   }
 
   .dark .button-secondary {
@@ -1050,10 +1093,16 @@
 
   .button-secondary:hover {
     background-color: #d1d5db;
+    cursor: pointer;
   }
 
   .dark .button-secondary:hover {
     background-color: #4b5563;
+  }
+
+  .button-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   .badge-indigo {
@@ -1298,11 +1347,14 @@
     background-color: #fef2f2;
     border-color: #fee2e2;
     color: #dc2626;
+    cursor: pointer;
+    transition: all 200ms ease;
   }
 
   .dialog-cancel-button:hover {
     background-color: #fee2e2;
     border-color: #fca5a5;
+    cursor: pointer;
   }
 
   .dark .dialog-cancel-button {
@@ -1313,6 +1365,7 @@
   .dark .dialog-cancel-button:hover {
     background-color: rgba(153, 27, 27, 0.3);
     border-color: rgba(239, 68, 68, 0.5);
+    cursor: pointer;
   }
 
   .dialog-close-button {
@@ -1325,6 +1378,7 @@
 
   .dialog-close-button:hover {
     background-color: #e5e7eb;
+    cursor: pointer;
   }
 
   .dark .dialog-close-button {

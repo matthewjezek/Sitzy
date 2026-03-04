@@ -86,7 +86,7 @@ function BellDropdown({ open, onClose, invites, loading, onRespond, responding }
     >
       <div className="flex items-center justify-between">
         <span className="font-semibold text-sm">Pozvánky</span>
-        <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-lg leading-none">×</button>
+        <button onClick={onClose} className="text-gray-400 hover-text-gray-600 text-lg leading-none">×</button>
       </div>
 
       {loading && (
@@ -109,14 +109,14 @@ function BellDropdown({ open, onClose, invites, loading, onRespond, responding }
             <button
               disabled={responding === inv.token}
               onClick={() => onRespond(inv.token, true, inv.ride_id)}
-              className="flex-1 text-sm py-1 px-3 rounded-lg button-primary disabled:opacity-50"
+              className="flex-1 text-sm py-1 px-3 rounded-lg button-primary"
             >
               {responding === inv.token ? 'Zpracovávám...' : 'Přijmout'}
             </button>
             <button
               disabled={responding === inv.token}
               onClick={() => onRespond(inv.token, false, inv.ride_id)}
-              className="flex-1 text-sm py-1 px-3 rounded-lg button-secondary disabled:opacity-50 transition"
+              className="flex-1 text-sm py-1 px-3 rounded-lg button-secondary"
             >
               Odmítnout
             </button>
@@ -229,7 +229,7 @@ export default function Navigation() {
         </Link>
         <div className="flex items-center gap-2">
           <div className="relative">
-            <button className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-muted rounded-lg hover:list-item-bg relative" onClick={() => setBellOpen(o => !o)}>
+            <button className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-muted rounded-lg hover-list-bg relative" onClick={() => setBellOpen(o => !o)}>
               <FiBell className="nav-icon-bell" size={20} />
               <UnreadBadge count={unreadCount} />
             </button>
@@ -244,7 +244,7 @@ export default function Navigation() {
           </div>
           <button
             type="button"
-            className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-muted rounded-lg hover:list-item-bg focus:outline-none"
+            className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-muted rounded-lg hover-list-bg focus:outline-none"
             aria-controls="navbar-default"
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen(o => !o)}
@@ -267,7 +267,7 @@ export default function Navigation() {
             <li><Link to="/settings" className="inline-flex items-center gap-2 py-2 px-3 rounded-md" onClick={() => setMenuOpen(false)}><SettingsIcon />Nastavení</Link></li>
             <hr className="border-light" />
             <li>
-              <button onClick={handleLogout} className="inline-flex items-center gap-2 py-2 px-3 rounded-md w-full">
+              <button onClick={handleLogout} className="inline-flex items-center gap-2 button-danger w-full">
                 <LogoutIcon />Odhlásit se
               </button>
             </li>

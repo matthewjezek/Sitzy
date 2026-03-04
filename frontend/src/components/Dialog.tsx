@@ -224,7 +224,7 @@ const InviteDialog = forwardRef<HTMLDialogElement, InviteDialogProps>(
                       </div>
                       {invite.status === "Pending" && (
                         <button
-                          className="p-3 dialog-cancel-button rounded-2xl border-2 transition-all duration-200 transform hover:scale-105 cursor-pointer flex items-center justify-center"
+                          className="p-3 dialog-cancel-button rounded-2xl border-2 hover-scale-105 cursor-pointer flex items-center justify-center"
                           onClick={() => onCancel(invite.token)}
                           title="Zrušit pozvánku"
                         >
