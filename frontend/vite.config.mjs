@@ -14,7 +14,7 @@ export default defineConfig({
         name: 'Sitzy',
         short_name: 'Sitzy',
         description: 'Sdílení jízd a zasedací pořádek',
-        theme_color: '#7c3aed',
+        theme_color: '#7350F2',
         background_color: '#ffffff',
         display: 'standalone',
         start_url: '/rides',
