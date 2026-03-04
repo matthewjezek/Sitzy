@@ -402,6 +402,15 @@
     to   { transform: scale(1.09); }
   }
 
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in forwards;
+  }
+
   .dialog-success-image svg {
     color: #059669;
     width: 1.5rem;
