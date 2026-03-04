@@ -33,13 +33,13 @@ export default function SeatRendererTestPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-[#0f172a]">
       <div className="container mx-auto px-4 py-8">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">
             SeatRenderer - Testovací stránka
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-300">
             SVG sedadla s CSS filtry - realističtější výběr sedadel
           </p>
         </div>
@@ -47,7 +47,7 @@ export default function SeatRendererTestPage() {
         <div className="grid gap-8 lg:grid-cols-2 xl:grid-cols-3">
           
           {/* Sedan - Interaktivní */}
-          <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
             <h2 className="text-xl font-semibold mb-4 text-center">
               Sedan - Interaktivní
             </h2>
@@ -62,15 +62,15 @@ export default function SeatRendererTestPage() {
               ownerName="Jan Novák"
               mode="interactive"
             />
-            <div className="mt-4 p-3 bg-gray-50 rounded">
-              <p className="text-sm text-gray-600">
+            <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded">
+              <p className="text-sm text-gray-600 dark:text-gray-200">
                 <strong>Vybrané sedadlo:</strong> {selectedSeatSedan || 'žádné'}
               </p>
             </div>
           </div>
 
           {/* Sedan - Pouze zobrazení */}
-          <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
             <h2 className="text-xl font-semibold mb-4 text-center">
               Sedan - Pouze zobrazení
             </h2>
@@ -88,7 +88,7 @@ export default function SeatRendererTestPage() {
           </div>
 
           {/* Kupé - Interaktivní */}
-          <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
             <h2 className="text-xl font-semibold mb-4 text-center">
               Kupé - Interaktivní
             </h2>
@@ -103,15 +103,15 @@ export default function SeatRendererTestPage() {
               ownerName="Marie Nová"
               mode="interactive"
             />
-            <div className="mt-4 p-3 bg-gray-50 rounded">
-              <p className="text-sm text-gray-600">
+            <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded">
+              <p className="text-sm text-gray-600 dark:text-gray-200">
                 <strong>Vybrané sedadlo:</strong> {selectedSeatCoupe || 'žádné'}
               </p>
             </div>
           </div>
 
           {/* Minivan - Interaktivní */}
-          <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
             <h2 className="text-xl font-semibold mb-4 text-center">
               Minivan - Interaktivní
             </h2>
@@ -126,15 +126,15 @@ export default function SeatRendererTestPage() {
               ownerName="Petr Dvořák"
               mode="interactive"
             />
-            <div className="mt-4 p-3 bg-gray-50 rounded">
-              <p className="text-sm text-gray-600">
+            <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded">
+              <p className="text-sm text-gray-600 dark:text-gray-200">
                 <strong>Vybrané sedadlo:</strong> {selectedSeatMinivan || 'žádné'}
               </p>
             </div>
           </div>
 
           {/* Neznámý layout - test */}
-          <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
             <h2 className="text-xl font-semibold mb-4 text-center">
               Neznámý typ vozidla
             </h2>
@@ -151,7 +151,7 @@ export default function SeatRendererTestPage() {
           </div>
 
           {/* Prázdná data - test */}
-          <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
             <h2 className="text-xl font-semibold mb-4 text-center">
               Prázdná data
             </h2>
@@ -171,7 +171,7 @@ export default function SeatRendererTestPage() {
         </div>
 
         {/* Ovládací panel */}
-        <div className="mt-8 bg-white rounded-lg shadow-lg p-6">
+        <div className="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
           <h3 className="text-lg font-semibold mb-4">Ovládací panel</h3>
           
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -208,9 +208,9 @@ export default function SeatRendererTestPage() {
             </button>
           </div>
 
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+          <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
             <h4 className="font-medium mb-2">Aktuální výběry:</h4>
-            <div className="space-y-1 text-sm">
+            <div className="space-y-1 text-sm dark:text-gray-200">
               <p><strong>Sedan:</strong> {selectedSeatSedan || 'žádné'}</p>
               <p><strong>Kupé:</strong> {selectedSeatCoupe || 'žádné'}</p>
               <p><strong>Minivan:</strong> {selectedSeatMinivan || 'žádné'}</p>
