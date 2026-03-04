@@ -89,10 +89,16 @@ Sitzy is a bilingual car seat management web app: **Czech UI/comments** with Eng
 - Dev-only routes lazy loaded (see [App.tsx](../frontend/src/App.tsx))
 - Seat rendering uses `SeatRenderer` component with position-based layout ([SeatRenderer.tsx](../frontend/src/components/SeatRenderer.tsx))
 
-**UI Patterns - Three Consistent Approaches**
+**UI Patterns - Four Consistent Approaches**
 1. **Skeleton Loading:** Replace spinners with shape-matching skeleton screens (`animate-pulse`). Components: `RideCardSkeleton`, `CarCardSkeleton`, `PassengerListSkeleton`, `SeatRendererSkeleton`.
 2. **Optimistic UI + Rollback:** Changes appear immediately in UI. Automatically revert if backend fails. Applies to: seat booking, invitation accept/reject, driver transfer, ride cancellation, booking cancellation.
 3. **Button Feedback:** Every async action button must: (a) disable immediately, (b) show loading state ("Ukládám..."), (c) display toast success/error. Pattern: `const [submitting, setSubmitting] = useState(false)` → `disabled={submitting}` → `finally { setSubmitting(false) }`.
+4. **Async Action Timeout + User Feedback:** Long-running actions (navigation, redirects, complex requests) must show feedback after N seconds:
+   - **Timeout pattern:** Set timeout at action start (e.g., 5-10s) → show loading indicator + message ("Connecting...", "Saving...")
+   - **No isMounted guards:** Allow response handlers to execute even after component unmounts (cleanup may interfere)
+   - **No automatic cleanup:** Don't clear timeouts in cleanup function; let response handler finish
+   - **Error fallback:** If timeout expires before response, show error toast + fallback action
+   - **Example:** OAuth callback shows splash screen, loader appears after 2.5s if still loading, error after 10s timeout
 
 **Form Validation**
 - Zod schemas in `utils/validation.ts` for client-side validation (before sending to backend)
@@ -287,3 +293,5 @@ State tokens are stored in Redis with 10-minute TTL for:
 8. **Ensure** only one `is_active=true` CarDriver per car by rotating with `revoked_at` timestamps
 9. **Always validate** that transfer-driver target is a passenger on the ride before allowing transfer
 10. **Remember** Invitations are ride-specific; use `ride_id` FK, not `car_id`
+11. **Timeout + Loader Pattern - Gotchas:** (a) `isMounted` checks in response handlers block setState→renders never happen, (b) cleanup functions clearing timeouts prevent late updates, (c) `fixed inset-0 z-50` overlays hide content beneath, (d) no cleanup in useEffect—let timeouts fire naturally. **Right way:** Set timeout at start, show UI after N seconds, let response execute regardless of mount state, navigate only in response handler (not before).
+
