@@ -1,5 +1,6 @@
 import React from 'react'
 import { useLocation } from 'react-router'
+import { isAxiosError } from 'axios'
 import instance from '../api/axios'
 import { toast } from 'react-toastify'
 import { SocialButton, XIcon, FacebookIcon } from '../components/tailgrids/core/social-button'
@@ -19,7 +20,11 @@ export default function LoginPage() {
     try {
       const { data } = await instance.post(`/auth/oauth/${provider}/init`)
       window.location.href = data.authorization_url
-    } catch {
+    } catch (error) {
+      if (isAxiosError(error) && !error.response) {
+        toast.error('Nelze kontaktovat API. Zkontrolujte VITE_API_BASE_URL (HTTPS).')
+        return
+      }
       toast.error('Nepodařilo se zahájit přihlášení.')
     }
   }

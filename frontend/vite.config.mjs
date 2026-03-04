@@ -55,4 +55,29 @@ export default defineConfig({
       },
     }),
   ],
+  // server: {
+  //   allowedHosts: ['unpendulously-motionless-niki.ngrok-free.dev'],
+  //   proxy: {
+  //     '/auth': {
+  //       target: 'http://localhost:8000',
+  //       changeOrigin: true,
+  //     },
+  //     '/cars': {
+  //       target: 'http://localhost:8000',
+  //       changeOrigin: true,
+  //     },
+  //     '/rides': {
+  //       target: 'http://localhost:8000',
+  //       changeOrigin: true,
+  //     },
+  //     '/invitations': {
+  //       target: 'http://localhost:8000',
+  //       changeOrigin: true,
+  //     },
+  //     '/health': {
+  //       target: 'http://localhost:8000',
+  //       changeOrigin: true,
+  //     },
+  //   },
+  // },
 })

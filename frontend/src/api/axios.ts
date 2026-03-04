@@ -1,7 +1,9 @@
 import axios, { AxiosError } from 'axios'
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+
 const instance = axios.create({
-  baseURL: 'http://localhost:8000',
+  baseURL: API_BASE_URL,
   timeout: 10000,
   withCredentials: true,
 })
@@ -56,7 +58,7 @@ instance.interceptors.response.use(
 
     try {
       const { data } = await axios.post(
-        'http://localhost:8000/auth/refresh',
+        `${API_BASE_URL}/auth/refresh`,
         {},
         { withCredentials: true },
       )
