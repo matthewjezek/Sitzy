@@ -86,6 +86,8 @@ function AppRoutes() {
 }
 
 function App() {
+  const isDarkMode = document.documentElement.classList.contains('dark')
+  
   return (
     <Router>
       <AppRoutes />
@@ -95,7 +97,7 @@ function App() {
         hideProgressBar
         pauseOnHover
         draggable
-        theme="colored"
+        theme={isDarkMode ? 'dark' : 'colored'}
       />
     </Router>
   )
