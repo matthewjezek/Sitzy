@@ -25,7 +25,7 @@ export default function LoginPage() {
             </div>
             <div className="main-card-body">
               {expired && (
-                <div className="text-red-500 text-sm mb-2 text-center">
+                <div className="text-sm mb-2 text-center status-danger">
                   Vaše přihlášení vypršelo. Přihlaste se prosím znovu.
                 </div>
               )}

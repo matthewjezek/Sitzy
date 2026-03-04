@@ -511,11 +511,11 @@
     justify-content: center;
     padding: 1.5rem;
     min-height: calc(100dvh - 4rem);
-    background-color: white;
+    background-color: var(--bg-light);
   }
 
   .dark .page-container {
-    background-color: #0f172a;
+    background-color: var(--bg-dark);
   }
 
   .page-content {
@@ -604,7 +604,7 @@
    * MAIN CARD
    * ======================================== */
   .main-card {
-    background-color: white;
+    background-color: var(--bg-light);
     border-radius: 1.5rem;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     border: 1px solid var(--primary-border);
@@ -612,28 +612,28 @@
   }
 
   .dark .main-card {
-    background-color: #111827;
+    background-color: var(--bg-dark);
     border-color: rgba(115, 80, 242, 0.2);
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
   }
 
   .main-card-header {
-    background: linear-gradient(135deg, #7350F2 0%, #6345d6 100%);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
     padding: 2rem;
     color: white;
   }
 
   .dark .main-card-header {
-    background: linear-gradient(135deg, #3d1f6d 0%, #230d50 100%);
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-border) 100%);
   }
 
   .main-card-body {
     padding: 2rem;
-    background-color: white;
+    background-color: var(--bg-light);
   }
 
   .dark .main-card-body {
-    background-color: #111827;
+    background-color: var(--bg-dark);
     color: #f3f4f6;
   }
 
@@ -1216,7 +1216,7 @@
    * PRIMARY BUTTON
    * ======================================== */
   .button-primary {
-    background-color: #4f46e5;
+    background-color: var(--primary);
     color: white;
     font-weight: 600;
     transition: all 200ms ease;
@@ -1227,7 +1227,7 @@
   }
 
   .button-primary:hover {
-    background-color: #4338ca;
+    background-color: var(--primary-hover);
   }
 
   .button-primary:disabled {
