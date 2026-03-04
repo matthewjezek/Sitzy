@@ -7,19 +7,15 @@ import SplashScreen from '../components/SplashScreen'
 export default function OAuthCallbackPage() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const requestSentRef = useRef(false)
+  const executedRef = useRef(false)
 
   useEffect(() => {
-    // Prevent double request in Strict Mode (state token is one-time use)
-    if (requestSentRef.current) return
-    requestSentRef.current = true
-
-    let isMounted = true
+    // Prevent double execution in Strict Mode
+    if (executedRef.current) return
+    executedRef.current = true
 
     const code = searchParams.get('code')
     const state = searchParams.get('state')
-
-    console.log('OAuth callback params:', { code, state })
 
     if (!code || !state) {
       toast.error('Neplatný callback.')
@@ -27,22 +23,19 @@ export default function OAuthCallbackPage() {
       return
     }
 
-    instance
-      .get(`/auth/oauth/callback`, { params: { code, state } })
-      .then(({ data }) => {
-        if (!isMounted) return
-        console.log('OAuth success:', data)
+    instance.get('/auth/oauth/callback', { 
+      params: { code, state }
+    })
+      .then(response => {
+        const data = response.data
         localStorage.setItem('access_token', data.access_token)
         toast.success('Přihlášení úspěšné!')
         navigate('/')
       })
-      .catch((error) => {
-        if (!isMounted) return
-        console.error('OAuth callback error:', error.response?.data || error.message)
-        
+      .catch(error => {
         const errorDetail = error.response?.data?.detail || ''
         const errorMessage = error.response?.data?.error || ''
-        
+
         if (errorMessage.includes('Rate limit')) {
           toast.error('Příliš mnoho pokusů. Prosím zkuste za chvíli.')
         } else if (errorDetail.includes('Invalid or expired state token')) {
@@ -52,15 +45,11 @@ export default function OAuthCallbackPage() {
         }
         navigate('/login')
       })
-
-    return () => {
-      isMounted = false
-    }
   }, [])
 
   return (
-    <div className="page-container">
-      <div className="page-content text-center">
+    <div className="page-container min-h-screen bg-slate-900 dark:bg-slate-950">
+      <div className="page-content text-center flex flex-col items-center justify-center">
         <SplashScreen />
       </div>
     </div>
