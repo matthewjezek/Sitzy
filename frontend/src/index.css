@@ -31,6 +31,8 @@
     --primary-dark: #3d1f6d;    /* indigo-900 */
     --bg-light: #ffffff;
     --bg-dark: #0f172a;
+    --surface-light: #ffffff;
+    --surface-dark: #1f2937;
     --accent: #CFF250;          /* lime for warnings/errors in dark */
   }
 }
@@ -512,10 +514,21 @@
     padding: 1.5rem;
     min-height: calc(100dvh - 4rem);
     background-color: var(--bg-light);
+    transition: background-color 200ms ease;
+  }
+
+  .page-container-auth {
+    min-height: 100dvh;
   }
 
   .dark .page-container {
     background-color: var(--bg-dark);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not(.light) .page-container {
+      background-color: var(--bg-dark);
+    }
   }
 
   .page-content {
@@ -604,7 +617,7 @@
    * MAIN CARD
    * ======================================== */
   .main-card {
-    background-color: var(--bg-light);
+    background-color: var(--surface-light);
     border-radius: 1.5rem;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     border: 1px solid var(--primary-border);
@@ -612,9 +625,17 @@
   }
 
   .dark .main-card {
-    background-color: var(--bg-dark);
+    background-color: var(--surface-dark);
     border-color: rgba(115, 80, 242, 0.2);
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+    box-shadow: none;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not(.light) .main-card {
+      background-color: var(--surface-dark);
+      border-color: rgba(115, 80, 242, 0.2);
+      box-shadow: none;
+    }
   }
 
   .main-card-header {
@@ -624,17 +645,30 @@
   }
 
   .dark .main-card-header {
-    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-border) 100%);
+    background: var(--primary-dark);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not(.light) .main-card-header {
+      background: var(--primary-dark);
+    }
   }
 
   .main-card-body {
     padding: 2rem;
-    background-color: var(--bg-light);
+    background-color: var(--surface-light);
   }
 
   .dark .main-card-body {
-    background-color: var(--bg-dark);
+    background-color: var(--surface-dark);
     color: #f3f4f6;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not(.light) .main-card-body {
+      background-color: var(--surface-dark);
+      color: #f3f4f6;
+    }
   }
 
   /* ========================================
@@ -1233,6 +1267,51 @@
   .button-primary:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+
+  /* ========================================
+   * SOCIAL BUTTON
+   * ======================================== */
+  .social-button {
+    width: 100%;
+    padding-block: 0.75rem;
+    border: 1px solid #d1d5db;
+    background-color: #ffffff;
+    color: #1f2937;
+    transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease;
+  }
+
+  .social-button:hover {
+    background-color: #f9fafb;
+    border-color: #9ca3af;
+  }
+
+  .social-button:disabled svg {
+    opacity: 0.6;
+  }
+
+  .dark .social-button {
+    border-color: #4b5563;
+    background-color: #1f2937;
+    color: #f3f4f6;
+  }
+
+  .dark .social-button:hover {
+    background-color: #374151;
+    border-color: #6b7280;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not(.light) .social-button {
+      border-color: #4b5563;
+      background-color: #1f2937;
+      color: #f3f4f6;
+    }
+
+    html:not(.light) .social-button:hover {
+      background-color: #374151;
+      border-color: #6b7280;
+    }
   }
 
   /* ========================================

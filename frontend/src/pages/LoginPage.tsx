@@ -1,6 +1,7 @@
 import { useLocation } from 'react-router'
 import instance from '../api/axios'
 import { toast } from 'react-toastify'
+import { SocialButton, XIcon, FacebookIcon } from '../components/tailgrids/core/social-button'
 
 export default function LoginPage() {
   const location = useLocation()
@@ -16,7 +17,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="page-container">
+    <div className="page-container page-container-auth">
       <div className='page-content'>
         <div className="form-container">
           <div className="main-card">
@@ -31,21 +32,21 @@ export default function LoginPage() {
               )}
 
               <div className="form-group">
-                <button
+                <SocialButton
                   onClick={() => handleOAuthLogin('x')}
-                  className="button-primary w-full"
                 >
+                  <XIcon />
                   Přihlásit se přes X
-                </button>
+                </SocialButton>
               </div>
 
               <div className="form-group">
-                <button
+                <SocialButton
                   onClick={() => handleOAuthLogin('facebook')}
-                  className="button-primary w-full"
                 >
+                  <FacebookIcon />
                   Přihlásit se přes Facebook
-                </button>
+                </SocialButton>
               </div>
             </div>
           </div>

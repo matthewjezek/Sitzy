@@ -25,6 +25,7 @@ export function resolveThemePreference(preference: ThemePreference): 'light' | '
 export function applyThemePreference(preference: ThemePreference): 'light' | 'dark' {
   const resolvedTheme = resolveThemePreference(preference)
   document.documentElement.classList.toggle('dark', resolvedTheme === 'dark')
+  document.documentElement.classList.toggle('light', resolvedTheme === 'light')
   localStorage.setItem(THEME_STORAGE_KEY, preference)
 
   window.dispatchEvent(new CustomEvent(THEME_CHANGED_EVENT, {
