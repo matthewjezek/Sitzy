@@ -103,69 +103,83 @@ async def oauth_callback(
     provider, code_verifier = result
 
     _, code_verifier = result
+    logger.info(f"OAuth callback for provider: {provider}")
 
-    if provider == "x":
-        if not code_verifier:
-            logger.warning(
-                "OAuth callback missing PKCE code verifier", extra={"provider": "x"}
-            )
-            raise HTTPException(status_code=400, detail="Missing PKCE code verifier.")
-        token_data = x_client.exchange_code(code, code_verifier)
-        user_info = await x_client.get_user_info(token_data["access_token"])
-    else:
-        token_data = fb_client.exchange_code(code)
-        user_info = await fb_client.get_user_info(token_data["access_token"])
+    try:
+        if provider == "x":
+            if not code_verifier:
+                logger.warning(
+                    "OAuth callback missing PKCE code verifier", extra={"provider": "x"}
+                )
+                raise HTTPException(status_code=400, detail="Missing PKCE code verifier.")
+            token_data = x_client.exchange_code(code, code_verifier)
+            logger.info(f"X token exchange complete, fetching user info")
+            user_info = await x_client.get_user_info(token_data["access_token"])
+        else:
+            token_data = fb_client.exchange_code(code)
+            logger.info(f"Facebook token exchange complete, fetching user info")
+            user_info = await fb_client.get_user_info(token_data["access_token"])
 
-    raw_id = user_info.get("id")
-    if not raw_id:
-        logger.error("Failed to fetch user profile", extra={"provider": provider})
-        raise HTTPException(status_code=502, detail="Failed to fetch user profile.")
-    social_id: str = str(raw_id)
-    email = user_info.get("email") or f"{social_id}@{provider}.invalid"
+        logger.info(f"User info fetched: {user_info}")
 
-    user = find_or_create_user(
-        provider=provider,
-        social_id=social_id,
-        email=email,
-        full_name=user_info.get("full_name"),
-        avatar_url=user_info.get("avatar_url"),
-        db=db,
-    )
+        raw_id = user_info.get("id")
+        if not raw_id:
+            logger.error("Failed to fetch user profile", extra={"provider": provider})
+            raise HTTPException(status_code=502, detail="Failed to fetch user profile.")
+        social_id: str = str(raw_id)
+        email = user_info.get("email") or f"{social_id}@{provider}.invalid"
 
-    expires_in: int = int(token_data.get("expires_in", 7200))
+        logger.info(f"Creating/updating user for {provider}:{social_id}")
+        user = find_or_create_user(
+            provider=provider,
+            social_id=social_id,
+            email=email,
+            full_name=user_info.get("full_name"),
+            avatar_url=user_info.get("avatar_url"),
+            db=db,
+        )
+        logger.info(f"User created/found: {user.id}")
 
-    session = create_or_update_session(
-        user_id=user.id,
-        social_account_id=user.social_accounts[-1].id,
-        provider_access_token=token_data["access_token"],
-        provider_refresh_token=token_data.get("refresh_token"),
-        expires_in=expires_in,
-        user_agent=request.headers.get("user-agent"),
-        db=db,
-    )
+        expires_in: int = int(token_data.get("expires_in", 7200))
 
-    db.commit()
+        session = create_or_update_session(
+            user_id=user.id,
+            social_account_id=user.social_accounts[-1].id,
+            provider_access_token=token_data["access_token"],
+            provider_refresh_token=token_data.get("refresh_token"),
+            expires_in=expires_in,
+            user_agent=request.headers.get("user-agent"),
+            db=db,
+        )
+        logger.info(f"Session created: {session.id}")
 
-    access_token = create_access_token(
-        {"sub": str(user.id), "session_id": str(session.id)}
-    )
-    refresh_token = create_refresh_token(user.id, session.id)
+        db.commit()
+        logger.info(f"Database committed")
 
-    _set_refresh_cookie(response, refresh_token)
+        access_token = create_access_token(
+            {"sub": str(user.id), "session_id": str(session.id)}
+        )
+        refresh_token = create_refresh_token(user.id, session.id)
 
-    logger.info(
-        "OAuth callback successful",
-        extra={
-            "provider": provider,
-            "user_id": str(user.id),
-            "session_id": str(session.id),
-        },
-    )
+        _set_refresh_cookie(response, refresh_token)
+        logger.info(f"Refresh cookie set, returning access token")
 
-    return {
-        "access_token": access_token,
-        "token_type": "bearer",
-    }
+        logger.info(
+            "OAuth callback successful",
+            extra={
+                "provider": provider,
+                "user_id": str(user.id),
+                "session_id": str(session.id),
+            },
+        )
+
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+        }
+    except Exception as e:
+        logger.error(f"OAuth callback exception: {str(e)}", extra={"exception": str(e)}, exc_info=True)
+        raise
 
 
 @router.post("/refresh", response_model=dict[str, str])
