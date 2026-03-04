@@ -19,7 +19,7 @@ function CreateCarSkeleton() {
         ))}
       </div>
       <div className="h-10 rounded-lg bg-gray-200 dark:bg-gray-700" />
-      <div className="h-10 rounded-lg bg-indigo-200 dark:bg-indigo-900" />
+      <div className="h-10 rounded-lg skeleton-indigo" />
     </div>
   )
 }
@@ -90,14 +90,14 @@ export default function CreateCarPage() {
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
 
         {/* Layout výběr */}
-        <div className="flex gap-4 justify-center flex-wrap">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 justify-items-center">
           {LAYOUTS.map(l => (
             <label
               key={l.value}
-              className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 cursor-pointer transition
+              className={`w-full max-w-[11rem] min-h-[10rem] flex flex-col items-center justify-center text-center gap-2 p-4 rounded-xl border-2 cursor-pointer transition
                 ${layout === l.value
-                  ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/30'
-                  : 'border-gray-200 dark:border-gray-700 hover:border-indigo-300'
+                  ? 'layout-selected'
+                  : 'layout-unselected'
                 }`}
             >
               <input
@@ -106,9 +106,9 @@ export default function CreateCarPage() {
                 className="sr-only"
                 {...register('layout')}
               />
-              {l.icon}
-              <span className="font-medium text-sm">{l.label}</span>
-              <span className="text-xs text-gray-500">{l.description}</span>
+              <span className="layout-icon leading-none">{l.icon}</span>
+              <span className="layout-label">{l.label}</span>
+              <span className="layout-description">{l.description}</span>
             </label>
           ))}
         </div>

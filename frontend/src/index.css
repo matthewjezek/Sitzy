@@ -199,6 +199,70 @@
   }
 
   /* ========================================
+   * LAYOUT ICONS (Car layout selector)
+   * ======================================== */
+  .layout-icon {
+    color: #6d28d9;
+  }
+
+  .dark .layout-icon {
+    color: #a5b4fc;
+  }
+
+  .layout-label {
+    font-weight: 500;
+    font-size: 0.875rem;
+    color: #111827;
+  }
+
+  .dark .layout-label {
+    color: #f9fafb;
+  }
+
+  .layout-description {
+    font-size: 0.75rem;
+    color: #4b5563;
+  }
+
+  .dark .layout-description {
+    color: #9ca3af;
+  }
+
+  .layout-selected {
+    border-color: #4f46e5;
+    background-color: #eef2ff;
+  }
+
+  .dark .layout-selected {
+    border-color: #4f46e5;
+    background-color: rgba(79, 70, 229, 0.1);
+  }
+
+  .layout-unselected {
+    border-color: #d1d5db;
+  }
+
+  .dark .layout-unselected {
+    border-color: #374151;
+  }
+
+  .layout-unselected:hover {
+    border-color: #a5b4fc;
+  }
+
+  .dark .layout-unselected:hover {
+    border-color: #a5b4fc;
+  }
+
+  .skeleton-indigo {
+    background-color: #e0d0f7;
+  }
+
+  .dark .skeleton-indigo {
+    background-color: #3d1f6d;
+  }
+
+  /* ========================================
    * NAVIGATION
    * ======================================== */
   .navigation {
@@ -1084,8 +1148,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 80px;
-  min-height: 80px;
+  width: 110px;
+  min-height: 110px;
   border-radius: 1rem;
   border: 2px solid var(--primary-border);
   background-color: white;
@@ -1176,14 +1240,14 @@
 }
 
 .radio-icon svg {
-  width: 2rem;
-  height: 2rem;
-  fill: #6b7280;
+  width: 4rem;
+  height: 4rem;
+  fill: #6d28d9;
   transition: fill 200ms ease;
 }
 
 .dark .radio-icon svg {
-  fill: #9ca3af;
+  fill: #a5b4fc;
 }
 
 .radio-label {
