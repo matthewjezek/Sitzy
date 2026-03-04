@@ -17,7 +17,7 @@ function CreateRideSkeleton() {
       <div className="h-10 rounded-lg bg-gray-200 dark:bg-gray-700" />
       <div className="h-10 rounded-lg bg-gray-200 dark:bg-gray-700" />
       <div className="h-10 rounded-lg bg-gray-200 dark:bg-gray-700" />
-      <div className="h-10 rounded-lg bg-violet-200 dark:bg-violet-900" />
+      <div className="h-10 rounded-lg bg-indigo-200 dark:bg-indigo-900" />
     </div>
   )
 }
@@ -79,7 +79,7 @@ export default function CreateRidePage() {
           <p>Nemáte žádné auto. Nejprve přidejte auto.</p>
           <button
             onClick={() => navigate('/cars/new')}
-            className="py-2 px-4 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-semibold transition self-start"
+            className="py-2 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition self-start"
           >
             Přidat auto
           </button>
@@ -141,7 +141,7 @@ export default function CreateRidePage() {
         <button
           type="submit"
           disabled={submitting || cars.length === 0}
-          className="w-full py-2 px-4 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-semibold transition disabled:opacity-50"
+          className="w-full py-2 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition disabled:opacity-50"
         >
           {submitting ? 'Vytvářím...' : 'Vytvořit jízdu'}
         </button>

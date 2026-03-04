@@ -40,7 +40,7 @@ function RideStatusBadge({ departureTime }: { departureTime: string }) {
     </span>
   )
   return (
-    <span className="text-xs px-2 py-0.5 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-600">
+    <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600">
       Nadcházející
     </span>
   )
@@ -100,7 +100,7 @@ function InviteSection({ rideId }: { rideId: string }) {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="py-2 px-4 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-semibold flex items-center gap-2 transition disabled:opacity-50 shrink-0"
+          className="py-2 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center gap-2 transition disabled:opacity-50 shrink-0"
         >
           <FiUserPlus size={16} />
           Pozvat
@@ -143,7 +143,7 @@ function InviteSection({ rideId }: { rideId: string }) {
               <button
                 disabled={responding === inv.token}
                 onClick={() => handleRespond(inv.token, true)}
-                className="text-xs py-1 px-3 rounded-lg bg-violet-600 text-white hover:bg-violet-700 disabled:opacity-50 transition"
+                className="text-xs py-1 px-3 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 transition"
               >
                 Přijmout
               </button>
@@ -181,7 +181,7 @@ function PassengersSection({ passengers }: { passengers: import('../hooks/useRid
             {p.avatar_url ? (
               <img src={p.avatar_url} alt={p.full_name ?? ''} className="w-8 h-8 rounded-full object-cover" />
             ) : (
-              <div className="w-8 h-8 rounded-full bg-violet-200 dark:bg-violet-800 flex items-center justify-center text-sm font-bold text-violet-700 dark:text-violet-200">
+              <div className="w-8 h-8 rounded-full bg-indigo-200 dark:bg-indigo-800 flex items-center justify-center text-sm font-bold text-indigo-700 dark:text-indigo-200">
                 {p.full_name?.[0]?.toUpperCase() ?? '?'}
               </div>
             )}
@@ -230,7 +230,7 @@ export default function RideDetailPage() {
       <p className="text-gray-500">Jízda nebyla nalezena.</p>
       <button
         onClick={() => navigate('/rides')}
-        className="py-2 px-4 rounded-xl bg-violet-600 text-white hover:bg-violet-700 transition"
+        className="py-2 px-4 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition"
       >
         Zpět na jízdy
       </button>
@@ -249,12 +249,12 @@ export default function RideDetailPage() {
 
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2 text-sm text-gray-500">
-            <FiClock size={14} className="shrink-0 text-violet-500" />
+            <FiClock size={14} className="shrink-0 text-indigo-500" />
             {formatLocalDateTime(ride.departure_time)}
           </div>
           {ride.car && (
             <div className="flex items-center gap-2 text-sm text-gray-500">
-              <FiMapPin size={14} className="shrink-0 text-violet-500" />
+              <FiMapPin size={14} className="shrink-0 text-indigo-500" />
               {ride.car.name} ({ride.car.layout})
             </div>
           )}

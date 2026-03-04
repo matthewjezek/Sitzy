@@ -22,7 +22,7 @@ const RocketIcon = () => (
 )
 
 const SeatIcon = () => (
-  <svg className="text-violet-500" stroke="currentColor" strokeWidth={1.5} fill="none" viewBox="0 0 24 24" height={22} width={22}>
+  <svg className="text-indigo-500" stroke="currentColor" strokeWidth={1.5} fill="none" viewBox="0 0 24 24" height={22} width={22}>
     <rect x="7" y="6" width="10" height="8" rx="3" />
     <rect x="5" y="14" width="14" height="7" rx="2" />
     <path d="M9 6v-1a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v1" />
@@ -109,7 +109,7 @@ function BellDropdown({ open, onClose, invites, loading, onRespond, responding }
             <button
               disabled={responding === inv.token}
               onClick={() => onRespond(inv.token, true, inv.ride_id)}
-              className="flex-1 text-sm py-1 px-3 rounded-lg bg-violet-600 text-white hover:bg-violet-700 disabled:opacity-50 transition"
+              className="flex-1 text-sm py-1 px-3 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 transition"
             >
               {responding === inv.token ? 'Zpracovávám...' : 'Přijmout'}
             </button>
@@ -132,7 +132,7 @@ function BellDropdown({ open, onClose, invites, loading, onRespond, responding }
 function UnreadBadge({ count }: { count: number }) {
   if (count === 0) return null
   return (
-    <span className="absolute -top-1 -right-1 bg-violet-500 text-white rounded-full px-1.5 py-0.5 text-xs min-w-5 flex items-center justify-center">
+    <span className="absolute -top-1 -right-1 bg-indigo-500 text-white rounded-full px-1.5 py-0.5 text-xs min-w-5 flex items-center justify-center">
       {count}
     </span>
   )
@@ -189,7 +189,7 @@ export default function Navigation() {
           <button className="nav-button glass hover:text-cyan-400" onClick={() => navigate('/rides')}>
             <RocketIcon />Jízdy
           </button>
-          <button className="nav-button glass hover:text-violet-500" onClick={() => navigate('/rides')}>
+          <button className="nav-button glass hover:text-indigo-500" onClick={() => navigate('/rides')}>
             <SeatIcon />Moje jízdy
           </button>
           <button className="nav-button glass hover:text-fuchsia-500" onClick={() => navigate('/cars')}>

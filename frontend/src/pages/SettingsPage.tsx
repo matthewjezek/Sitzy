@@ -91,7 +91,7 @@ export default function SettingsPage() {
             className="w-16 h-16 rounded-full object-cover"
           />
         ) : (
-          <div className="w-16 h-16 rounded-full bg-violet-200 dark:bg-violet-800 flex items-center justify-center text-2xl font-bold text-violet-700 dark:text-violet-200">
+          <div className="w-16 h-16 rounded-full bg-indigo-200 dark:bg-indigo-800 flex items-center justify-center text-2xl font-bold text-indigo-700 dark:text-indigo-200">
             {user?.full_name?.[0]?.toUpperCase() ?? '?'}
           </div>
         )}
@@ -102,7 +102,7 @@ export default function SettingsPage() {
             <p className="text-xs text-gray-400 mt-1">
               Přihlášen přes{' '}
               {user.social_accounts.map(a => (
-                <span key={a.provider} className="capitalize font-medium text-violet-500">
+                <span key={a.provider} className="capitalize font-medium text-indigo-500">
                   {a.provider}
                 </span>
               )).reduce((acc, el, i) => i === 0 ? [el] : [...acc, ', ', el], [] as React.ReactNode[])}
@@ -117,7 +117,7 @@ export default function SettingsPage() {
         <button
           onClick={toggleDarkMode}
           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ${
-            darkMode ? 'bg-violet-600' : 'bg-gray-300 dark:bg-gray-600'
+            darkMode ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-gray-600'
           }`}
         >
           <span

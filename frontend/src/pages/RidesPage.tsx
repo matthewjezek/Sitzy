@@ -39,7 +39,7 @@ function RideStatusBadge({ departureTime }: { departureTime: string }) {
     )
   }
   return (
-    <span className="text-xs px-2 py-0.5 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-600">
+    <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600">
       Nadcházející
     </span>
   )
@@ -65,7 +65,7 @@ export default function RidesPage() {
         <h1 className="text-2xl font-bold">Jízdy</h1>
         <button
           onClick={() => navigate('/rides/new')}
-          className="py-2 px-4 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-semibold flex items-center gap-2 transition"
+          className="py-2 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center gap-2 transition"
         >
           <FiPlus size={18} />
           Nová jízda
@@ -85,7 +85,7 @@ export default function RidesPage() {
           <p className="text-gray-500">Zatím nemáte žádné jízdy.</p>
           <button
             onClick={() => navigate('/rides/new')}
-            className="py-2 px-6 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-semibold flex items-center gap-2 transition"
+            className="py-2 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center gap-2 transition"
           >
             <FiPlus size={18} />
             Naplánovat první jízdu
@@ -100,11 +100,11 @@ export default function RidesPage() {
             <li key={ride.id}>
               <button
                 onClick={() => navigate(`/rides/${ride.id}`)}
-                className="w-full card p-4 flex items-center gap-4 hover:border-violet-400 transition text-left"
+                className="w-full card p-4 flex items-center gap-4 hover:border-indigo-400 transition text-left"
               >
                 <div className="flex-1 min-w-0 flex flex-col gap-1">
                   <div className="flex items-center gap-2">
-                    <FiMapPin size={14} className="text-violet-500 shrink-0" />
+                    <FiMapPin size={14} className="text-indigo-500 shrink-0" />
                     <p className="font-semibold truncate">{ride.destination}</p>
                   </div>
                   <div className="flex items-center gap-2">

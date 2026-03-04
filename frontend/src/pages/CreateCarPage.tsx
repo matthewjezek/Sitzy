@@ -19,7 +19,7 @@ function CreateCarSkeleton() {
         ))}
       </div>
       <div className="h-10 rounded-lg bg-gray-200 dark:bg-gray-700" />
-      <div className="h-10 rounded-lg bg-violet-200 dark:bg-violet-900" />
+      <div className="h-10 rounded-lg bg-indigo-200 dark:bg-indigo-900" />
     </div>
   )
 }
@@ -96,8 +96,8 @@ export default function CreateCarPage() {
               key={l.value}
               className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 cursor-pointer transition
                 ${layout === l.value
-                  ? 'border-violet-600 bg-violet-50 dark:bg-violet-900/30'
-                  : 'border-gray-200 dark:border-gray-700 hover:border-violet-300'
+                  ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/30'
+                  : 'border-gray-200 dark:border-gray-700 hover:border-indigo-300'
                 }`}
             >
               <input
@@ -132,7 +132,7 @@ export default function CreateCarPage() {
         <button
           type="submit"
           disabled={submitting || loading}
-          className="w-full py-2 px-4 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-semibold transition disabled:opacity-50"
+          className="w-full py-2 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition disabled:opacity-50"
         >
           {submitting ? 'Ukládám...' : isEdit ? 'Uložit změny' : 'Vytvořit auto'}
         </button>

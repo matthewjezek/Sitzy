@@ -47,7 +47,7 @@ export default function CarsPage() {
         <h1 className="text-2xl font-bold">Moje auta</h1>
         <button
           onClick={() => navigate('/cars/new')}
-          className="py-2 px-4 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-semibold flex items-center gap-2 transition"
+          className="py-2 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center gap-2 transition"
         >
           <FiPlus size={18} />
           Přidat
@@ -67,7 +67,7 @@ export default function CarsPage() {
           <p className="text-gray-500">Zatím nemáte žádné auto.</p>
           <button
             onClick={() => navigate('/cars/new')}
-            className="py-2 px-6 rounded-xl bg-violet-600 hover:bg-violet-700 text-white font-semibold flex items-center gap-2 transition"
+            className="py-2 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center gap-2 transition"
           >
             <FiPlus size={18} />
             Přidat první auto
@@ -82,9 +82,9 @@ export default function CarsPage() {
             <li key={car.id}>
               <button
                 onClick={() => navigate(`/cars/${car.id}`)}
-                className="w-full card p-4 flex items-center gap-4 hover:border-violet-400 transition text-left"
+                className="w-full card p-4 flex items-center gap-4 hover:border-indigo-400 transition text-left"
               >
-                <div className="p-2 rounded-xl bg-violet-100 dark:bg-violet-900/30 shrink-0">
+                <div className="p-2 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 shrink-0">
                   <LayoutIcon layout={car.layout} />
                 </div>
                 <div className="flex-1 min-w-0">
