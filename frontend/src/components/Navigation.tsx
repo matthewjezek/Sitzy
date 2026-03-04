@@ -180,8 +180,8 @@ export default function Navigation() {
   return (
     <>
       {/* ── Desktop ── */}
-      <div className="navigation hidden md:flex justify-between items-center">
-        <div className="flex items-center gap-2">
+      <div className="navigation hidden md:flex items-center">
+        <div className="flex items-center gap-2 flex-1">
           <button className="nav-button glass gap-0 group transition-all duration-300 ease-in hover:gap-2" onClick={() => navigate(-1)}>
             <ArrowLeftIcon />
             <span className="whitespace-nowrap max-w-0 overflow-hidden transition-all duration-300 ease-in group-hover:max-w-[100px]">Zpět</span>
@@ -197,7 +197,11 @@ export default function Navigation() {
           </button>
         </div>
 
-        <div className="flex items-center gap-2">
+        <Link to="/rides" className="flex items-center gap-2 flex-shrink-0">
+          <img src="src/assets/sitzy_logo_full.svg" alt="Sitzy" className="logo h-10" />
+        </Link>
+
+        <div className="flex items-center gap-2 flex-1 justify-end">
           <div className="relative">
             <button onClick={() => setBellOpen(o => !o)} className="nav-button p-0 glass rounded-full w-9 h-9 flex items-center justify-center relative">
               <FiBell className="nav-icon-bell" size={20} />
@@ -225,7 +229,7 @@ export default function Navigation() {
       {/* ── Mobilní ── */}
       <div className="top-0 left-0 w-full z-50 max-w-screen-xl flex flex-wrap items-center justify-between p-4 md:hidden">
         <Link to="/rides" className="flex items-center space-x-3">
-          <span className="text-3xl font-semibold text-secondary">Sitzy</span>
+            <img src="src/assets/sitzy_logo_full.svg" alt="Sitzy" className="logo h-10" />
         </Link>
         <div className="flex items-center gap-2">
           <div className="relative">
