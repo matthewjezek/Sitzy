@@ -8,8 +8,8 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
     return (
-        <div>
-            <main>
+        <div className="layout-wrapper">
+            <main className="layout-main">
                 <div className="h-16">
                     <Navigation />
                 </div>    
