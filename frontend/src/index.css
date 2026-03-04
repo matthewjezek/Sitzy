@@ -110,6 +110,94 @@
     background-color: rgba(255, 255, 255, 0.15);
   }
 
+  .nav-icon-rocket {
+    color: #0891b2;
+  }
+
+  .dark .nav-icon-rocket {
+    color: #67e8f9;
+  }
+
+  .nav-icon-seat {
+    color: #4f46e5;
+  }
+
+  .dark .nav-icon-seat {
+    color: #a5b4fc;
+  }
+
+  .nav-icon-car {
+    color: #c026d3;
+  }
+
+  .dark .nav-icon-car {
+    color: #f0abfc;
+  }
+
+  .nav-icon-settings {
+    color: #0369a1;
+  }
+
+  .dark .nav-icon-settings {
+    color: #7dd3fc;
+  }
+
+  .nav-icon-bell {
+    color: #0284c7;
+  }
+
+  .dark .nav-icon-bell {
+    color: #7dd3fc;
+  }
+
+  .nav-icon-logout {
+    color: #dc2626;
+  }
+
+  .dark .nav-icon-logout {
+    color: #f87171;
+  }
+
+  .nav-hover-rocket:hover {
+    color: #0891b2;
+  }
+
+  .dark .nav-hover-rocket:hover {
+    color: #67e8f9;
+  }
+
+  .nav-hover-seat:hover {
+    color: #4f46e5;
+  }
+
+  .dark .nav-hover-seat:hover {
+    color: #a5b4fc;
+  }
+
+  .nav-hover-car:hover {
+    color: #c026d3;
+  }
+
+  .dark .nav-hover-car:hover {
+    color: #f0abfc;
+  }
+
+  .nav-hover-settings:hover {
+    color: #0369a1;
+  }
+
+  .dark .nav-hover-settings:hover {
+    color: #7dd3fc;
+  }
+
+  .nav-hover-logout:hover {
+    color: #dc2626;
+  }
+
+  .dark .nav-hover-logout:hover {
+    color: #f87171;
+  }
+
   /* ========================================
    * NAVIGATION
    * ======================================== */
