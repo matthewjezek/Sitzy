@@ -1,3 +1,4 @@
+import React from 'react'
 import { useLocation } from 'react-router'
 import instance from '../api/axios'
 import { toast } from 'react-toastify'
@@ -6,6 +7,13 @@ import { SocialButton, XIcon, FacebookIcon } from '../components/tailgrids/core/
 export default function LoginPage() {
   const location = useLocation()
   const expired = new URLSearchParams(location.search).get('expired')
+  const loggedOut = new URLSearchParams(location.search).get('logged_out')
+
+  React.useEffect(() => {
+    if (loggedOut) {
+      toast.success('Úspěšně odhlášeno.')
+    }
+  }, [loggedOut])
 
   const handleOAuthLogin = async (provider: 'x' | 'facebook') => {
     try {

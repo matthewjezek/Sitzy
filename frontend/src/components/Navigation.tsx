@@ -152,7 +152,7 @@ export default function Navigation() {
 
   const handleLogout = () => {
     localStorage.removeItem('access_token')
-    navigate('/login')
+    navigate('/login?logged_out=1')
   }
 
   const handleRespond = async (token: string, accept: boolean, rideId: string) => {

@@ -70,7 +70,7 @@ export default function SettingsPage() {
 
   const handleLogout = () => {
     localStorage.removeItem('access_token')
-    window.location.href = '/login'
+    window.location.href = '/login?logged_out=1'
   }
 
   if (loading) return <SettingsSkeleton />
