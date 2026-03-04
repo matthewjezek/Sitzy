@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router'
 import { useEffect, useState, lazy, Suspense } from 'react'
 import { useNavigate } from 'react-router'
-import { ToastContainer } from 'react-toastify'
+import { Slide, ToastContainer } from 'react-toastify'
 import { AUTH_EXPIRED_EVENT } from './api/axios'
 import LoginPage from './pages/LoginPage'
 import Layout from './components/Layout'
@@ -156,7 +156,8 @@ function App() {
         hideProgressBar
         pauseOnHover
         draggable
-        theme={resolvedTheme === 'dark' ? 'dark' : 'colored'}
+        theme={resolvedTheme === 'dark' ? 'dark' : 'light'}
+        transition={Slide}
       />
     </Router>
   )
