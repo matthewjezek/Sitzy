@@ -56,7 +56,6 @@ export default defineConfig({
     }),
   ],
   // server: {
-  //   allowedHosts: ['unpendulously-motionless-niki.ngrok-free.dev'],
   //   proxy: {
   //     '/auth': {
   //       target: 'http://localhost:8000',
