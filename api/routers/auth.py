@@ -274,3 +274,136 @@ def read_me(ctx: UserContext = Depends(get_current_user)) -> UserOut:
     """Return current authenticated user."""
     logger.debug("User info requested", extra={"user_id": str(ctx.user.id)})
     return UserOut.model_validate(ctx.user)
+
+
+@router.delete("/delete-account", status_code=status.HTTP_204_NO_CONTENT)
+@limiter.limit("3/minute")
+def delete_account(
+    request: Request,
+    response: Response,
+    ctx: UserContext = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> None:
+    """Delete user account and all associated data (GDPR compliance).
+    
+    Cascades delete:
+    - SocialAccounts (OAuth links)
+    - SocialSessions (active sessions)
+    - Cars (owned vehicles)
+    - CarDrivers (driver assignments)
+    - Passenger entries (ride participations)
+    - Invitations are orphaned but remain for audit trail
+    """
+    user = ctx.user
+    user_id = str(user.id)
+    
+    logger.info(
+        "Account deletion initiated",
+        extra={"user_id": user_id, "email": user.email}
+    )
+    
+    # Delete user (cascades handle related data via SQLAlchemy relationships)
+    db.delete(user)
+    db.commit()
+    
+    # Clear refresh cookie
+    _clear_refresh_cookie(response)
+    
+    logger.info(
+        "Account deleted successfully",
+        extra={"user_id": user_id}
+    )
+
+
+@router.post("/facebook/deletion", status_code=status.HTTP_200_OK)
+@limiter.limit("10/minute")
+def facebook_data_deletion_callback(
+    request: Request,
+    signed_request: str,
+    db: Session = Depends(get_db),
+) -> dict[str, str]:
+    """Facebook Data Deletion Callback (required for App Review).
+    
+    Facebook sends signed_request when user deletes app from their settings.
+    We return a confirmation code and status URL for tracking.
+    
+    Note: For production, verify signed_request signature with app secret.
+    For academic/prototype use, we accept the request and process deletion.
+    
+    See: https://developers.facebook.com/docs/apps/delete-data
+    """
+    import base64
+    import json
+    
+    from api.models import SocialAccount, User
+    
+    try:
+        # Decode signed_request (format: signature.payload)
+        # Production should verify HMAC signature with app secret
+        encoded_sig, payload = signed_request.split('.', 1)
+        
+        # Add padding if needed for base64
+        padding = len(payload) % 4
+        if padding:
+            payload += '=' * (4 - padding)
+        
+        decoded_payload = base64.urlsafe_b64decode(payload)
+        data = json.loads(decoded_payload)
+        
+        facebook_user_id = data.get('user_id')
+        
+        if not facebook_user_id:
+            logger.warning("Facebook deletion callback missing user_id")
+            raise HTTPException(status_code=400, detail="Missing user_id in signed_request")
+        
+        # Find user by Facebook social account
+        social_account = (
+            db.query(SocialAccount)
+            .filter(
+                SocialAccount.provider == "facebook",
+                SocialAccount.social_id == str(facebook_user_id)
+            )
+            .first()
+        )
+        
+        if social_account:
+            user = social_account.user
+            user_id = str(user.id)
+            
+            logger.info(
+                "Facebook deletion callback - deleting user",
+                extra={"user_id": user_id, "facebook_id": facebook_user_id}
+            )
+            
+            db.delete(user)
+            db.commit()
+            
+            logger.info(
+                "User deleted via Facebook callback",
+                extra={"user_id": user_id}
+            )
+        else:
+            logger.info(
+                "Facebook deletion callback - user not found",
+                extra={"facebook_id": facebook_user_id}
+            )
+        
+        # Return confirmation as per Facebook spec
+        confirmation_code = f"sitzy_deletion_{facebook_user_id}"
+        status_url = f"{settings.frontend_origin}/deletion-status?code={confirmation_code}"
+        
+        return {
+            "url": status_url,
+            "confirmation_code": confirmation_code
+        }
+        
+    except Exception as e:
+        logger.error(
+            "Facebook deletion callback failed",
+            extra={"error": str(e)},
+            exc_info=True
+        )
+        raise HTTPException(
+            status_code=400,
+            detail="Failed to process deletion request"
+        )

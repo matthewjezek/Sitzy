@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { isAxiosError } from 'axios';
 import { toast } from 'react-toastify';
 import instance from '../api/axios';
@@ -7,6 +7,7 @@ import {
   getThemePreference,
   type ThemePreference,
 } from '../utils/theme';
+import { DeleteDialog } from '../components/Dialog';
 
 interface SocialAccount {
   provider: string
@@ -49,6 +50,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true)
   const [themePreference, setThemePreference] = useState<ThemePreference>(() => getThemePreference())
   const [emailNotifications, setEmailNotifications] = useState<'enabled' | 'disabled'>('enabled')
+  const deleteDialogRef = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
     instance.get<User>('/auth/me')
@@ -68,9 +70,30 @@ export default function SettingsPage() {
     applyThemePreference(nextTheme)
   }
 
-  const handleLogout = () => {
-    localStorage.removeItem('access_token')
-    window.location.href = '/login?logged_out=1'
+  const toggleDeleteDialog = () => {
+    if (deleteDialogRef.current) {
+      if (deleteDialogRef.current.open) {
+        deleteDialogRef.current.close()
+      } else {
+        deleteDialogRef.current.showModal()
+      }
+    }
+  }
+
+  const handleDeleteAccount = async () => {
+    try {
+      await instance.delete('/auth/delete-account')
+      toast.success('Účet byl úspěšně smazán.')
+      localStorage.removeItem('access_token')
+      window.location.href = '/login'
+    } catch (err) {
+      toast.error(
+        isAxiosError(err)
+          ? (err.response?.data?.detail ?? 'Nepodařilo se smazat účet.')
+          : 'Nastala neočekávaná chyba.'
+      )
+      toggleDeleteDialog()
+    }
   }
 
   if (loading) return <SettingsSkeleton />
@@ -153,13 +176,37 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Odhlášení */}
-      <button
-        onClick={handleLogout}
-        className="w-full button-danger flex items-center justify-center"
+      {/* Nebezpečná zóna */}
+      <div className="card p-4 border-2 border-red-500/20">
+        <h3 className="text-sm font-semibold text-red-600 dark:text-red-400 mb-2">Nebezpečná zóna</h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+          Smazání účtu je nevratné. Budou smazána všechna vaše auta, jízdy, pozvánky a účast v jízdách.
+        </p>
+        <button
+          onClick={toggleDeleteDialog}
+          className="button-danger w-full"
+        >
+          Smazat účet trvale
+        </button>
+      </div>
+
+      {/* Delete confirmation dialog */}
+      <DeleteDialog 
+        ref={deleteDialogRef} 
+        toggle={toggleDeleteDialog}
+        action={handleDeleteAccount}
       >
-        Odhlásit se
-      </button>
+        <h3 className="dialog-title">Opravdu chcete smazat svůj účet?</h3>
+        <p className="dialog-text">
+          Tato akce je <strong>nevratná</strong>. Všechna vaše data budou trvale smazána:
+        </p>
+        <ul className="dialog-text list-disc list-inside space-y-1 mt-2">
+          <li>Všechna vaše auta</li>
+          <li>Všechny vaše jízdy</li>
+          <li>Pozvánky a účast v jízdách</li>
+          <li>Propojení se sociálními sítěmi</li>
+        </ul>
+      </DeleteDialog>
 
     </div>
   )

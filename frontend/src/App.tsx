@@ -10,6 +10,7 @@ import PageNotFound from './pages/PageNotFound'
 import SettingsPage from './pages/SettingsPage'
 import AnonymousRoute from './utils/AnonymousRoute'
 import OAuthCallbackPage from './pages/OAuthCallbackPage'
+import DeletionStatusPage from './pages/DeletionStatusPage'
 import RidesPage from './pages/RidesPage'
 import RideDetailPage from './pages/RideDetailPage'
 import CreateRidePage from './pages/CreateRidePage'
@@ -78,6 +79,9 @@ function AppRoutes() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/auth/callback" element={<OAuthCallbackPage />} />
       </Route>
+
+      {/* Public routes (no auth required) */}
+      <Route path="/deletion-status" element={<DeletionStatusPage />} />
 
       <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
         {/* Jízdy */}
