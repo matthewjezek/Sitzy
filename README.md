@@ -51,6 +51,11 @@ from users with Facebook Login**
 4. Jdi do **App Settings → Basic**
 5. Zkopíruj `App ID` → `FACEBOOK_CLIENT_ID`
 6. Zkopíruj `App Secret` → `FACEBOOK_CLIENT_SECRET`
+7. **Přidej povinné URL pro App Review:**
+   - **Privacy Policy URL**: `https://your-domain.com/privacy` (po deployi)
+   - **Terms of Service URL**: `https://your-domain.com/terms` (po deployi)
+   - **User Data Deletion**: `https://your-domain.com/api/auth/facebook/deletion`
+8. **Kategorie aplikace**: `Utility & productivity`
 
 > **Poznámka:** V development módu jsou `http://localhost` redirect URI
 > povoleny automaticky – není potřeba je přidávat ručně.
@@ -73,6 +78,9 @@ Pro vývoj a testování (vlastní účet + max 25 testerů) není potřeba.
 6. Jdi do **Keys and Tokens** → sekce **OAuth 2.0 Client ID and Client Secret**
 7. Zkopíruj `Client ID` → `X_CLIENT_ID`
 8. Zkopíruj `Client Secret` → `X_CLIENT_SECRET`
+9. **Pro žádost o email přístup (request email from users):**
+   - **Privacy Policy URL**: `https://your-domain.com/privacy`
+   - **Terms of Service URL**: `https://your-domain.com/terms`
 
 > **Poznámka:** Na rozdíl od Facebooku X nevyžaduje localhost automaticky –
 > Callback URI musíš přidat ručně.
