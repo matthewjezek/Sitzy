@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router';
 import { isAxiosError } from 'axios';
 import { toast } from 'react-toastify';
 import instance from '../api/axios';
@@ -188,6 +189,25 @@ export default function SettingsPage() {
         >
           Smazat účet trvale
         </button>
+      </div>
+
+      {/* Dokumenty */}
+      <div className="card p-4">
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Dokumenty</h3>
+        <div className="flex flex-col gap-2">
+          <Link
+            to="/privacy"
+            className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+          >
+            Zásady ochrany osobních údajů
+          </Link>
+          <Link
+            to="/terms"
+            className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+          >
+            Podmínky použití
+          </Link>
+        </div>
       </div>
 
       {/* Delete confirmation dialog */}

@@ -1,5 +1,5 @@
 import React from 'react'
-import { useLocation } from 'react-router'
+import { useLocation, Link } from 'react-router'
 import { isAxiosError } from 'axios'
 import instance from '../api/axios'
 import { toast } from 'react-toastify'
@@ -60,6 +60,16 @@ export default function LoginPage() {
                   <FacebookIcon />
                   Přihlásit se přes Facebook
                 </SocialButton>
+              </div>
+
+              <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700 flex justify-center gap-4 text-sm">
+                <Link to="/privacy" className="text-blue-600 dark:text-blue-400 hover:underline">
+                  Ochrana osobních údajů
+                </Link>
+                <span className="text-gray-400">•</span>
+                <Link to="/terms" className="text-blue-600 dark:text-blue-400 hover:underline">
+                  Podmínky použití
+                </Link>
               </div>
             </div>
           </div>
