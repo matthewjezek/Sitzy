@@ -363,6 +363,14 @@
     height: 1.5rem;
   }
 
+  .dark .dialog-danger-image {
+    background-color: rgba(220, 38, 38, 0.2);
+  }
+
+  .dark .dialog-danger-image svg {
+    color: #f87171;
+  }
+
   .dialog-warning-image {
     display: flex;
     margin-left: auto;
@@ -423,14 +431,15 @@
   }
 
   .dialog-title {
-    color: #3d1f6d; /* indigo-950 */
-    font-size: 1rem;
+    color: #1f2937;
+    font-size: 1.125rem;
     font-weight: 600;
-    line-height: 1.5rem;
+    line-height: 1.75rem;
+    margin-bottom: 0.75rem;
   }
 
   .dark .dialog-title {
-    color: #e9d5ff;
+    color: #f3f4f6;
   }
 
   .dialog-message {
@@ -444,13 +453,28 @@
     color: #9ca3af;
   }
 
+  .dialog-text {
+    margin-top: 0.5rem;
+    color: #4b5563;
+    font-size: 0.875rem;
+    line-height: 1.5rem;
+    text-align: left;
+  }
+
+  .dark .dialog-text {
+    color: #d1d5db;
+  }
+
   .dialog-actions {
-    margin: 0.75rem 1rem;
-    background-color: #f5f5f5;
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    background-color: transparent;
   }
 
   .dark .dialog-actions {
-    background-color: #1f2937;
+    background-color: transparent;
   }
 
   /* ========================================
@@ -1214,12 +1238,19 @@
    * ======================================== */
   .button-secondary {
     background-color: #e5e7eb;
-    cursor: pointer;
+    color: #374151;
+    font-weight: 600;
     transition: all 200ms ease;
+    padding: 0.5rem 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--primary-border);
+    cursor: pointer;
   }
 
   .dark .button-secondary {
     background-color: #374151;
+    color: #e5e7eb;
+    border-color: rgba(115, 80, 242, 0.2);
   }
 
   .button-secondary:hover {
@@ -1520,27 +1551,32 @@
   }
 
   .dialog-cancel-button {
-    background-color: #fef2f2;
-    border-color: #fee2e2;
-    color: #dc2626;
+    background-color: #e5e7eb;
+    color: #374151;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 0.75rem;
+    border: none;
+    font-weight: 600;
     cursor: pointer;
     transition: all 200ms ease;
   }
 
   .dialog-cancel-button:hover {
-    background-color: #fee2e2;
-    border-color: #fca5a5;
+    background-color: #d1d5db;
+    border-color: #9ca3af;
     cursor: pointer;
   }
 
   .dark .dialog-cancel-button {
-    background-color: rgba(153, 27, 27, 0.2);
-    border-color: rgba(239, 68, 68, 0.3);
+    background-color: #374151;
+    border-color: #4b5563;
+    color: #e5e7eb;
   }
 
   .dark .dialog-cancel-button:hover {
-    background-color: rgba(153, 27, 27, 0.3);
-    border-color: rgba(239, 68, 68, 0.5);
+    background-color: #4b5563;
+    border-color: #6b7280;
     cursor: pointer;
   }
 
