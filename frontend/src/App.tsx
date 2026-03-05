@@ -78,10 +78,8 @@ function AppRoutes() {
       <Route element={<AnonymousRoute />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/auth/callback" element={<OAuthCallbackPage />} />
+        <Route path="/deletion-status" element={<DeletionStatusPage />} />
       </Route>
-
-      {/* Public routes (no auth required) */}
-      <Route path="/deletion-status" element={<DeletionStatusPage />} />
 
       <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
         {/* Jízdy */}

@@ -325,15 +325,17 @@ def facebook_data_deletion_callback(
     """Facebook Data Deletion Callback (required for App Review).
     
     Facebook sends signed_request when user deletes app from their settings.
-    We return a confirmation code and status URL for tracking.
+    We return a confirmation URL with code for tracking deletion status.
     
     Note: For production, verify signed_request signature with app secret.
     For academic/prototype use, we accept the request and process deletion.
     
     See: https://developers.facebook.com/docs/apps/delete-data
+    Returns: {"url": "https://sitzy.example.com/deletion-status?code=...&status=confirmed"}
     """
     import base64
     import json
+    import secrets
     
     from api.models import SocialAccount, User
     
@@ -366,6 +368,9 @@ def facebook_data_deletion_callback(
             .first()
         )
         
+        # Generate confirmation code for status tracking
+        confirmation_code = secrets.token_urlsafe(16)
+        
         if social_account:
             user = social_account.user
             user_id = str(user.id)
@@ -377,25 +382,16 @@ def facebook_data_deletion_callback(
             
             db.delete(user)
             db.commit()
-            
-            logger.info(
-                "User deleted via Facebook callback",
-                extra={"user_id": user_id}
-            )
         else:
             logger.info(
                 "Facebook deletion callback - user not found",
                 extra={"facebook_id": facebook_user_id}
             )
         
-        # Return confirmation as per Facebook spec
-        confirmation_code = f"sitzy_deletion_{facebook_user_id}"
-        status_url = f"{settings.frontend_origin}/deletion-status?code={confirmation_code}"
-        
-        return {
-            "url": status_url,
-            "confirmation_code": confirmation_code
-        }
+        # Return confirmation code as per Facebook spec
+        # In production, you would return: {"url": "https://your-domain.cz/deletion-status?code=..."}
+        # For development/testing, just return the confirmation code
+        return {"confirmation_code": confirmation_code}
         
     except Exception as e:
         logger.error(

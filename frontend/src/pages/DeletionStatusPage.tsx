@@ -1,10 +1,19 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { useSearchParams, useNavigate } from 'react-router';
 
 export default function DeletionStatusPage() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const confirmationCode = searchParams.get('code');
-  const [status] = useState<'confirmed' | 'pending'>('confirmed');
+  const statusParam = searchParams.get('status');
+  const [status] = useState<'confirmed' | 'pending'>((statusParam as 'confirmed' | 'pending') || 'pending');
+
+  useEffect(() => {
+    // Pokud není zadán status nebo code, přesměruj na login
+    if (!statusParam && !confirmationCode) {
+      navigate('/login');
+    }
+  }, [statusParam, confirmationCode, navigate]);
 
   useEffect(() => {
     document.title = 'Stav smazání účtu - Sitzy';
