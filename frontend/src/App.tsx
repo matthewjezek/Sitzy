@@ -11,6 +11,8 @@ import SettingsPage from './pages/SettingsPage'
 import AnonymousRoute from './utils/AnonymousRoute'
 import OAuthCallbackPage from './pages/OAuthCallbackPage'
 import DeletionStatusPage from './pages/DeletionStatusPage'
+import PrivacyPage from './pages/PrivacyPage'
+import TermsPage from './pages/TermsPage'
 import RidesPage from './pages/RidesPage'
 import RideDetailPage from './pages/RideDetailPage'
 import CreateRidePage from './pages/CreateRidePage'
@@ -81,19 +83,23 @@ function AppRoutes() {
         <Route path="/deletion-status" element={<DeletionStatusPage />} />
       </Route>
 
+      {/* Public routes (accessible to everyone) */}
+      <Route path="/privacy" element={<PrivacyPage />} />
+      <Route path="/terms" element={<TermsPage />} />
+
       <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-        {/* Jízdy */}
+        {/* Rides */}
         <Route path="/rides" element={<RidesPage />} />
         <Route path="/rides/new" element={<CreateRidePage />} />
         <Route path="/rides/:id" element={<RideDetailPage />} />
 
-        {/* Auta */}
+        {/* Cars */}
         <Route path="/cars" element={<CarsPage />} />
         <Route path="/cars/new" element={<CreateCarPage />} />
         <Route path="/cars/:id" element={<CarDetailPage />} />
         <Route path="/cars/:id/edit" element={<CreateCarPage />} />
 
-        {/* Nastavení */}
+        {/* Settings */}
         <Route path="/settings" element={<SettingsPage />} />
 
         {/* Dev only */}
