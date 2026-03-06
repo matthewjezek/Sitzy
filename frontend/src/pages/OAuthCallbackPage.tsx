@@ -9,13 +9,13 @@ export default function OAuthCallbackPage() {
   const navigate = useNavigate()
   const executedRef = useRef(false)
 
+  const code = searchParams.get('code')
+  const state = searchParams.get('state')
+
   useEffect(() => {
     // Prevent double execution in Strict Mode
     if (executedRef.current) return
     executedRef.current = true
-
-    const code = searchParams.get('code')
-    const state = searchParams.get('state')
 
     if (!code || !state) {
       toast.error('Neplatný callback.')
@@ -45,7 +45,7 @@ export default function OAuthCallbackPage() {
         }
         navigate('/login')
       })
-  }, [])
+  }, [code, state, navigate])
 
   return (
     <div className="page-container min-h-screen bg-slate-900 dark:bg-slate-950">
