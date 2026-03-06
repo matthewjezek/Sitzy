@@ -111,13 +111,15 @@ async def oauth_callback(
                 logger.warning(
                     "OAuth callback missing PKCE code verifier", extra={"provider": "x"}
                 )
-                raise HTTPException(status_code=400, detail="Missing PKCE code verifier.")
+                raise HTTPException(
+                    status_code=400, detail="Missing PKCE code verifier."
+                )
             token_data = x_client.exchange_code(code, code_verifier)
-            logger.info(f"X token exchange complete, fetching user info")
+            logger.info("X token exchange complete, fetching user info")
             user_info = await x_client.get_user_info(token_data["access_token"])
         else:
             token_data = fb_client.exchange_code(code)
-            logger.info(f"Facebook token exchange complete, fetching user info")
+            logger.info("Facebook token exchange complete, fetching user info")
             user_info = await fb_client.get_user_info(token_data["access_token"])
 
         logger.info(f"User info fetched: {user_info}")
@@ -154,7 +156,7 @@ async def oauth_callback(
         logger.info(f"Session created: {session.id}")
 
         db.commit()
-        logger.info(f"Database committed")
+        logger.info("Database committed")
 
         access_token = create_access_token(
             {"sub": str(user.id), "session_id": str(session.id)}
@@ -162,7 +164,7 @@ async def oauth_callback(
         refresh_token = create_refresh_token(user.id, session.id)
 
         _set_refresh_cookie(response, refresh_token)
-        logger.info(f"Refresh cookie set, returning access token")
+        logger.info("Refresh cookie set, returning access token")
 
         logger.info(
             "OAuth callback successful",
@@ -178,7 +180,11 @@ async def oauth_callback(
             "token_type": "bearer",
         }
     except Exception as e:
-        logger.error(f"OAuth callback exception: {str(e)}", extra={"exception": str(e)}, exc_info=True)
+        logger.error(
+            f"OAuth callback exception: {str(e)}",
+            extra={"exception": str(e)},
+            exc_info=True,
+        )
         raise
 
 
@@ -285,7 +291,7 @@ def delete_account(
     db: Session = Depends(get_db),
 ) -> None:
     """Delete user account and all associated data (GDPR compliance).
-    
+
     Cascades delete:
     - SocialAccounts (OAuth links)
     - SocialSessions (active sessions)
@@ -296,23 +302,19 @@ def delete_account(
     """
     user = ctx.user
     user_id = str(user.id)
-    
+
     logger.info(
-        "Account deletion initiated",
-        extra={"user_id": user_id, "email": user.email}
+        "Account deletion initiated", extra={"user_id": user_id, "email": user.email}
     )
-    
+
     # Delete user (cascades handle related data via SQLAlchemy relationships)
     db.delete(user)
     db.commit()
-    
+
     # Clear refresh cookie
     _clear_refresh_cookie(response)
-    
-    logger.info(
-        "Account deleted successfully",
-        extra={"user_id": user_id}
-    )
+
+    logger.info("Account deleted successfully", extra={"user_id": user_id})
 
 
 @router.post("/facebook/deletion", status_code=status.HTTP_200_OK)
@@ -323,83 +325,84 @@ def facebook_data_deletion_callback(
     db: Session = Depends(get_db),
 ) -> dict[str, str]:
     """Facebook Data Deletion Callback (required for App Review).
-    
+
     Facebook sends signed_request when user deletes app from their settings.
     We return a confirmation URL with code for tracking deletion status.
-    
+
     Note: For production, verify signed_request signature with app secret.
     For academic/prototype use, we accept the request and process deletion.
-    
+
     See: https://developers.facebook.com/docs/apps/delete-data
-    Returns: {"url": "https://sitzy.example.com/deletion-status?code=...&status=confirmed"}
+    Returns:
+    {"url": "https://sitzy.example.com/deletion-status?code=...&status=confirmed"}
     """
     import base64
     import json
     import secrets
-    
-    from api.models import SocialAccount, User
-    
+
+    from api.models import SocialAccount
+
     try:
         # Decode signed_request (format: signature.payload)
         # Production should verify HMAC signature with app secret
         encoded_sig, payload = signed_request.split('.', 1)
-        
+
         # Add padding if needed for base64
         padding = len(payload) % 4
         if padding:
             payload += '=' * (4 - padding)
-        
+
         decoded_payload = base64.urlsafe_b64decode(payload)
         data = json.loads(decoded_payload)
-        
+
         facebook_user_id = data.get('user_id')
-        
+
         if not facebook_user_id:
             logger.warning("Facebook deletion callback missing user_id")
-            raise HTTPException(status_code=400, detail="Missing user_id in signed_request")
-        
+            raise HTTPException(
+                status_code=400, detail="Missing user_id in signed_request"
+            )
+
         # Find user by Facebook social account
         social_account = (
             db.query(SocialAccount)
             .filter(
                 SocialAccount.provider == "facebook",
-                SocialAccount.social_id == str(facebook_user_id)
+                SocialAccount.social_id == str(facebook_user_id),
             )
             .first()
         )
-        
+
         # Generate confirmation code for status tracking
         confirmation_code = secrets.token_urlsafe(16)
-        
+
         if social_account:
             user = social_account.user
             user_id = str(user.id)
-            
+
             logger.info(
                 "Facebook deletion callback - deleting user",
-                extra={"user_id": user_id, "facebook_id": facebook_user_id}
+                extra={"user_id": user_id, "facebook_id": facebook_user_id},
             )
-            
+
             db.delete(user)
             db.commit()
         else:
             logger.info(
                 "Facebook deletion callback - user not found",
-                extra={"facebook_id": facebook_user_id}
+                extra={"facebook_id": facebook_user_id},
             )
-        
+
         # Return confirmation code as per Facebook spec
-        # In production, you would return: {"url": "https://your-domain.cz/deletion-status?code=..."}
+        # In production, you would return:
+        # {"url": "https://your-domain.cz/deletion-status?code=..."}
         # For development/testing, just return the confirmation code
         return {"confirmation_code": confirmation_code}
-        
+
     except Exception as e:
         logger.error(
-            "Facebook deletion callback failed",
-            extra={"error": str(e)},
-            exc_info=True
+            "Facebook deletion callback failed", extra={"error": str(e)}, exc_info=True
         )
         raise HTTPException(
-            status_code=400,
-            detail="Failed to process deletion request"
+            status_code=400, detail="Failed to process deletion request"
         )
