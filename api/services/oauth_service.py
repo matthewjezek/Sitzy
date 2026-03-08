@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import json
 import secrets
+import ssl
 from datetime import datetime, timedelta, timezone
-from typing import Literal
+from typing import Any, Literal
 from urllib.parse import urlencode
 from uuid import UUID
 
@@ -19,7 +20,11 @@ from api.utils.security import generate_token
 
 Provider = Literal["x", "facebook"]
 
-_redis = redis_lib.from_url(settings.redis_url, decode_responses=True)  # type: ignore
+kwargs: dict[str, Any] = {"decode_responses": True}
+if settings.redis_url.startswith("rediss://"):
+    kwargs["ssl_cert_reqs"] = ssl.CERT_NONE
+
+_redis = redis_lib.from_url(settings.redis_url, **kwargs)  # type: ignore
 logger = get_logger(__name__)
 
 

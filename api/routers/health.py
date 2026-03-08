@@ -36,13 +36,19 @@ def check_database() -> dict[str, str]:
 def check_redis() -> dict[str, str]:
     """Check Redis connectivity."""
     try:
+        import ssl
+
         import redis as redis_lib
 
         from api.config import settings
 
-        redis_client = redis_lib.from_url(
-            settings.redis_url, decode_responses=True
-        )  # type: ignore
+        kwargs: dict[str, Any] = {"decode_responses": True}
+
+        if settings.redis_url.startswith("rediss://"):
+            kwargs["ssl_cert_reqs"] = ssl.CERT_NONE
+
+        redis_client = redis_lib.from_url(settings.redis_url, **kwargs)  # type: ignore
+
         redis_client.ping()
         log_with_context(logger, logging.DEBUG, "Redis health check passed")
         return {"status": "connected"}
