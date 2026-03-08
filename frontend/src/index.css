@@ -24,15 +24,25 @@
   }
 
   :root {
-    --primary: #7350F2;         /* indigo-600 */
-    --primary-hover: #6345d6;   /* indigo-700 */
-    --primary-light: #e9d5ff;   /* indigo-100 */
-    --primary-border: #e0d0f7;  /* indigo-200 */
-    --primary-dark: #3d1f6d;    /* indigo-900 */
+    /* WCAG 2.1 AA compliant primary palette */
+    --primary: #7350f2;           /* Main (text on: #fff) */
+    --primary-hover: #5c3dd8;     /* Hover (text on: #fff) */
+    --primary-light: #c6befb;     /* Light (text on: #000) */
+    --primary-border: #aa9bf7;    /* Border (text on: #000) */
+    --primary-dark: #442abe;      /* Dark (text on: #fff) */
     --bg-light: #ffffff;
     --bg-dark: #0f172a;
     --surface-light: #ffffff;
     --surface-dark: #1f2937;
+    /*
+      WCAG 2.1 AA Recommendations:
+      - Maintain contrast ratio ≥ 4.5:1 for normal text, ≥ 3:1 for large text/icons.
+      - Use text-shadow or outline for text on colored backgrounds if needed.
+      - Avoid using color as the only means of conveying information.
+      - Ensure focus indicators are visible and high-contrast.
+      - Test color choices in both light and dark modes.
+      - Use sufficient padding and spacing for touch targets.
+    */
   }
 }
 
@@ -171,7 +181,7 @@
   }
 
   .nav-icon-logout {
-    color: #dc2626;
+    color: #d32f2f;
   }
 
   .dark .nav-icon-logout {
@@ -211,7 +221,7 @@
   }
 
   .nav-hover-logout:hover {
-    color: #dc2626;
+    color: #d32f2f;
   }
 
   .dark .nav-hover-logout:hover {
@@ -295,17 +305,22 @@
     top: 0;
     left: 1rem;
     right: 1rem;
+    background-color: var(--bg-light);
+  }
+
+  .dark .navigation {
+    background-color: var(--bg-dark);
   }
 
   /* ========================================
    * GRADIENTS
    * ======================================== */
   .bg-gradient {
-    background: linear-gradient(135deg, #7350F2 0%, #6345d6 100%);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
   }
 
   .dark .bg-gradient {
-    background: linear-gradient(135deg, #3d1f6d 0%, #230d50 100%);
+    background: linear-gradient(135deg, var(--primary-dark) 0%, #230d50 100%);
   }
 
   /* ========================================
@@ -358,7 +373,7 @@
   }
 
   .dialog-danger-image svg {
-    color: #dc2626;
+    color: #d32f2f;
     width: 1.5rem;
     height: 1.5rem;
   }
@@ -743,11 +758,11 @@
   .info-card-title {
     font-size: 1.125rem;
     font-weight: 600;
-    color: #3d1f6d; /* indigo-950 */
+    color: var(--primary-dark);
   }
 
   .dark .info-card-title {
-    color: #e9d5ff;
+    color: var(--primary-light);
   }
 
   .info-card-content {
@@ -763,7 +778,7 @@
   .info-card-label {
     font-size: 0.875rem;
     font-weight: 500;
-    color: #7350F2;
+    color: var(--primary);
     margin-bottom: 0.25rem;
   }
 
@@ -925,7 +940,7 @@
   }
 
   .dark .settings-section-title {
-    color: #e9d5ff;
+    color: var(--primary-light);
   }
 
   .setting-row {
@@ -1150,15 +1165,36 @@
   }
 
   .text-accent {
-    color: #7350f2;
+    color: var(--primary);
   }
 
   .dark .text-accent {
-    color: #a5b4fc;
+    color: var(--primary-light);
   }
 
   .capitalize {
     text-transform: capitalize;
+  }
+
+  .text-danger {
+    color: #d32f2f;
+  }
+
+  .dark .text-danger {
+    color: #f87171;
+  }
+
+  .text-link {
+    color: #155dfc;
+    text-decoration: none;
+  }
+
+  .dark .text-link {
+    color: #93c5fd;
+  }
+
+  .text-link:hover {
+    text-decoration: underline;
   }
 
   /* ========================================
@@ -1173,11 +1209,11 @@
   }
 
   .border-accent {
-    border-color: #e9d5ff;
+    border-color: var(--primary-light);
   }
 
   .dark .border-accent {
-    border-color: rgba(115, 80, 242, 0.3);
+    border-color: var(--primary-border);
   }
 
   .hover-border-accent {
@@ -1268,11 +1304,11 @@
   }
 
   .badge-indigo {
-    background-color: #e0d0f7;
+    background-color: var(--primary-border);
   }
 
   .dark .badge-indigo {
-    background-color: rgba(79, 70, 229, 0.15);
+    background-color: rgba(115, 80, 242, 0.15);
   }
 
   .badge-red {
@@ -1284,8 +1320,8 @@
   }
 
   .initials-avatar {
-    background-color: #e0d0f7;
-    color: #4338ca;
+    background-color: var(--primary-border);
+    color: var(--primary-dark);
   }
 
   .dark .initials-avatar {
@@ -1365,7 +1401,7 @@
    * DANGER BUTTON
    * ======================================== */
   .button-danger {
-    background-color: #ef4444;
+    background-color: #d32f2f;
     color: white;
     font-weight: 600;
     transition: all 200ms ease;
@@ -1376,7 +1412,7 @@
   }
 
   .button-danger:hover {
-    background-color: #dc2626;
+    background-color: #a11819;
   }
 
   .button-danger:disabled {
@@ -1523,12 +1559,12 @@
 
   .notification-error {
     background-color: #fee2e2;
-    color: #dc2626;
+    color: #d32f2f;
   }
 
   .notification-info {
-    background-color: #e0d0f7;
-    color: #4f46e5;
+    background-color: var(--primary-border);
+    color: var(--primary);
   }
 
   /* ========================================
@@ -1656,12 +1692,12 @@
 
   .notification-item {
     background-color: #eef2ff;
-    border-color: #e0d0f7;
+    border-color: var(--primary-border);
   }
 
   .dark .notification-item {
-    background-color: rgba(79, 70, 229, 0.1);
-    border-color: rgba(79, 70, 229, 0.2);
+    background-color: rgba(115, 80, 242, 0.1);
+    border-color: rgba(115, 80, 242, 0.2);
   }
 
   .unread-count-badge {
@@ -1691,12 +1727,12 @@
 
   .notification-unread {
     background-color: #eef2ff;
-    border-color: #e0d0f7;
+    border-color: var(--primary-border);
   }
 
   .dark .notification-unread {
-    background-color: rgba(79, 70, 229, 0.1);
-    border-color: rgba(79, 70, 229, 0.2);
+    background-color: rgba(115, 80, 242, 0.1);
+    border-color: rgba(115, 80, 242, 0.2);
   }
 
   /* ========================================
