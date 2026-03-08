@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { FiBell } from 'react-icons/fi';
+import { FiBell, FiX } from 'react-icons/fi';
 import { useNavigate, Link } from 'react-router';
 import { useInvites } from '../hooks/useInvites';
 import { useRide } from '../hooks/useRide';
@@ -86,7 +86,9 @@ function BellDropdown({ open, onClose, invites, loading, onRespond, responding }
     >
       <div className="flex items-center justify-between">
         <span className="font-semibold text-sm">Pozvánky</span>
-        <button onClick={onClose} className="text-gray-400 hover-text-gray-600 text-lg leading-none">×</button>
+        <button onClick={onClose} className="close-button" aria-label="Close notifications area">
+          <FiX size={18} />
+        </button>
       </div>
 
       {loading && (
