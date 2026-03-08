@@ -265,7 +265,7 @@ export default function RideDetailPage() {
         {/* Smazat */}
         <button
           onClick={handleDelete}
-          className="self-end py-1.5 px-3 rounded-lg status-danger text-sm hover-opacity-80 flex items-center gap-2"
+          className="self-end py-1.5 px-3 rounded-lg button-danger text-sm hover-opacity-80 flex items-center gap-2"
         >
           <FiTrash size={14} />
           Smazat jízdu

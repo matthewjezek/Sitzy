@@ -100,7 +100,7 @@ function BellDropdown({ open, onClose, invites, loading, onRespond, responding }
       )}
 
       {!loading && invites.length === 0 && (
-        <p className="text-sm text-gray-500 text-center py-4">Žádné nové pozvánky</p>
+        <p className="text-sm text-secondary text-center py-4">Žádné nové pozvánky</p>
       )}
 
       {!loading && invites.map(inv => (
@@ -288,7 +288,7 @@ export default function Navigation() {
             <li><Link to="/settings" className="inline-flex items-center gap-2 py-2 px-3 rounded-md" onClick={() => setMenuOpen(false)}><SettingsIcon />Nastavení</Link></li>
             <hr className="border-light" />
             <li>
-              <button onClick={handleLogout} className="inline-flex items-center gap-2 button-danger w-full">
+              <button onClick={handleLogout} className="inline-flex items-center gap-2 py-2 px-3 rounded-md">
                 <LogoutIcon />Odhlásit se
               </button>
             </li>
