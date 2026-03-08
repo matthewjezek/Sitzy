@@ -227,3 +227,6 @@ Thumbs.db
 # pnpm-lock.yaml
 
 .early.coverage
+
+# Unrelated files
+unrelated/
