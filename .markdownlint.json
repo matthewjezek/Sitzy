@@ -2,5 +2,8 @@
     "MD026": {
         "punctuation": "."
     },
-    "MD033": {"allowed_elements": ["input"]}
+    "MD033": {"allowed_elements": ["input"]},
+    "MD013": {
+        "tables": false
+    }
 }
