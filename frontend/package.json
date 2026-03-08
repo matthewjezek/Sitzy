@@ -8,7 +8,11 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext .ts,.tsx",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "a11y:lint": "eslint . --ext .ts,.tsx --max-warnings=0",
+    "a11y:audit": "echo 'Runtime audit placeholder - requires running dev server'",
+    "a11y": "npm run a11y:lint",
+    "a11y:ci": "npm run a11y:lint"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -30,6 +34,7 @@
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.0",
     "eslint": "^9.33.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "tailwindcss": "^4.0.0",

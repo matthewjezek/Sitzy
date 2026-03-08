@@ -38,3 +38,8 @@ jobs:
           npm -g i typescript
           npm install typescript --save-dev
           npm run typecheck
+
+      - name: Run Accessibility check
+        run: |
+          cd frontend
+          npm run a11y:ci
