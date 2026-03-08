@@ -2,6 +2,8 @@ import { forwardRef, useState } from "react";
 import { FiBell, FiMail, FiCheck, FiX, FiClock } from "react-icons/fi";
 import { formatLocalDateTime } from "../utils/datetime";
 
+/* eslint-disable jsx-a11y/click-events-have-key-events -- backdrop close pattern for dialogs */
+
 const DeleteDialog = forwardRef<HTMLDialogElement, { children: React.ReactNode; toggle: () => void; action: () => Promise<void>; }>((props, ref) => {
   const { children, toggle, action } = props;
   return (
@@ -149,23 +151,26 @@ const InviteDialog = forwardRef<HTMLDialogElement, InviteDialogProps>(
     const displayError = localError || error;
 
     return (
-      <dialog className="dialog-card" ref={ref}>
+      <dialog className="dialog-card" ref={ref} aria-labelledby="invite-dialog-title">
         <div className="dialog-header">
           <div className="flex flex-row-reverse justify-between m-0">
-            <div
+            <button
+              type="button"
               className="w-auto m-0 dialog-close-button"
               onClick={toggle}
+              aria-label="Zavřít dialog"
             >
-              <FiX className="text-2xl md:text-lg" />
-            </div>
+              <FiX className="text-2xl md:text-lg" aria-hidden="true" />
+            </button>
             <div className="dialog-title text-xl">
-              <h1>Pozvat uživatele</h1>
+              <h1 id="invite-dialog-title">Pozvat uživatele</h1>
             </div>
           </div>
 
           <div className="dialog-content">
             <form className="form-container" onSubmit={handleSubmit}>
               <div className="form-group !mb-0.5 flex flex-col sm:flex-row gap-3">
+                <label htmlFor="email" className="sr-only">E-mail uživatele</label>
                 <input
                   type="email"
                   placeholder="E-mail uživatele"
@@ -224,11 +229,13 @@ const InviteDialog = forwardRef<HTMLDialogElement, InviteDialogProps>(
                       </div>
                       {invite.status === "Pending" && (
                         <button
+                          type="button"
                           className="p-3 dialog-cancel-button rounded-2xl border-2 hover-scale-105 cursor-pointer flex items-center justify-center"
                           onClick={() => onCancel(invite.token)}
+                          aria-label={`Zrušit pozvánku pro ${invite.invited_email}`}
                           title="Zrušit pozvánku"
                         >
-                          <FiX size={16} />
+                          <FiX size={16} aria-hidden="true" />
                         </button>
                       )}
                     </div>
@@ -276,18 +283,20 @@ const NotificationDialog = forwardRef<HTMLDialogElement, NotificationDialogProps
     const unreadCount = notifications.filter(n => !n.read).length;
 
     return (
-      <dialog className="dialog-card !max-w-md" ref={ref}>
+      <dialog className="dialog-card !max-w-md" ref={ref} aria-labelledby="notification-dialog-title">
         <div className="dialog-header">
           <div className="flex flex-row-reverse justify-between m-0">
-            <div
+            <button
+              type="button"
               className="w-auto m-0 dialog-close-button"
               onClick={toggle}
+              aria-label="Zavřít notifikace"
             >
-              <FiX className="text-2xl md:text-lg" />
-            </div>
+              <FiX className="text-2xl md:text-lg" aria-hidden="true" />
+            </button>
             <div className="dialog-title text-xl flex items-center gap-2">
-              <FiBell className="text-indigo-500" />
-              <h1>Notifikace</h1>
+              <FiBell className="text-indigo-500" aria-hidden="true" />
+              <h1 id="notification-dialog-title">Notifikace</h1>
               {unreadCount > 0 && (
                 <span className="notification-badge">
                   {unreadCount}
@@ -321,9 +330,10 @@ const NotificationDialog = forwardRef<HTMLDialogElement, NotificationDialogProps
                 )}
                 <div className="space-y-3 max-h-64 overflow-y-auto">
                   {notifications.map((notification) => (
-                    <div
+                    <button
                       key={notification.id}
-                      className={`p-3 rounded-xl border transition-all cursor-pointer ${
+                      type="button"
+                      className={`w-full text-left p-3 rounded-xl border transition-all cursor-pointer ${
                         notification.read
                           ? 'notification-read'
                           : 'notification-unread'
@@ -361,7 +371,7 @@ const NotificationDialog = forwardRef<HTMLDialogElement, NotificationDialogProps
                           <div className="unread-indicator"></div>
                         )}
                       </div>
-                    </div>
+                    </button>
                   ))}
                 </div>
               </>
@@ -403,14 +413,16 @@ const InvitationDialog = forwardRef<HTMLDialogElement, InvitationDialogProps>(
       <dialog className="dialog-card !max-w-sm" ref={ref}>
         <div className="dialog-header">
           <div className="flex flex-row-reverse justify-between m-0">
-            <div
+            <button
+              type="button"
               className="w-auto m-0 dialog-close-button"
               onClick={toggle}
+              aria-label="Zavřít pozvánku"
             >
-              <FiX className="text-2xl md:text-lg" />
-            </div>
+              <FiX className="text-2xl md:text-lg" aria-hidden="true" />
+            </button>
             <div className="dialog-title text-xl flex items-center gap-2">
-              <FiMail className="text-indigo-500" />
+              <FiMail className="text-indigo-500" aria-hidden="true" />
               <h1>Pozvánka na jízdu</h1>
             </div>
           </div>

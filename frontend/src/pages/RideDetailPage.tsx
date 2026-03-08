@@ -87,7 +87,9 @@ function InviteSection({ rideId }: { rideId: string }) {
       {/* Formulář pro pozvání */}
       <form onSubmit={handleSubmit(onInvite)} className="flex gap-2">
         <div className="flex-1 flex flex-col gap-1">
+          <label htmlFor="invite-email" className="sr-only">E-mail pro pozvánku</label>
           <input
+            id="invite-email"
             type="email"
             placeholder="email@example.com"
             className={`form-input ${errors.email ? 'border-red-400' : ''}`}

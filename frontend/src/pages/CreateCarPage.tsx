@@ -116,8 +116,9 @@ export default function CreateCarPage() {
 
         {/* Název auta */}
         <div className="flex flex-col gap-1">
-          <label className="font-medium text-sm">Název auta</label>
+          <label htmlFor="car-name" className="font-medium text-sm">Název auta</label>
           <input
+            id="car-name"
             type="text"
             placeholder="Fabián"
             minLength={2}

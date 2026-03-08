@@ -90,8 +90,9 @@ export default function CreateRidePage() {
 
         {/* Výběr auta */}
         <div className="flex flex-col gap-1">
-          <label className="font-medium text-sm">Auto</label>
+          <label htmlFor="car-select" className="font-medium text-sm">Auto</label>
           <select
+            id="car-select"
             className={`form-input ${errors.car_id ? 'border-red-400' : ''}`}
             {...register('car_id')}
           >
@@ -109,8 +110,9 @@ export default function CreateRidePage() {
 
         {/* Čas odjezdu */}
         <div className="flex flex-col gap-1">
-          <label className="font-medium text-sm">Čas odjezdu</label>
+          <label htmlFor="departure-time" className="font-medium text-sm">Čas odjezdu</label>
           <input
+            id="departure-time"
             type="datetime-local"
             min={today}
             required
@@ -124,8 +126,9 @@ export default function CreateRidePage() {
 
         {/* Cíl */}
         <div className="flex flex-col gap-1">
-          <label className="font-medium text-sm">Cíl</label>
+          <label htmlFor="destination" className="font-medium text-sm">Cíl</label>
           <input
+            id="destination"
             type="text"
             placeholder="Praha"
             required
