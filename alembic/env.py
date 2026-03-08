@@ -8,10 +8,9 @@ from sqlalchemy import pool
 
 from alembic import context
 
-# moje Base a modely
 from api.models import Base
 
-load_dotenv()  # načtení .env pro DATABASE_URL
+load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
@@ -23,7 +22,7 @@ def normalize_database_url(url: str) -> str:
     return url
 
 if not DATABASE_URL:
-    raise ValueError("DATABASE_URL není nastavený v .env souboru.")
+    raise ValueError("DATABASE_URL is not set in the .env file.")
 
 DATABASE_URL = normalize_database_url(DATABASE_URL)
 
