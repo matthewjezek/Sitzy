@@ -38,12 +38,6 @@ export default function LoginPage() {
               <h1 className='text-2xl font-bold'>Přihlášení</h1>
             </div>
             <div className="main-card-body">
-              {expired && (
-                <div className="text-sm mb-2 text-center status-danger">
-                  Vaše přihlášení vypršelo. Přihlaste se prosím znovu.
-                </div>
-              )}
-
               <div className="form-group">
                 <SocialButton
                   onClick={() => handleOAuthLogin('x')}
@@ -61,6 +55,11 @@ export default function LoginPage() {
                   Přihlásit se přes Facebook
                 </SocialButton>
               </div>
+              {expired && (
+                <div className="text-sm text-center text-danger">
+                  Vaše přihlášení vypršelo. Přihlaste se prosím znovu.
+                </div>
+              )}
 
               <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700 flex justify-center gap-4 text-sm">
                 <Link to="/privacy" className="text-blue-600 dark:text-blue-400 hover:underline">
