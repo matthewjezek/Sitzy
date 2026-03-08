@@ -18,6 +18,7 @@ def normalize_database_url(url: str) -> str:
         return url.replace("postgres://", "postgresql://", 1)
     return url
 
+
 if not DATABASE_URL:
     raise ValueError("DATABASE_URL není nastavený v .env souboru.")
 
