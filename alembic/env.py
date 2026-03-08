@@ -15,8 +15,17 @@ load_dotenv()  # načtení .env pro DATABASE_URL
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
+
+def normalize_database_url(url: str) -> str:
+    """Normalize provider-specific URLs for SQLAlchemy compatibility."""
+    if url.startswith("postgres://"):
+        return url.replace("postgres://", "postgresql://", 1)
+    return url
+
 if not DATABASE_URL:
     raise ValueError("DATABASE_URL není nastavený v .env souboru.")
+
+DATABASE_URL = normalize_database_url(DATABASE_URL)
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
