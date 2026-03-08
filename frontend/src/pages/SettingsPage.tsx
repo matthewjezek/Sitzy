@@ -118,9 +118,9 @@ export default function SettingsPage() {
         )}
         <div>
           <p className="font-semibold text-lg">{user?.full_name ?? 'Neznámý uživatel'}</p>
-          <p className="text-sm text-gray-500">{user?.email ?? '—'}</p>
+          <p className="text-sm text-secondary">{user?.email ?? '—'}</p>
           {user?.social_accounts && user.social_accounts.length > 0 && (
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-accent mt-1">
               Přihlášen přes{' '}
               {user.social_accounts.map(a => (
                 <span key={a.provider} className="capitalize font-medium text-accent">
@@ -184,8 +184,8 @@ export default function SettingsPage() {
 
       {/* Nebezpečná zóna */}
       <div className="card p-4 border-2 border-red-500/20">
-        <h3 className="text-sm font-semibold text-red-600 dark:text-red-400 mb-2">Nebezpečná zóna</h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+        <h3 className="text-sm font-semibold text-danger mb-2">Nebezpečná zóna</h3>
+        <p className="text-sm text-secondary mb-3">
           Smazání účtu je nevratné. Budou smazána všechna vaše auta, jízdy, pozvánky a účast v jízdách.
         </p>
         <button
@@ -198,17 +198,17 @@ export default function SettingsPage() {
 
       {/* Dokumenty */}
       <div className="card p-4">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Dokumenty</h3>
+        <h3 className="text-sm font-semibold mb-3">Dokumenty</h3>
         <div className="flex flex-col gap-2">
           <Link
             to="/privacy"
-            className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+            className="text-sm text-link hover:underline"
           >
             Zásady ochrany osobních údajů
           </Link>
           <Link
             to="/terms"
-            className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+            className="text-sm text-link hover:underline"
           >
             Podmínky použití
           </Link>

@@ -64,7 +64,7 @@ export default function CarsPage() {
       {/* Prázdný stav */}
       {!error && cars.length === 0 && (
         <div className="flex flex-col items-center gap-4 py-16 text-center">
-          <p className="text-gray-500">Zatím nemáte žádné auto.</p>
+          <p className="text-muted">Zatím nemáte žádné auto.</p>
           <button
             onClick={() => navigate('/cars/new')}
             className="py-2 px-6 rounded-xl button-primary flex items-center gap-2"
@@ -90,7 +90,7 @@ export default function CarsPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold truncate">{car.name}</p>
-                  <p className="text-sm text-gray-500">{car.layout}</p>
+                  <p className="text-sm text-secondary">{car.layout}</p>
                 </div>
                 <FiChevronRight className="text-gray-400 shrink-0" size={20} />
               </button>

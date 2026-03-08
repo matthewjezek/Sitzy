@@ -82,7 +82,7 @@ export default function RidesPage() {
       {/* Prázdný stav */}
       {!error && rides.length === 0 && (
         <div className="flex flex-col items-center gap-4 py-16 text-center">
-          <p className="text-gray-500">Zatím nemáte žádné jízdy.</p>
+          <p className="text-muted">Zatím nemáte žádné jízdy.</p>
           <button
             onClick={() => navigate('/rides/new')}
             className="py-2 px-6 rounded-xl button-primary flex items-center gap-2"

@@ -30,7 +30,7 @@ function RideStatusBadge({ departureTime }: { departureTime: string }) {
   const diffHours = diffMs / (1000 * 60 * 60)
 
   if (diffMs < 0) return (
-    <span className="text-xs px-2 py-0.5 rounded-full list-item-bg text-muted">
+    <span className="text-xs px-2 py-0.5 rounded-full list-item-bg text-accent">
       Proběhla
     </span>
   )
@@ -119,7 +119,7 @@ function InviteSection({ rideId }: { rideId: string }) {
       )}
 
       {!loading && invites.length === 0 && (
-        <p className="text-sm text-gray-500 text-center py-2">Zatím žádné pozvánky.</p>
+        <p className="text-sm text-muted text-center py-2">Zatím žádné pozvánky.</p>
       )}
 
       {!loading && invites.map(inv => (
@@ -170,7 +170,7 @@ function PassengersSection({ passengers }: { passengers: import('../hooks/useRid
   if (passengers.length === 0) return (
     <div className="card p-4 flex flex-col gap-2">
       <h2 className="font-semibold">Pasažéři</h2>
-      <p className="text-sm text-gray-500 text-center py-2">Zatím žádní pasažéři.</p>
+      <p className="text-sm text-muted text-center py-2">Zatím žádní pasažéři.</p>
     </div>
   )
 
@@ -190,7 +190,7 @@ function PassengersSection({ passengers }: { passengers: import('../hooks/useRid
             <div className="flex flex-col min-w-0">
               <p className="text-sm font-medium truncate">{p.full_name ?? 'Neznámý'}</p>
               {p.seat_position != null && (
-                <p className="text-xs text-gray-400">Sedadlo {p.seat_position}</p>
+                <p className="text-xs text-secondary">Sedadlo {p.seat_position}</p>
               )}
             </div>
           </li>
@@ -229,7 +229,7 @@ export default function RideDetailPage() {
 
   if (notFound || !ride) return (
     <div className="max-w-lg mx-auto mt-10 p-6 text-center flex flex-col gap-4">
-      <p className="text-gray-500">Jízda nebyla nalezena.</p>
+      <p className="text-secondary">Jízda nebyla nalezena.</p>
       <button
         onClick={() => navigate('/rides')}
         className="py-2 px-4 rounded-xl button-primary"
@@ -250,12 +250,12 @@ export default function RideDetailPage() {
         </div>
 
         <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2 text-sm text-gray-500">
+          <div className="flex items-center gap-2 text-sm text-secondary">
             <FiClock size={14} className="shrink-0 text-accent" />
             {formatLocalDateTime(ride.departure_time)}
           </div>
           {ride.car && (
-            <div className="flex items-center gap-2 text-sm text-gray-500">
+            <div className="flex items-center gap-2 text-sm text-secondary">
               <FiMapPin size={14} className="shrink-0 text-accent" />
               {ride.car.name} ({ride.car.layout})
             </div>

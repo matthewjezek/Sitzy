@@ -82,9 +82,9 @@ export default function CarDetailPage() {
         </div>
         <div>
           <h1 className="text-2xl font-bold">{car.name}</h1>
-          <p className="text-sm text-gray-500">{car.layout}</p>
+          <p className="text-sm text-secondary">{car.layout}</p>
           {car.owner_name && (
-            <p className="text-xs text-gray-400 mt-1">Majitel: {car.owner_name}</p>
+            <p className="text-xs text-accent mt-1">Majitel: {car.owner_name}</p>
           )}
         </div>
       </div>
