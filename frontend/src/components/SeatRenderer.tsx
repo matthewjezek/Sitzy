@@ -298,16 +298,26 @@ export const SeatRenderer: React.FC<SeatRendererProps> = ({
     const isDriver = position === 1;
     const seatPosition = getSeatPosition(position);
 
-    // Tooltip text
+    // Tooltip & aria-label text
     let tooltipText = '';
+    let ariaLabel = '';
     if (isDriver) {
       tooltipText = `Řidič: ${ownerName} - nedostupné`;
+      ariaLabel = `Řidič: ${ownerName}, sedadlo nedostupné`;
     } else if (state === SeatState.OCCUPIED) {
       tooltipText = seat?.user_name ? `Obsazeno: ${seat.user_name}` : 'Obsazeno';
+      ariaLabel = seat?.user_name ? `Obsazeno: ${seat.user_name}` : `Obsazené sedadlo`;
     } else if (state === SeatState.SELECTED) {
       tooltipText = 'Vaše vybrané sedadlo';
+      ariaLabel = 'Vaše vybrané sedadlo';
     } else {
       tooltipText = 'Volné sedadlo - klikněte pro výběr';
+      ariaLabel = 'Volné sedadlo, klikněte pro výběr';
+    }
+
+    // Přidej číslo/label pozice do aria-label
+    if (!isDriver) {
+      ariaLabel += seat?.position_label ? `, pozice ${seat.position_label}` : `, pozice ${position}`;
     }
 
     return (
@@ -319,6 +329,7 @@ export const SeatRenderer: React.FC<SeatRendererProps> = ({
         onClick={() => handleSeatClick(position)}
         disabled={!isInteractive || state === SeatState.OCCUPIED || state === SeatState.DRIVER}
         title={tooltipText}
+        aria-label={ariaLabel}
       >
         <img 
           src={seatSvg} 

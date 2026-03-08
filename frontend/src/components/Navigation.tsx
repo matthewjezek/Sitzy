@@ -206,8 +206,12 @@ export default function Navigation() {
 
         <div className="flex items-center gap-2 flex-1 justify-end">
           <div className="relative">
-            <button onClick={() => setBellOpen(o => !o)} className="nav-button p-0 glass rounded-full w-9 h-9 flex items-center justify-center relative">
-              <FiBell className="nav-icon-bell" size={20} />
+            <button
+              onClick={() => setBellOpen(o => !o)}
+              className="nav-button p-0 glass rounded-full w-9 h-9 flex items-center justify-center relative"
+              aria-label="Otevřít notifikace"
+            >
+              <FiBell className="nav-icon-bell" size={20} aria-hidden="true" />
               <UnreadBadge count={unreadCount} />
             </button>
             <BellDropdown
@@ -219,7 +223,11 @@ export default function Navigation() {
               responding={responding}
             />
           </div>
-          <button className="nav-button p-0 glass rounded-full w-9 h-9 flex items-center justify-center nav-hover-settings" onClick={() => navigate('/settings')}>
+          <button
+            className="nav-button p-0 glass rounded-full w-9 h-9 flex items-center justify-center nav-hover-settings"
+            onClick={() => navigate('/settings')}
+            aria-label="Nastavení"
+          >
             <SettingsIcon />
           </button>
           <button className="nav-button glass gap-0 group transition-all duration-300 ease-in hover:gap-2 nav-hover-logout" onClick={handleLogout}>
@@ -237,8 +245,12 @@ export default function Navigation() {
         </Link>
         <div className="flex items-center gap-2">
           <div className="relative">
-            <button className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-muted rounded-lg hover-list-bg relative" onClick={() => setBellOpen(o => !o)}>
-              <FiBell className="nav-icon-bell" size={20} />
+            <button
+              className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-muted rounded-lg hover-list-bg relative"
+              onClick={() => setBellOpen(o => !o)}
+              aria-label="Otevřít notifikace"
+            >
+              <FiBell className="nav-icon-bell" size={20} aria-hidden="true" />
               <UnreadBadge count={unreadCount} />
             </button>
             <BellDropdown
@@ -253,11 +265,12 @@ export default function Navigation() {
           <button
             type="button"
             className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-muted rounded-lg hover-list-bg focus:outline-none"
-            aria-controls="navbar-default"
+            aria-controls="mobile-menu"
             aria-expanded={menuOpen}
+            aria-label="Otevřít hlavní menu"
             onClick={() => setMenuOpen(o => !o)}
           >
-            <span className="sr-only">Open main menu</span>
+            <span className="sr-only">Otevřít hlavní menu</span>
             <svg className="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" strokeWidth={1.5} fill="none" viewBox="0 0 17 14">
               <path d="M1 1h15M1 7h15M1 13h15" />
             </svg>

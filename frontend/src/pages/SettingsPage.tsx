@@ -140,18 +140,21 @@ export default function SettingsPage() {
             <button
               onClick={() => handleThemeChange('light')}
               className={`setting-value-option ${themePreference === 'light' ? 'setting-value-option-active' : ''}`}
+              aria-pressed={themePreference === 'light'}
             >
               Světlý
             </button>
             <button
               onClick={() => handleThemeChange('dark')}
               className={`setting-value-option ${themePreference === 'dark' ? 'setting-value-option-active' : ''}`}
+              aria-pressed={themePreference === 'dark'}
             >
               Tmavý
             </button>
             <button
               onClick={() => handleThemeChange('system')}
               className={`setting-value-option ${themePreference === 'system' ? 'setting-value-option-active' : ''}`}
+              aria-pressed={themePreference === 'system'}
             >
               Podle systému
             </button>
@@ -164,12 +167,14 @@ export default function SettingsPage() {
             <button
               onClick={() => setEmailNotifications('enabled')}
               className={`setting-value-option ${emailNotifications === 'enabled' ? 'setting-value-option-active' : ''}`}
+              aria-pressed={emailNotifications === 'enabled'}
             >
               Zapnuto
             </button>
             <button
               onClick={() => setEmailNotifications('disabled')}
               className={`setting-value-option ${emailNotifications === 'disabled' ? 'setting-value-option-active' : ''}`}
+              aria-pressed={emailNotifications === 'disabled'}
             >
               Vypnuto
             </button>

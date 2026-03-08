@@ -83,6 +83,7 @@ export default function CarsPage() {
               <button
                 onClick={() => navigate(`/cars/${car.id}`)}
                 className="w-full card card-interactive p-4 flex items-center gap-4 hover-border-accent text-left"
+                aria-label={`Zobrazit auto ${car.name}, typ ${car.layout}`}
               >
                 <div className="p-2 rounded-xl badge-indigo shrink-0">
                   <LayoutIcon layout={car.layout} />
