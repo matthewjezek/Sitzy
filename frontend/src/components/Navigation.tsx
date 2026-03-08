@@ -82,7 +82,8 @@ function BellDropdown({ open, onClose, invites, loading, onRespond, responding }
   return (
     <div
       ref={dropdownRef}
-      className="absolute right-0 top-12 z-50 w-80 card shadow-xl rounded-xl p-4 flex flex-col gap-3"
+      className="z-50 card shadow-xl flex flex-col gap-3 fixed top-16 left-0 right-0 mx-4 rounded-xl p-4
+        lg:absolute lg:top-12 lg:w-80 lg:mx-0 lg:left-auto"
     >
       <div className="flex items-center justify-between">
         <span className="font-semibold text-sm">Pozvánky</span>
@@ -182,7 +183,7 @@ export default function Navigation() {
   return (
     <>
       {/* ── Desktop ── */}
-      <div className="navigation hidden md:flex items-center">
+      <div className="navigation hidden lg:flex items-center">
         <div className="flex items-center gap-2 flex-1">
           <button className="nav-button glass gap-0 group transition-all duration-300 ease-in hover:gap-2" onClick={() => navigate(-1)}>
             <ArrowLeftIcon />
@@ -238,7 +239,7 @@ export default function Navigation() {
       </div>
 
       {/* ── Mobilní ── */}
-      <div className="top-0 left-0 w-full z-50 max-w-screen-xl flex flex-wrap items-center justify-between p-4 md:hidden">
+      <div className="top-0 left-0 w-full z-50 max-w-screen-xl flex flex-wrap items-center justify-between p-4 lg:hidden">
         <Link to="/rides" className="flex items-center space-x-3">
             <img src="src/assets/sitzy_logo_full.svg" alt="Sitzy" className="logo logo-light h-10" />
             <img src="src/assets/sitzy_logo_full_dark.svg" alt="Sitzy" className="logo logo-dark h-10" />
