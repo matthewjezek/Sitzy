@@ -35,6 +35,7 @@ export default function CarsPage() {
 
   useEffect(() => {
     fetchMyCars()
+    document.title = 'Sitzy - Moje auta'
   }, [fetchMyCars])
 
   if (loading) return <CarsListSkeleton />

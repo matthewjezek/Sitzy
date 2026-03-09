@@ -49,6 +49,7 @@ export default function CreateRidePage() {
 
   useEffect(() => {
     fetchMyCars()
+    document.title = 'Sitzy - Nová jízda'
   }, [fetchMyCars])
 
   const onSubmit = async (data: RideFormValues) => {

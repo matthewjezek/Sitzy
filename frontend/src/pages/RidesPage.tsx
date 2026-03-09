@@ -53,6 +53,7 @@ export default function RidesPage() {
 
   useEffect(() => {
     fetchMyRides()
+    document.title = 'Sitzy - Jízdy'
   }, [fetchMyRides])
 
   if (loading) return <RidesListSkeleton />

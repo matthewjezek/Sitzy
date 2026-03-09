@@ -220,6 +220,8 @@ export default function RideDetailPage() {
       navigate('/rides')
     }
   }
+  
+  document.title = ride ? `Sitzy - ${ride.destination}` : 'Sitzy - Jízda'
 
   if (loading) return <RideDetailSkeleton />
 

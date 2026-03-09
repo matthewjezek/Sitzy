@@ -1,7 +1,12 @@
 import { useNavigate } from "react-router";
+import { useEffect } from "react";
 
 const PageNotFound = () => {
   const navigate = useNavigate();
+  
+  useEffect(() => {
+    document.title = 'Sitzy - Stránka nenalezena';
+  }, []);
 
   return (
     <main className="page-container text-center">

@@ -54,6 +54,8 @@ export default function CarDetailPage() {
     }
   }
 
+  document.title = car ? `Sitzy - ${car.name}` : 'Sitzy - Auto'
+
   if (loading) return <CarDetailSkeleton />
 
   if (error) return (

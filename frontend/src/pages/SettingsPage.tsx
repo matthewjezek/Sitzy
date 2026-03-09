@@ -64,6 +64,7 @@ export default function SettingsPage() {
         )
       })
       .finally(() => setLoading(false))
+    document.title = 'Sitzy - Nastavení'
   }, [])
 
   const handleThemeChange = (nextTheme: ThemePreference) => {

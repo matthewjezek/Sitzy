@@ -47,15 +47,18 @@ export default function CreateCarPage() {
 
   const layout = watch('layout')
 
-  // Pokud editace – načti existující auto
   useEffect(() => {
-    if (!isEdit || !id) return
+    if (!isEdit || !id) {
+      document.title = 'Sitzy - Přidat auto'
+      return
+    }
     fetchCarById(id).then(car => {
       if (car) {
         setValue('name', car.name)
         setValue('layout', car.layout)
       }
     }).finally(() => setInitialLoading(false))
+    document.title = 'Sitzy - Upravit auto'
   }, [isEdit, id, fetchCarById, setValue])
 
   const onSubmit = async (data: CarFormValues) => {

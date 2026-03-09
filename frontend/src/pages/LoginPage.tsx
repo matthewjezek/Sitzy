@@ -1,4 +1,4 @@
-import React from 'react'
+import { useEffect } from 'react'
 import { useLocation, Link } from 'react-router'
 import { isAxiosError } from 'axios'
 import instance from '../api/axios'
@@ -10,10 +10,11 @@ export default function LoginPage() {
   const expired = new URLSearchParams(location.search).get('expired')
   const loggedOut = new URLSearchParams(location.search).get('logged_out')
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (loggedOut) {
       toast.success('Úspěšně odhlášeno.')
     }
+    document.title = 'Sitzy - Přihlášení'
   }, [loggedOut])
 
   const handleOAuthLogin = async (provider: 'x' | 'facebook') => {

@@ -198,7 +198,7 @@ export default function Navigation() {
             <SeatIcon />Moje jízdy
           </button>
           <button className="nav-button glass nav-hover-car" onClick={() => navigate('/cars')}>
-            <CarIcon /><span>Moje auto</span>
+            <CarIcon /><span>Moje auta</span>
           </button>
         </div>
 
