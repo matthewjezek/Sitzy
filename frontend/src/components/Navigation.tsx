@@ -4,6 +4,8 @@ import { useNavigate, Link } from 'react-router';
 import { useInvites } from '../hooks/useInvites';
 import { useRide } from '../hooks/useRide';
 import { toast } from 'react-toastify';
+import logoLight from '../assets/sitzy_logo_full.svg';
+import logoDark from '../assets/sitzy_logo_full_dark.svg';
 
 // ─── Ikony ────────────────────────────────────────────────────────────────────
 
@@ -201,8 +203,8 @@ export default function Navigation() {
         </div>
 
         <Link to="/rides" className="flex items-center gap-2 flex-shrink-0">
-          <img src="src/assets/sitzy_logo_full.svg" alt="Sitzy" className="logo logo-light h-10" />
-          <img src="src/assets/sitzy_logo_full_dark.svg" alt="Sitzy" className="logo logo-dark h-10" />
+          <img src={logoLight} alt="Sitzy logo" className="logo logo-light h-10" />
+          <img src={logoDark} alt="Sitzy logo" className="logo logo-dark h-10" />
         </Link>
 
         <div className="flex items-center gap-2 flex-1 justify-end">
@@ -241,8 +243,8 @@ export default function Navigation() {
       {/* ── Mobilní ── */}
       <div className="top-0 left-0 w-full z-50 max-w-screen-xl flex flex-wrap items-center justify-between p-4 lg:hidden">
         <Link to="/rides" className="flex items-center space-x-3">
-            <img src="src/assets/sitzy_logo_full.svg" alt="Sitzy" className="logo logo-light h-10" />
-            <img src="src/assets/sitzy_logo_full_dark.svg" alt="Sitzy" className="logo logo-dark h-10" />
+            <img src={logoLight} alt="Sitzy logo" className="logo logo-light h-10" />
+            <img src={logoDark} alt="Sitzy logo" className="logo logo-dark h-10" />
         </Link>
         <div className="flex items-center gap-2">
           <div className="relative">
