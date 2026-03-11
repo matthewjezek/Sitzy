@@ -86,10 +86,10 @@ export default function RidesPage() {
           <p className="text-muted">Zatím nemáte žádné jízdy.</p>
           <button
             onClick={() => navigate('/rides/new')}
-            className="py-2 px-6 rounded-xl button-tertiary flex items-center gap-2"
+            className="py-2 px-6 rounded-xl button-primary flex items-center gap-2"
           >
             <FiPlus size={18} />
-            Naplánovat druhou jízdu
+            Naplánovat první jízdu
           </button>
         </div>
       )}
