@@ -2,14 +2,26 @@ import { useEffect, useState } from 'react';
 import { FiShare, FiPlusSquare, FiX, FiMoreHorizontal } from 'react-icons/fi';
 import appIcon from '/apple-touch-icon.png?url';
 
+// Definition for PWA prompt event, which is not standard in TS
+interface BeforeInstallPromptEvent extends Event {
+  readonly platforms: string[];
+  readonly userChoice: Promise<{
+    outcome: 'accepted' | 'dismissed';
+    platform: string;
+  }>;
+  prompt(): Promise<void>;
+}
+
 export default function InstallPrompt() {
   const [isIOS, setIsIOS] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
 
   useEffect(() => {
-    const isPWA = window.matchMedia('(display-mode: standalone)').matches || ('standalone' in navigator && (navigator as any).standalone);
+    const nav = navigator as Navigator & { standalone?: boolean };
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches || !!nav.standalone;
+
     setIsStandalone(isPWA);
 
     if (isPWA) return;
@@ -24,7 +36,7 @@ export default function InstallPrompt() {
 
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
-      setDeferredPrompt(e);
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
       setShowPrompt(true);
     };
 
