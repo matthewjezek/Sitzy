@@ -30,9 +30,7 @@ export function ReloadPrompt() {
     needRefresh: [needRefresh, setNeedRefresh],
     updateServiceWorker,
   } = useRegisterSW({
-    onRegistered(r) {
-      // Volitelně: Můžeš kontrolovat updaty každou hodinu
-      if (r) setInterval(() => { r.update() }, 60 * 60 * 1000)
+    onRegistered() {
       console.log('SW Registered');
     },
     onRegisterError(error) {
