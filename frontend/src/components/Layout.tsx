@@ -1,6 +1,8 @@
 import { Outlet } from 'react-router'
 import Navigation from './Navigation'
 import type { ReactNode } from 'react'
+import InstallPrompt from '../utils/InstallPrompt'
+import { ReloadPrompt } from '../utils/ReloadPrompt'
 
 interface LayoutProps {
     children?: ReactNode
@@ -15,6 +17,8 @@ export default function Layout({ children }: LayoutProps) {
                 </div>    
                 {children ?? <Outlet />}
             </main>
+            <InstallPrompt />
+            <ReloadPrompt />
         </div>
     )
 }
