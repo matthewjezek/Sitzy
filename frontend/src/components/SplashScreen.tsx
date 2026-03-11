@@ -6,7 +6,7 @@ interface SplashScreenProps {
   duration?: number
 }
 
-export default function SplashScreen({ onComplete, duration = 2500 }: SplashScreenProps) {
+export default function SplashScreen({ onComplete, duration = 2000 }: SplashScreenProps) {
   useEffect(() => {
     gsap.set('svg', { transformOrigin: '50% 50%' })
 
