@@ -24,9 +24,19 @@ export function resolveThemePreference(preference: ThemePreference): 'light' | '
 
 export function applyThemePreference(preference: ThemePreference): 'light' | 'dark' {
   const resolvedTheme = resolveThemePreference(preference)
+
   document.documentElement.classList.toggle('dark', resolvedTheme === 'dark')
   document.documentElement.classList.toggle('light', resolvedTheme === 'light')
   localStorage.setItem(THEME_STORAGE_KEY, preference)
+
+  let metaThemeColor = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
+  if (!metaThemeColor) {
+    metaThemeColor = document.createElement('meta')
+    metaThemeColor.name = 'theme-color'
+    document.head.appendChild(metaThemeColor)
+  }
+
+  metaThemeColor.content = resolvedTheme === 'dark' ? '#0f172a' : '#ffffff'
 
   window.dispatchEvent(new CustomEvent(THEME_CHANGED_EVENT, {
     detail: {
