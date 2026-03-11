@@ -16,6 +16,18 @@ export default function TermsPage() {
           Poslední aktualizace: {new Date().toLocaleDateString('cs-CZ')}
         </div>
 
+        <div className="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 p-4 mb-8">
+          <h2 className="text-red-800 dark:text-red-200 font-bold text-lg mb-2">
+            Upozornění: Akademický projekt (Bakalářská práce)
+          </h2>
+          <p className="text-red-700 dark:text-red-300 text-sm">
+            Tato aplikace ("Sitzy") není komerčním produktem a není určena pro veřejnost. 
+            Jedná se výhradně o studentský projekt vytvořený pro účely obhajoby bakalářské práce. 
+            Aplikace neposkytuje reálné přepravní služby. Veškerá data jsou shromažďována 
+            pouze za účelem demonstrace technického řešení a budou po obhajobě trvale smazána.
+          </p>
+        </div>
+
         <div className="prose dark:prose-invert max-w-none space-y-6">
           <section>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
@@ -187,8 +199,8 @@ export default function TermsPage() {
               Máte-li otázky o těchto podmínkách, kontaktujte nás:
             </p>
             <p className="text-gray-700 dark:text-gray-300 mt-2">
-              Email: <a href="mailto:info@sitzy.local" className="text-blue-600 dark:text-blue-400 hover:underline">
-                info@sitzy.local
+              Email: <a href="mailto:info@sitzy.page" className="text-blue-600 dark:text-blue-400 hover:underline">
+                info@sitzy.page
               </a>
             </p>
           </section>
