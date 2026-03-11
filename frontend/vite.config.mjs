@@ -14,8 +14,8 @@ export default defineConfig({
         name: 'Sitzy',
         short_name: 'Sitzy',
         description: 'Sdílení jízd a zasedací pořádek',
-        theme_color: '#7350F2',
-        background_color: '#ffffff',
+        theme_color: '#0f172a',
+        background_color: '#0f172a',
         display: 'standalone',
         start_url: '/rides',
         icons: [
@@ -47,7 +47,7 @@ export default defineConfig({
               cacheName: 'api-cache',
               expiration: {
                 maxEntries: 50,
-                maxAgeSeconds: 60 * 5, // 5 minut
+                maxAgeSeconds: 60 * 5, // 5 minutes
               },
             },
           },
@@ -55,28 +55,4 @@ export default defineConfig({
       },
     }),
   ],
-  // server: {
-  //   proxy: {
-  //     '/auth': {
-  //       target: 'http://localhost:8000',
-  //       changeOrigin: true,
-  //     },
-  //     '/cars': {
-  //       target: 'http://localhost:8000',
-  //       changeOrigin: true,
-  //     },
-  //     '/rides': {
-  //       target: 'http://localhost:8000',
-  //       changeOrigin: true,
-  //     },
-  //     '/invitations': {
-  //       target: 'http://localhost:8000',
-  //       changeOrigin: true,
-  //     },
-  //     '/health': {
-  //       target: 'http://localhost:8000',
-  //       changeOrigin: true,
-  //     },
-  //   },
-  // },
 })
