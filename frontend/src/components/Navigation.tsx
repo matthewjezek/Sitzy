@@ -240,63 +240,90 @@ export default function Navigation() {
         </div>
       </div>
 
-      {/* ── Mobilní ── */}
-      <div className="top-0 left-0 w-full z-50 max-w-screen-xl flex flex-wrap items-center justify-between p-4 lg:hidden">
-        <Link to="/rides" className="flex items-center space-x-3">
+      {/* ── Mobile ── */}
+      <div className="relative z-50 lg:hidden">
+        
+        <div className="w-full max-w-screen-xl grid grid-cols-[1fr_auto_1fr] items-center p-4">
+          
+          <div className="flex justify-start">
+            {window.location.pathname !== '/rides' ? (
+              <button
+                className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-muted rounded-lg hover-list-bg"
+                onClick={() => navigate(-1)}
+                aria-label="Zpět"
+              >
+                <ArrowLeftIcon />
+              </button>
+            ) : (
+              <div className="w-10 h-10" aria-hidden="true" />
+            )}
+          </div>
+
+          <Link 
+            to="/rides" 
+            className="flex justify-center items-center space-x-3 h-10"
+          >
             <img src={logoLight} alt="Sitzy logo" className="logo logo-light h-10" />
             <img src={logoDark} alt="Sitzy logo" className="logo logo-dark h-10" />
-        </Link>
-        <div className="flex items-center gap-2">
-          <div className="relative">
+          </Link>
+
+          <div className="flex justify-end gap-2">
+            
+            <div className="relative">
+              <button
+                className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-muted rounded-lg hover-list-bg relative"
+                onClick={() => setBellOpen(o => !o)}
+                aria-label="Otevřít notifikace"
+              >
+                <FiBell className="nav-icon-bell" size={20} aria-hidden="true" />
+                <UnreadBadge count={unreadCount} />
+              </button>
+              
+              <BellDropdown
+                open={bellOpen}
+                onClose={() => setBellOpen(false)}
+                invites={invites}
+                loading={invitesLoading}
+                onRespond={handleRespond}
+                responding={responding}
+              />
+            </div>
+
             <button
-              className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-muted rounded-lg hover-list-bg relative"
-              onClick={() => setBellOpen(o => !o)}
-              aria-label="Otevřít notifikace"
+              type="button"
+              className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-muted rounded-lg hover-list-bg focus:outline-none"
+              aria-controls="mobile-menu"
+              aria-expanded={menuOpen}
+              aria-label="Otevřít hlavní menu"
+              onClick={() => setMenuOpen(o => !o)}
             >
-              <FiBell className="nav-icon-bell" size={20} aria-hidden="true" />
-              <UnreadBadge count={unreadCount} />
+              <span className="sr-only">Otevřít hlavní menu</span>
+              <svg className="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" strokeWidth={1.5} fill="none" viewBox="0 0 17 14">
+                <path d="M1 1h15M1 7h15M1 13h15" />
+              </svg>
             </button>
-            <BellDropdown
-              open={bellOpen}
-              onClose={() => setBellOpen(false)}
-              invites={invites}
-              loading={invitesLoading}
-              onRespond={handleRespond}
-              responding={responding}
-            />
           </div>
-          <button
-            type="button"
-            className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-muted rounded-lg hover-list-bg focus:outline-none"
-            aria-controls="mobile-menu"
-            aria-expanded={menuOpen}
-            aria-label="Otevřít hlavní menu"
-            onClick={() => setMenuOpen(o => !o)}
-          >
-            <span className="sr-only">Otevřít hlavní menu</span>
-            <svg className="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" strokeWidth={1.5} fill="none" viewBox="0 0 17 14">
-              <path d="M1 1h15M1 7h15M1 13h15" />
-            </svg>
-          </button>
         </div>
 
-        <div className={`top-16 left-0 w-full z-50 ${menuOpen ? '' : 'hidden'}`} id="mobile-menu">
-          <ul className="font-medium flex flex-col gap-2 p-4 mt-4 rounded-xl card">
-            <li><Link to="/rides" className="inline-flex items-center gap-2 py-2 px-3 rounded-md" onClick={() => setMenuOpen(false)}><RocketIcon />Jízdy</Link></li>
-            <hr className="border-light" />
-            <li><Link to="/rides" className="inline-flex items-center gap-2 py-2 px-3 rounded-md" onClick={() => setMenuOpen(false)}><SeatIcon />Moje jízdy</Link></li>
-            <hr className="border-light" />
-            <li><Link to="/cars" className="inline-flex items-center gap-2 py-2 px-3 rounded-md" onClick={() => setMenuOpen(false)}><CarIcon />Moje auto</Link></li>
-            <hr className="border-light" />
-            <li><Link to="/settings" className="inline-flex items-center gap-2 py-2 px-3 rounded-md" onClick={() => setMenuOpen(false)}><SettingsIcon />Nastavení</Link></li>
-            <hr className="border-light" />
-            <li>
-              <button onClick={handleLogout} className="inline-flex items-center gap-2 py-2 px-3 rounded-md">
-                <LogoutIcon />Odhlásit se
-              </button>
-            </li>
-          </ul>
-        </div>
+        {menuOpen && (
+          <div className="absolute top-16 left-0 w-full px-4" id="mobile-menu">
+            <ul className="font-medium flex flex-col gap-2 p-4 rounded-xl card shadow-xl">
+              <li><Link to="/rides" className="inline-flex items-center gap-3 py-2 px-3 rounded-md w-full" onClick={() => setMenuOpen(false)}><RocketIcon />Jízdy</Link></li>
+              <hr className="border-light" />
+              <li><Link to="/rides" className="inline-flex items-center gap-3 py-2 px-3 rounded-md w-full" onClick={() => setMenuOpen(false)}><SeatIcon />Moje jízdy</Link></li>
+              <hr className="border-light" />
+              <li><Link to="/cars" className="inline-flex items-center gap-3 py-2 px-3 rounded-md w-full" onClick={() => setMenuOpen(false)}><CarIcon />Moje auto</Link></li>
+              <hr className="border-light" />
+              <li><Link to="/settings" className="inline-flex items-center gap-3 py-2 px-3 rounded-md w-full" onClick={() => setMenuOpen(false)}><SettingsIcon />Nastavení</Link></li>
+              <hr className="border-light" />
+              <li>
+                <button onClick={handleLogout} className="inline-flex items-center gap-3 py-2 px-3 rounded-md w-full text-left">
+                  <LogoutIcon />Odhlásit se
+                </button>
+              </li>
+            </ul>
+          </div>
+        )}
       </div>
     </>
   )
