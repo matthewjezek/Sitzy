@@ -8,8 +8,6 @@ import logoLight from '../assets/sitzy_logo_full.svg';
 import logoDark from '../assets/sitzy_logo_full_dark.svg';
 import { ArrowLeftIcon, RocketIcon, SeatIcon, CarIcon, SettingsIcon, LogoutIcon } from '../assets/icons';
 
-// ─── Zvoneček dropdown ────────────────────────────────────────────────────────
-
 interface BellDropdownProps {
   open: boolean
   onClose: () => void
@@ -86,8 +84,6 @@ function BellDropdown({ open, onClose, invites, loading, onRespond, responding }
   )
 }
 
-// ─── Badge ────────────────────────────────────────────────────────────────────
-
 function UnreadBadge({ count }: { count: number }) {
   if (count === 0) return null
   return (
@@ -97,14 +93,12 @@ function UnreadBadge({ count }: { count: number }) {
   )
 }
 
-// ─── Navigation ───────────────────────────────────────────────────────────────
-
 export default function Navigation() {
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
   const [bellOpen, setBellOpen] = useState(false)
   const [responding, setResponding] = useState<string | null>(null)
-  const { invites, loading: invitesLoading, respondInvite } = useInvites()  // ✅ jediná instance
+  const { invites, loading: invitesLoading, respondInvite } = useInvites()  // single instance
   const { fetchRide } = useRide()
 
   const unreadCount = invites.filter(i => i.status === 'Pending').length

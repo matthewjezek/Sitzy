@@ -7,8 +7,6 @@ import { useCar } from '../hooks/useCar'
 import { carSchema, type CarFormValues } from '../utils/validation'
 import { SedanSvg, CoupeSvg, MinivanSvg } from '../assets/icons'
 
-// ─── Skeleton ─────────────────────────────────────────────────────────────────
-
 function CreateCarSkeleton() {
   return (
     <div className="animate-pulse max-w-lg mx-auto mt-10 p-6 flex flex-col gap-6">
@@ -23,8 +21,6 @@ function CreateCarSkeleton() {
     </div>
   )
 }
-
-// ─── CreateCarPage ────────────────────────────────────────────────────────────
 
 const LAYOUTS = [
   { value: 'Sedan', label: 'Sedan', description: '4 místa', icon: <SedanSvg /> },
@@ -92,7 +88,6 @@ export default function CreateCarPage() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
 
-        {/* Layout výběr */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 justify-items-center">
           {LAYOUTS.map(l => (
             <label
@@ -117,7 +112,6 @@ export default function CreateCarPage() {
         </div>
         {errors.layout && <p className="text-red-500 text-sm">{errors.layout.message}</p>}
 
-        {/* Název auta */}
         <div className="flex flex-col gap-1">
           <label htmlFor="car-name" className="font-medium text-sm">Název auta</label>
           <input
@@ -132,7 +126,6 @@ export default function CreateCarPage() {
           {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
         </div>
 
-        {/* Submit */}
         <button
           type="submit"
           disabled={submitting || loading}

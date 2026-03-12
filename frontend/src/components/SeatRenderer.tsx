@@ -6,7 +6,7 @@ import minivanSvg from '../assets/minivan.svg';
 import seatSvg from '../assets/seat.svg';
 import Loader from './Loader';
 
-// TODO: přidat jména?
+// TODO: add names?
 
 export interface SeatData {
   position: number;
@@ -25,7 +25,7 @@ export interface SeatRendererProps {
   className?: string;
 }
 
-// Stavy sedadel
+// Seat states
 export const SeatState = {
   FREE: 'free',
   SELECTED: 'selected',
@@ -35,7 +35,7 @@ export const SeatState = {
 
 export type SeatStateType = typeof SeatState[keyof typeof SeatState];
 
-// Styled komponenty
+// Styled components
 const SeatRendererContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -83,8 +83,8 @@ const SeatButton = styled.button<{
   transform: translate(-50%, -50%);
   pointer-events: auto;
 
-  width: 29.33%;   // cca 5.5rem/300px = 29.33%
-  height: 35.2%;  // cca 6.6rem/300px = 35.2%
+  width: 29.33%;   // approx 5.5rem/300px = 29.33%
+  height: 35.2%;  // approx 6.6rem/300px = 35.2%
   border: none;
   background: none;
   padding: 0;
@@ -95,7 +95,6 @@ const SeatButton = styled.button<{
   transition: all 0.2s ease;
   cursor: ${props => props.$interactive && props.$state !== SeatState.OCCUPIED && props.$state !== SeatState.DRIVER ? 'pointer' : 'default'};
 
-  /* SVG obrázek sedadla */
   .seat-icon {
     width: 100%;
     height: 100%;
@@ -168,7 +167,7 @@ const LayoutTitle = styled.h3`
   text-align: center;
 `;
 
-// Hlavní komponenta
+// Main component
 export const SeatRenderer: React.FC<SeatRendererProps> = ({
   layout,
   seats,
@@ -178,10 +177,10 @@ export const SeatRenderer: React.FC<SeatRendererProps> = ({
   mode = 'interactive',
   className = '',
 }) => {
-  // Normalizace layoutu
+  // Normalize layout string
   const normalizedLayout = layout.toLowerCase();
   
-  // Přednačtení obrázků a stav načtení
+  // Preload images and loading state
   const carMeta = React.useMemo(() => {
     switch (normalizedLayout) {
       case 'sedaq':
@@ -201,7 +200,7 @@ export const SeatRenderer: React.FC<SeatRendererProps> = ({
   const [carLoaded, setCarLoaded] = React.useState(false);
   const [seatLoaded, setSeatLoaded] = React.useState(false);
 
-  // Přednačtení assets – při změně layoutu znovu načti auto; sedadlo stačí jednou
+  // Preload assets – reload car image on layout change; seat image only once
   React.useEffect(() => {
     let canceled = false;
     setCarLoaded(false);
@@ -221,7 +220,7 @@ export const SeatRenderer: React.FC<SeatRendererProps> = ({
     return () => { canceled = true; };
   }, [carMeta.carSvgSrc, seatLoaded]);
   
-  // Mapa sedadel podle pozice
+  // Map seats by position
   const seatByPosition = React.useMemo(() => {
     const map: Record<number, SeatData> = {};
     seats.forEach(seat => {
@@ -230,9 +229,9 @@ export const SeatRenderer: React.FC<SeatRendererProps> = ({
     return map;
   }, [seats]);
 
-  // Funkce pro určení stavu sedadla
+  // Determine seat state
   const getSeatState = (position: number): SeatStateType => {
-    if (position === 1) return SeatState.DRIVER; // Pozice 1 je vždy řidič
+    if (position === 1) return SeatState.DRIVER; // Position 1 is always driver
     
     const seat = seatByPosition[position];
     if (seat?.occupied || seat?.user_name) return SeatState.OCCUPIED;
@@ -240,37 +239,37 @@ export const SeatRenderer: React.FC<SeatRendererProps> = ({
     return SeatState.FREE;
   };
 
-  // Funkce pro získání pozice sedadla na SVG (v procentech)
+  // Get seat position on SVG (in percent)
   const getSeatPosition = (position: number): { top: number; left: number } => {
     switch (normalizedLayout) {
       case 'sedaq':
       case 'sedan (4 seats)':
         switch (position) {
-          case 1: return { top: 47, left: 34 }; // Řidič - přední levý
-          case 2: return { top: 47, left: 64 }; // Spolujezdec - přední pravý
-          case 3: return { top: 70, left: 34 }; // Zadní levý
-          case 4: return { top: 70, left: 64 }; // Zadní pravý
+          case 1: return { top: 47, left: 34 }; // Driver - front left
+          case 2: return { top: 47, left: 64 }; // Passenger - front right
+          case 3: return { top: 70, left: 34 }; // Rear left
+          case 4: return { top: 70, left: 64 }; // Rear right
           default: return { top: 50, left: 50 };
         }
         
       case 'trapaq':
       case 'coupé (2 seats)':
         switch (position) {
-          case 1: return { top: 57, left: 33 }; // Řidič
-          case 2: return { top: 57, left: 67 }; // Spolujezdec
+          case 1: return { top: 57, left: 33 }; // Driver
+          case 2: return { top: 57, left: 67 }; // Passenger
           default: return { top: 57, left: 50 };
         }
         
       case 'praq':
       case 'minivan (7 seats)':
         switch (position) {
-          case 1: return { top: 44, left: 35 }; // Řidič - přední levý
-          case 2: return { top: 44, left: 65 }; // Spolujezdec - přední pravý
-          case 3: return { top: 64, left: 25 }; // Střední levý
-          case 4: return { top: 64, left: 50 }; // Střední střed
-          case 5: return { top: 64, left: 75 }; // Střední pravý
-          case 6: return { top: 84, left: 35 }; // Zadní levý
-          case 7: return { top: 84, left: 65 }; // Zadní pravý
+          case 1: return { top: 44, left: 35 }; // Driver - front left
+          case 2: return { top: 44, left: 65 }; // Passenger - front right
+          case 3: return { top: 64, left: 25 }; // Middle left
+          case 4: return { top: 64, left: 50 }; // Middle center
+          case 5: return { top: 64, left: 75 }; // Middle right
+          case 6: return { top: 84, left: 35 }; // Rear left
+          case 7: return { top: 84, left: 65 }; // Rear right
           default: return { top: 50, left: 50 };
         }
         
@@ -279,18 +278,18 @@ export const SeatRenderer: React.FC<SeatRendererProps> = ({
     }
   };
 
-  // Funkce pro klik na sedadlo
+  // Handle seat click
   const handleSeatClick = (position: number) => {
     if (mode !== 'interactive' || !onSeatSelect) return;
     
     const state = getSeatState(position);
     if (state === SeatState.OCCUPIED || state === SeatState.DRIVER) return;
     
-    // Pokud je sedadlo už vybráno, zruš výběr, jinak ho vyber
+    // If seat is already selected, deselect; otherwise select
     onSeatSelect(selectedSeat === position ? null : position);
   };
 
-  // Komponenta jednotlivého sedadla
+  // Single seat component
   const SeatComponent: React.FC<{ position: number }> = ({ position }) => {
     const seat = seatByPosition[position];
     const state = getSeatState(position);
@@ -315,7 +314,7 @@ export const SeatRenderer: React.FC<SeatRendererProps> = ({
       ariaLabel = 'Volné sedadlo, klikněte pro výběr';
     }
 
-    // Přidej číslo/label pozice do aria-label
+    // Add seat number/label to aria-label
     if (!isDriver) {
       ariaLabel += seat?.position_label ? `, pozice ${seat.position_label}` : `, pozice ${position}`;
     }
@@ -342,7 +341,7 @@ export const SeatRenderer: React.FC<SeatRendererProps> = ({
     );
   };
 
-  // Renderování vozidla s sedadly jako overlay
+  // Render car with seats as overlay
   const renderCarWithSeats = () => {
     const { carSvgSrc, altText, maxSeats } = carMeta;
 
@@ -378,7 +377,7 @@ export const SeatRenderer: React.FC<SeatRendererProps> = ({
     <SeatRendererContainer className={className}>
       {renderCarWithSeats()}
       
-      {/* Legenda */}
+      {/* Legend */}
       {mode === 'interactive' && (
         <div style={{ 
           display: 'flex', 

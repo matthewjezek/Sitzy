@@ -1,8 +1,6 @@
 import { z } from 'zod'
 
-// ========================================
-// CAR
-// ========================================
+
 export const carSchema = z.object({
   name: z
     .string()
@@ -15,9 +13,7 @@ export const carSchema = z.object({
 
 export type CarFormValues = z.infer<typeof carSchema>
 
-// ========================================
-// RIDE
-// ========================================
+
 export const rideSchema = z.object({
   car_id: z.string().uuid('Vyberte auto.'),
   departure_time: z
@@ -35,9 +31,7 @@ export const rideSchema = z.object({
 
 export type RideFormValues = z.infer<typeof rideSchema>
 
-// ========================================
-// INVITE
-// ========================================
+
 export const inviteSchema = z.object({
   email: z
     .email('Zadejte platný e-mail.')
@@ -47,9 +41,7 @@ export const inviteSchema = z.object({
 
 export type InviteFormValues = z.infer<typeof inviteSchema>
 
-// ========================================
-// SEAT
-// ========================================
+
 export const seatSchema = z.object({
   seat_position: z
     .number()

@@ -116,7 +116,7 @@ const MyDialog = forwardRef<HTMLDialogElement, { children: React.ReactNode; togg
   );
 });
 
-// Typy pro InviteDialog
+// Types for InviteDialog
 type InviteInvitation = {
   invited_email: string;
   status: "Pending" | "Accepted" | "Rejected";
@@ -133,7 +133,7 @@ type InviteDialogProps = {
   error: string | null;
 };
 
-// Dialog pro pozvání uživatelů
+// Dialog for inviting users
 const InviteDialog = forwardRef<HTMLDialogElement, InviteDialogProps>(
   ({ toggle, pendingInvites, onInvite, onCancel, loading, error }, ref) => {
     const [email, setEmail] = useState("");
@@ -147,7 +147,7 @@ const InviteDialog = forwardRef<HTMLDialogElement, InviteDialogProps>(
       setEmail("");
     };
 
-    // Kombinovaný error - lokální má přednost před backend chybou
+    // Local error takes precedence over backend error
     const displayError = localError || error;
 
     return (
@@ -179,7 +179,7 @@ const InviteDialog = forwardRef<HTMLDialogElement, InviteDialogProps>(
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value.toLocaleLowerCase());
-                    // Reset chyb při psaní nového emailu
+                    // Reset error when typing a new email
                     setLocalError(null);
                   }}
                   required
@@ -259,7 +259,7 @@ const InviteDialog = forwardRef<HTMLDialogElement, InviteDialogProps>(
   }
 );
 
-// Typy pro notifikace
+// Types for NotificationDialog
 type Notification = {
   id: string;
   title: string;
@@ -277,7 +277,7 @@ type NotificationDialogProps = {
   onOpen: (id: string) => void;
 };
 
-// Dialog pro notifikace
+// Dialog for notifications
 const NotificationDialog = forwardRef<HTMLDialogElement, NotificationDialogProps>(
   ({ toggle, notifications, onMarkAsRead, onMarkAllAsRead, onOpen }, ref) => {
     const unreadCount = notifications.filter(n => !n.read).length;
@@ -341,7 +341,7 @@ const NotificationDialog = forwardRef<HTMLDialogElement, NotificationDialogProps
                       onClick={() => {
                         onMarkAsRead(notification.id);
                         onOpen(notification.id);
-                        toggle(); // Zavřít notification dialog po kliknutí
+                        toggle(); // Close notification dialog after click
                       }}
                     >
                       <div className="flex items-start gap-2">
@@ -389,7 +389,7 @@ const NotificationDialog = forwardRef<HTMLDialogElement, NotificationDialogProps
   }
 );
 
-// Typy pro pozvánky
+// Types for InvitationDialog
 type Invitation = {
   id: string;
   carName: string;
@@ -406,7 +406,7 @@ type InvitationDialogProps = {
   loading: boolean;
 };
 
-// Dialog pro přijmutí/odmítnutí pozvánky
+// Dialog for accepting/declining invitation
 const InvitationDialog = forwardRef<HTMLDialogElement, InvitationDialogProps>(
   ({ toggle, invitation, onAccept, onDecline, loading }, ref) => {
     return (

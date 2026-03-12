@@ -9,8 +9,6 @@ import { useRide } from '../hooks/useRide'
 import { useInvites } from '../hooks/useInvites'
 import { inviteSchema, type InviteFormValues } from '../utils/validation'
 
-// ─── Skeleton ─────────────────────────────────────────────────────────────────
-
 function RideDetailSkeleton() {
   return (
     <div className="animate-pulse max-w-lg mx-auto mt-10 p-6 flex flex-col gap-6">
@@ -21,8 +19,7 @@ function RideDetailSkeleton() {
   )
 }
 
-// ─── Status badge ─────────────────────────────────────────────────────────────
-
+// Status badge for ride
 function RideStatusBadge({ departureTime }: { departureTime: string }) {
   const now = new Date()
   const departure = new Date(departureTime)
@@ -45,8 +42,6 @@ function RideStatusBadge({ departureTime }: { departureTime: string }) {
     </span>
   )
 }
-
-// ─── Invite section ───────────────────────────────────────────────────────────
 
 function InviteSection({ rideId }: { rideId: string }) {
   const { invites, loading, error, createInvite, respondInvite } = useInvites(rideId)
@@ -84,7 +79,6 @@ function InviteSection({ rideId }: { rideId: string }) {
     <div className="card p-4 flex flex-col gap-4">
       <h2 className="font-semibold">Pozvánky</h2>
 
-      {/* Formulář pro pozvání */}
       <form onSubmit={handleSubmit(onInvite)} className="flex gap-2">
         <div className="flex-1 flex flex-col gap-1">
           <label htmlFor="invite-email" className="sr-only">E-mail pro pozvánku</label>
@@ -109,7 +103,6 @@ function InviteSection({ rideId }: { rideId: string }) {
         </button>
       </form>
 
-      {/* Seznam pozvánek */}
       {loading && (
         <div className="animate-pulse flex flex-col gap-2">
           {[1, 2].map(i => (
@@ -164,9 +157,7 @@ function InviteSection({ rideId }: { rideId: string }) {
   )
 }
 
-// ─── Passengers section ───────────────────────────────────────────────────────
-
-function PassengersSection({ passengers }: { passengers: import('../hooks/useRide').PassengerOut[] }) {
+function PassengersSection({ passengers }: { passengers: import('../types/models').PassengerOut[] }) {
   if (passengers.length === 0) return (
     <div className="card p-4 flex flex-col gap-2">
       <h2 className="font-semibold">Pasažéři</h2>
@@ -200,8 +191,6 @@ function PassengersSection({ passengers }: { passengers: import('../hooks/useRid
   )
 }
 
-// ─── RideDetailPage ───────────────────────────────────────────────────────────
-
 export default function RideDetailPage() {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
@@ -214,7 +203,7 @@ export default function RideDetailPage() {
   const handleDelete = async () => {
     if (!ride) return
     if (!window.confirm('Opravdu chcete smazat tuto jízdu?')) return
-    const success = await cancelRide(ride.id)  // ✅
+    const success = await cancelRide(ride.id)
     if (success) {
       toast.success('Jízda byla smazána.')
       navigate('/rides')
@@ -244,7 +233,6 @@ export default function RideDetailPage() {
   return (
     <div className="max-w-lg mx-auto mt-10 p-6 flex flex-col gap-6">
 
-      {/* Header */}
       <div className="card p-6 flex flex-col gap-3">
         <div className="flex items-start justify-between gap-2">
           <h1 className="text-2xl font-bold">{ride.destination}</h1>
@@ -264,7 +252,6 @@ export default function RideDetailPage() {
           )}
         </div>
 
-        {/* Smazat */}
         <button
           onClick={handleDelete}
           className="self-end py-1.5 px-3 rounded-lg button-danger text-sm hover-opacity-80 flex items-center gap-2"
@@ -274,10 +261,8 @@ export default function RideDetailPage() {
         </button>
       </div>
 
-      {/* Pasažéři */}
       <PassengersSection passengers={ride.passengers ?? []} />
 
-      {/* Pozvánky */}
       <InviteSection rideId={ride.id} />
 
     </div>

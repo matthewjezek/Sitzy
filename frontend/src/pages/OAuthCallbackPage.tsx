@@ -22,7 +22,7 @@ export default function OAuthCallbackPage() {
 
     if (!code || !state) {
       toast.error('Neplatný callback.')
-      setTargetPath('/login') // Místo okamžitého navigate si cestu jen uložíme
+      setTargetPath('/login')
       return
     }
 
@@ -33,7 +33,7 @@ export default function OAuthCallbackPage() {
         const data = response.data
         localStorage.setItem('access_token', data.access_token)
         toast.success('Přihlášení úspěšné!')
-        setTargetPath('/') // Uložíme si, kam chceme jít při úspěchu
+        setTargetPath('/')
       })
       .catch(error => {
         const errorDetail = error.response?.data?.detail || ''
@@ -46,13 +46,11 @@ export default function OAuthCallbackPage() {
         } else {
           toast.error('Přihlášení selhalo.')
         }
-        setTargetPath('/login') // Uložíme si cestu při chybě
+        setTargetPath('/login')
       })
   }, [code, state])
 
-  // 2. Efekt, který čeká na splnění obou podmínek
   useEffect(() => {
-    // Pokud animace dojela A ZÁROVEŇ už nám backend vrátil výsledek (máme cestu)
     if (animationDone && targetPath) {
       navigate(targetPath)
     }
@@ -61,7 +59,7 @@ export default function OAuthCallbackPage() {
   return (
     <div className="page-container min-h-screen bg-slate-900 dark:bg-slate-950">
       <div className="page-content text-center flex flex-col items-center justify-center">
-        {/* 3. Napojení na callback animace */}
+        
         <SplashScreen onComplete={() => setAnimationDone(true)} />
       </div>
     </div>

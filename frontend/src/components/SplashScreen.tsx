@@ -5,10 +5,10 @@ interface SplashScreenProps {
   onComplete?: () => void
 }
 
+
 export default function SplashScreen({ onComplete }: SplashScreenProps) {
-  // 1. Schováme si aktuální funkci do refu, abychom kvůli ní nemuseli restartovat GSAP
+  // Store the latest onComplete callback in a ref to avoid unnecessary GSAP restarts
   const onCompleteRef = useRef(onComplete)
-  
   useEffect(() => {
     onCompleteRef.current = onComplete
   }, [onComplete])
@@ -16,7 +16,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
   useEffect(() => {
     gsap.set('#main-svg', { transformOrigin: '50% 50%' })
 
-    // 2. Tady zavoláme funkci z refu
+    // Use the ref callback to avoid dependency issues
     const tl = gsap.timeline({ 
       delay: 0.8, 
       onComplete: () => {
@@ -26,7 +26,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
       } 
     })
 
-    // Morph Z
+    // Z morph animation
     tl.to('#morph-z', {
       attr: { d: 'M 225 48 L 211 88 L 176 78 L 186 113' },
       stroke: '#6345d6',
@@ -56,7 +56,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
     return () => {
       tl.kill()
     }
-  }, []) // <--- 3. TADY JE KOUZLO: Prázdné pole! Animace se inicializuje jen jednou.
+  }, []) // Empty dependency: animation initializes only once
 
   return (
     <div className="relative w-full flex items-center justify-center">

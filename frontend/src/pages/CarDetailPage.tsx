@@ -5,8 +5,6 @@ import { toast } from 'react-toastify'
 import { useCar } from '../hooks/useCar'
 import { SedanSvg, CoupeSvg, MinivanSvg } from '../assets/icons'
 
-// ─── Skeleton ─────────────────────────────────────────────────────────────────
-
 function CarDetailSkeleton() {
   return (
     <div className="animate-pulse max-w-lg mx-auto mt-10 p-6 flex flex-col gap-6">
@@ -22,8 +20,6 @@ function CarDetailSkeleton() {
   )
 }
 
-// ─── Layout ikona ─────────────────────────────────────────────────────────────
-
 function LayoutIcon({ layout }: { layout: string }) {
   switch (layout) {
     case 'Sedan': return <SedanSvg />
@@ -32,8 +28,6 @@ function LayoutIcon({ layout }: { layout: string }) {
     default: return null
   }
 }
-
-// ─── CarDetailPage ────────────────────────────────────────────────────────────
 
 export default function CarDetailPage() {
   const navigate = useNavigate()
@@ -77,7 +71,6 @@ export default function CarDetailPage() {
   return (
     <div className="max-w-lg mx-auto mt-10 p-6 flex flex-col gap-6">
 
-      {/* Header */}
       <div className="card p-6 flex items-center gap-4">
         <div className="p-3 rounded-xl badge-indigo">
           <LayoutIcon layout={car.layout} />
@@ -91,7 +84,6 @@ export default function CarDetailPage() {
         </div>
       </div>
 
-      {/* Nová jízda */}
       <button
         onClick={() => navigate(`/rides/new?car_id=${car.id}`)}
         className="w-full py-3 px-4 rounded-xl button-primary flex items-center justify-center gap-2"
@@ -100,7 +92,6 @@ export default function CarDetailPage() {
         Nová jízda s tímto autem
       </button>
 
-      {/* Akce */}
       <div className="flex gap-3">
         <button
           onClick={() => navigate(`/cars/${car.id}/edit`)}

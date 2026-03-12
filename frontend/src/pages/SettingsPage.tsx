@@ -11,8 +11,6 @@ import {
 import { DeleteDialog } from '../components/Dialog';
 import { useAuth } from '../hooks/useAuth';
 
-// ─── Skeleton ─────────────────────────────────────────────────────────────────
-
 function SettingsSkeleton() {
   return (
     <div className="animate-pulse flex flex-col gap-6 max-w-lg mx-auto mt-10 p-6">
@@ -29,8 +27,6 @@ function SettingsSkeleton() {
     </div>
   )
 }
-
-// ─── SettingsPage ─────────────────────────────────────────────────────────────
 
 export default function SettingsPage() {
   const { user, loading } = useAuth();
@@ -79,7 +75,7 @@ export default function SettingsPage() {
   return (
     <div className="max-w-lg mx-auto mt-10 p-6 flex flex-col gap-6">
 
-      {/* Profil */}
+      
       <div className="card p-6 flex items-center gap-4">
         {user?.avatar_url ? (
           <img
@@ -109,7 +105,7 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Motiv */}
+      
       <div className="card p-4 flex flex-col gap-3">
         <div className="setting-row">
           <span className="setting-label">Motiv</span>
@@ -159,7 +155,7 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Nebezpečná zóna */}
+      
       <div className="card p-4 border-2 border-red-500/20">
         <h3 className="text-sm font-semibold text-danger mb-2">Nebezpečná zóna</h3>
         <p className="text-sm text-secondary mb-3">
@@ -173,7 +169,7 @@ export default function SettingsPage() {
         </button>
       </div>
 
-      {/* Dokumenty */}
+      
       <div className="card p-4">
         <h3 className="text-sm font-semibold mb-3">Dokumenty</h3>
         <div className="flex flex-col gap-2">
@@ -192,7 +188,7 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Delete confirmation dialog */}
+      
       <DeleteDialog 
         ref={deleteDialogRef} 
         toggle={toggleDeleteDialog}

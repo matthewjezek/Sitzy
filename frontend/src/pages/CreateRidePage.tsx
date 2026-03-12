@@ -8,8 +8,6 @@ import { useCar } from '../hooks/useCar'
 import { rideSchema, type RideFormValues } from '../utils/validation'
 import { localInputToUTC, nowForDatetimeInput } from '../utils/datetime'
 
-// ─── Skeleton ─────────────────────────────────────────────────────────────────
-
 function CreateRideSkeleton() {
   return (
     <div className="animate-pulse max-w-lg mx-auto mt-10 p-6 flex flex-col gap-6">
@@ -21,8 +19,6 @@ function CreateRideSkeleton() {
     </div>
   )
 }
-
-// ─── CreateRidePage ───────────────────────────────────────────────────────────
 
 export default function CreateRidePage() {
   const navigate = useNavigate()
@@ -74,7 +70,7 @@ export default function CreateRidePage() {
     <div className="max-w-lg mx-auto mt-10 p-6 flex flex-col gap-6">
       <h1 className="text-2xl font-bold text-center">Nová jízda</h1>
 
-      {/* Žádné auto */}
+      
       {!carsLoading && cars.length === 0 && (
         <div className="p-4 rounded-xl status-warning text-sm flex flex-col gap-3">
           <p>Nemáte žádné auto. Nejprve přidejte auto.</p>
@@ -89,7 +85,7 @@ export default function CreateRidePage() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
 
-        {/* Výběr auta */}
+        
         <div className="flex flex-col gap-1">
           <label htmlFor="car-select" className="font-medium text-sm">Auto</label>
           <select
@@ -109,7 +105,7 @@ export default function CreateRidePage() {
           )}
         </div>
 
-        {/* Čas odjezdu */}
+        
         <div className="flex flex-col gap-1">
           <label htmlFor="departure-time" className="font-medium text-sm">Čas odjezdu</label>
           <input
@@ -125,7 +121,7 @@ export default function CreateRidePage() {
           )}
         </div>
 
-        {/* Cíl */}
+        
         <div className="flex flex-col gap-1">
           <label htmlFor="destination" className="font-medium text-sm">Cíl</label>
           <input
@@ -141,7 +137,7 @@ export default function CreateRidePage() {
           )}
         </div>
 
-        {/* Submit */}
+        
         <button
           type="submit"
           disabled={submitting || cars.length === 0}

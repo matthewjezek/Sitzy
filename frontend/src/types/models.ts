@@ -1,5 +1,3 @@
-// Centralized DB model types for frontend (shared across hooks/components)
-
 export interface User {
   id: string;
   full_name: string | null;

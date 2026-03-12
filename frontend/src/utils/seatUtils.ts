@@ -1,6 +1,5 @@
-// Pomocné funkce pro práci se sedadly
+// Helper functions for working with seat positions and layouts
 
-// Slovní popis pozice sedadla dle layoutu
 export function getSeatPositionLabel(layout: string, position: number): string {
   const l = (layout || '').toLowerCase();
   switch (l) {

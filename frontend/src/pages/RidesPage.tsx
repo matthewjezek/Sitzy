@@ -9,7 +9,6 @@ type TimeFilter = 'all_time' | 'upcoming' | 'history'
 type RoleFilter = 'all_roles' | 'organizing' | 'participating'
 type SortBy = 'date_asc' | 'date_desc' | 'alpha'
 
-// ─── Skeleton ─────────────────────────────────────────────────────────────────
 function RidesListSkeleton() {
   return (
     <div className="list-container list-none">
@@ -20,7 +19,6 @@ function RidesListSkeleton() {
   )
 }
 
-// ─── RideStatusBadge ──────────────────────────────────────────────────────────
 function RideStatusBadge({ departureTime }: { departureTime: string }) {
   const now = new Date()
   const departure = new Date(departureTime)
@@ -36,7 +34,6 @@ function RideStatusBadge({ departureTime }: { departureTime: string }) {
   return <span className="text-xs px-2 py-0.5 rounded-full status-info">Nadcházející</span>
 }
 
-// ─── RidesPage ────────────────────────────────────────────────────────────────
 export default function RidesPage() {
   const navigate = useNavigate()
   const { rides, loading, error, fetchMyRides } = useRide()
@@ -64,7 +61,6 @@ export default function RidesPage() {
       if (timeFilter === 'history' && !isPast) return false
 
       if (roleFilter === 'organizing' && ride.driver_user_id !== user?.id) return false
-      console.log('Ride:', ride.id, 'Passengers:', ride.passengers.map(p => p.user_id), 'User ID:', user?.id, 'Driver ID:', ride.driver_user_id)
       if (roleFilter === 'participating' && !ride.passengers.some(p => p.user_id === user?.id)) return false
 
       return true
@@ -152,7 +148,7 @@ export default function RidesPage() {
     <div className="page-container flex-col items-center pt-24 pb-10">
       <div className="page-content max-w-lg mx-auto w-full flex flex-col gap-6">
 
-        {/* Hlavička */}
+        
         <div className="flex items-center justify-between">
           <h1 className="page-title">Jízdy</h1>
           <button 
@@ -163,7 +159,7 @@ export default function RidesPage() {
           </button>
         </div>
 
-        {/* Ovládací panel */}
+        
         {!error && rides.length > 0 && (
           <section className="card p-4 flex flex-col gap-4" aria-label="Filtrování a vyhledávání jízd">
             
@@ -208,7 +204,7 @@ export default function RidesPage() {
                 onChange={e => setSortBy(e.target.value as SortBy)}
                 className="form-input flex-1 cursor-pointer py-2"
               >
-                {/* Změněno pořadí podle tvého vzoru */}
+                
                 <option value="alpha">A-Z</option>
                 <option value="date_desc">Od nejnovější</option>
                 <option value="date_asc">Od nejstarší</option>
@@ -218,7 +214,7 @@ export default function RidesPage() {
           </section>
         )}
 
-        {/* Obsah */}
+        
         {renderContent()}
 
       </div>

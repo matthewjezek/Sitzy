@@ -26,7 +26,7 @@ export default function Dashboard() {
     <div className="page-container flex-col items-center pt-24 pb-10">
       <div className="page-content max-w-2xl mx-auto w-full flex flex-col gap-8">
         
-        {/* Hlavička */}
+        
         <header>
           <h1 className="page-title">
             Ahoj, {user?.full_name?.split(' ')[0] || 'řidiči'}! 👋
@@ -34,7 +34,7 @@ export default function Dashboard() {
           <p className="text-secondary mt-2">Vítej zpět. Co máš dnes v plánu?</p>
         </header>
 
-        {/* Rychlé akce */}
+        
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" role="group" aria-label="Rychlé akce">
           <button 
             onClick={() => navigate('/rides/new')} 
@@ -63,7 +63,7 @@ export default function Dashboard() {
           </button>
         </div>
 
-        {/* Sekce Nejbližší jízda */}
+        
         <section aria-labelledby="upcoming-ride-heading">
           <h2 id="upcoming-ride-heading" className="text-xl font-bold mb-4">Nejbližší jízda</h2>
           
