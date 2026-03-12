@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router'
+import { BrowserRouter as Router, Routes, Route } from 'react-router'
 import { useEffect, useState, lazy, Suspense } from 'react'
 import { useNavigate } from 'react-router'
 import { Slide, ToastContainer } from 'react-toastify'
@@ -25,6 +25,7 @@ import {
   resolveThemePreference,
   THEME_CHANGED_EVENT,
 } from './utils/theme'
+import DashboardPage from './pages/DashboardPage'
 
 const isDev = import.meta.env.MODE === 'development'
 
@@ -74,7 +75,6 @@ function AppRoutes() {
 
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/rides" replace />} />
       <Route path="*" element={<PageNotFound />} />
 
       <Route element={<AnonymousRoute />}>
@@ -88,6 +88,9 @@ function AppRoutes() {
       <Route path="/terms" element={<TermsPage />} />
 
       <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+        {/* Dashboard */}
+        <Route path="/" element={<DashboardPage />} />
+
         {/* Rides */}
         <Route path="/rides" element={<RidesPage />} />
         <Route path="/rides/new" element={<CreateRidePage />} />

@@ -17,7 +17,7 @@ export default defineConfig({
         theme_color: '#0f172a',
         background_color: '#0f172a',
         display: 'standalone',
-        start_url: '/rides',
+        start_url: '/',
         icons: [
           {
             src: '/icons/icon-192.png',
