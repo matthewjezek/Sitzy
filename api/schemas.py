@@ -155,6 +155,7 @@ class RideOut(BaseModel):
     id: UUID
     car_id: UUID
     car_driver_id: UUID
+    driver_user_id: UUID
     departure_time: datetime
     destination: str
     created_at: datetime
@@ -172,6 +173,7 @@ class RideOut(BaseModel):
             id=r.id,
             car_id=r.car_id,
             car_driver_id=r.car_driver_id,
+            driver_user_id=r.car_driver.driver_id,
             departure_time=r.departure_time,
             destination=r.destination,
             created_at=r.created_at,
