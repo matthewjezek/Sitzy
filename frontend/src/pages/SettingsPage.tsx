@@ -9,21 +9,7 @@ import {
   type ThemePreference,
 } from '../utils/theme';
 import { DeleteDialog } from '../components/Dialog';
-
-interface SocialAccount {
-  provider: string
-  email: string | null
-  linked_at: string
-}
-
-interface User {
-  id: string
-  full_name: string | null
-  email: string | null
-  avatar_url: string | null
-  created_at: string
-  social_accounts: SocialAccount[]
-}
+import { useAuth } from '../hooks/useAuth';
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 
@@ -47,23 +33,13 @@ function SettingsSkeleton() {
 // ─── SettingsPage ─────────────────────────────────────────────────────────────
 
 export default function SettingsPage() {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { user, loading } = useAuth();
   const [themePreference, setThemePreference] = useState<ThemePreference>(() => getThemePreference())
   const [emailNotifications, setEmailNotifications] = useState<'enabled' | 'disabled'>('enabled')
   const deleteDialogRef = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
-    instance.get<User>('/auth/me')
-      .then(res => setUser(res.data))
-      .catch(err => {
-        toast.error(
-          isAxiosError(err)
-            ? (err.response?.data?.detail ?? 'Nepodařilo se načíst profil.')
-            : 'Nastala neočekávaná chyba.'
-        )
-      })
-      .finally(() => setLoading(false))
+    
     document.title = 'Sitzy - Nastavení'
   }, [])
 
