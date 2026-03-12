@@ -1,22 +1,8 @@
 import { useState, useCallback } from "react";
 import { isAxiosError } from "axios";
 import instance from "../api/axios";
-import type { SeatData } from "../components/SeatRenderer";
-
-export interface Car {
-  id: string;
-  owner_id: string;
-  name: string;
-  layout: 'Sedan' | 'Coupe' | 'Minivan';
-  layout_label?: string;
-  owner_name?: string;
-  seats?: SeatData[];
-}
-
-export interface CarFormData {
-  name: string;
-  layout: string;
-}
+// import type { SeatData } from "../components/SeatRenderer"; // Only use in UI, not here
+import type { Car, CarFormData } from '../types/models';
 
 export function useCar() {
   const [car, setCar] = useState<Car | null>(null);
