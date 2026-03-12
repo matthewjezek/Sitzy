@@ -312,7 +312,7 @@ export default function Navigation() {
               <hr className="border-light" />
               <li><Link to="/rides" className="inline-flex items-center gap-3 py-2 px-3 rounded-md w-full" onClick={() => setMenuOpen(false)}><SeatIcon />Moje jízdy</Link></li>
               <hr className="border-light" />
-              <li><Link to="/cars" className="inline-flex items-center gap-3 py-2 px-3 rounded-md w-full" onClick={() => setMenuOpen(false)}><CarIcon />Moje auto</Link></li>
+              <li><Link to="/cars" className="inline-flex items-center gap-3 py-2 px-3 rounded-md w-full" onClick={() => setMenuOpen(false)}><CarIcon />Moje auta</Link></li>
               <hr className="border-light" />
               <li><Link to="/settings" className="inline-flex items-center gap-3 py-2 px-3 rounded-md w-full" onClick={() => setMenuOpen(false)}><SettingsIcon />Nastavení</Link></li>
               <hr className="border-light" />
