@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { isAxiosError } from "axios";
 import instance from "../api/axios";
-import type { Invitation } from "./useInvites";
+import type { Invitation } from "../types/models";
 
 type NotificationType = "info" | "warning" | "success" | "error" | "invite";
 
