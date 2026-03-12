@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react";
 import { isAxiosError } from "axios";
 import instance from "../api/axios";
-// import type { SeatData } from "../components/SeatRenderer"; // Only use in UI, not here
 import type { Car, CarFormData } from '../types/models';
 
 export function useCar() {
