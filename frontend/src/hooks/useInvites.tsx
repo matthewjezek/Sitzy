@@ -2,13 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { isAxiosError } from "axios";
 import instance from "../api/axios";
 
-export interface Invitation {
-  invited_email: string;
-  status: "Pending" | "Accepted" | "Rejected";
-  created_at: string;
-  token: string;
-  ride_id: string;
-}
+import type { Invitation } from '../types/models';
 
 export interface UseInvitesReturn {
   invites: Invitation[];
