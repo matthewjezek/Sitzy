@@ -1,36 +1,7 @@
 import { useState, useCallback } from 'react'
 import { isAxiosError } from 'axios'
 import instance from '../api/axios'
-import type { Car } from './useCar'
-
-export interface PassengerOut {
-  user_id: string
-  seat_position: number
-  full_name: string | null
-  avatar_url: string | null
-}
-
-export interface RideOut {
-  id: string
-  car_id: string
-  car_driver_id: string
-  departure_time: string
-  destination: string
-  created_at: string
-  passengers: PassengerOut[]
-  car: Car | null
-}
-
-export interface RideCreate {
-  car_id: string
-  departure_time: string
-  destination: string
-}
-
-export interface RideUpdate {
-  departure_time: string
-  destination: string
-}
+import type { RideOut, RideCreate, RideUpdate } from '../types/models';
 
 export function useRide() {
   const [ride, setRide] = useState<RideOut | null>(null)
@@ -47,18 +18,14 @@ export function useRide() {
     )
   }
 
-  // GET /rides/ – seznam jízd (filtr nadcházejících na FE)
+  // GET /rides/ – seznam všech jízd
   const fetchMyRides = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
       const res = await instance.get<RideOut[]>('/rides/')
-      const now = new Date()
-      const upcoming = res.data.filter(
-        r => new Date(r.departure_time) > now
-      )
-      setRides(upcoming)
-      return upcoming
+      setRides(res.data) // TADY JE ZMĚNA: Ukládáme všechno, nic nemažeme
+      return res.data
     } catch (err) {
       handleError(err, 'Nepodařilo se načíst jízdy.')
       return []
