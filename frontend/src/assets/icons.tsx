@@ -67,3 +67,48 @@ export const MinivanSvg = () => (
     </g>
   </svg>
 )
+
+export const ArrowLeftIcon = () => (
+  <svg stroke="currentColor" strokeWidth={3} strokeLinecap="round" fill="none" viewBox="0 0 24 24" height={22} width={22}>
+    <path d="m12 19-7-7 7-7" /><path d="M19 12H5" />
+  </svg>
+)
+
+export const RocketIcon = () => (
+  <svg className="nav-icon-rocket" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" fill="none" viewBox="0 0 24 24" height={22} width={22}>
+    <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+    <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+    <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" /><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+  </svg>
+)
+
+export const SeatIcon = () => (
+  <svg className="nav-icon-seat" stroke="currentColor" strokeWidth={1.5} fill="none" viewBox="0 0 24 24" height={22} width={22}>
+    <rect x="7" y="6" width="10" height="8" rx="3" />
+    <rect x="5" y="14" width="14" height="7" rx="2" />
+    <path d="M9 6v-1a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v1" />
+  </svg>
+)
+
+export const CarIcon = () => (
+  <svg className="nav-icon-car" stroke="currentColor" strokeWidth={1.5} fill="none" viewBox="0 0 24 24" height={22} width={22}>
+    <rect x="2" y="10" width="20" height="9" rx="2" />
+    <path d="m20.772 10.156-1.368-4.105A2.995 2.995 0 0 0 16.559 4H7.441a2.995 2.995 0 0 0-2.845 2.051l-1.368 4.105A2.003 2.003 0 0 0 2 12" />
+    <circle cx="6" cy="14.5" r="1.5" /><circle cx="18" cy="14.5" r="1.5" />
+    <rect x="3" y="19" width="3" height="3" rx="1" /><rect x="18" y="19" width="3" height="3" rx="1" />
+  </svg>
+)
+
+export const SettingsIcon = () => (
+  <svg className="nav-icon-settings" stroke="currentColor" strokeWidth="1.5" fill="none" viewBox="0 0 20 20" width={22} height={22}>
+    <circle r="2.5" cy={10} cx={10} />
+    <path fillRule="evenodd" d="m8.39079 2.80235c.53842-1.51424 2.67991-1.51424 3.21831-.00001.3392.95358 1.4284 1.40477 2.3425.97027 1.4514-.68995 2.9657.82427 2.2758 2.27575-.4345.91407.0166 2.00334.9702 2.34248 1.5143.53842 1.5143 2.67996 0 3.21836-.9536.3391-1.4047 1.4284-.9702 2.3425.6899 1.4514-.8244 2.9656-2.2758 2.2757-.9141-.4345-2.0033.0167-2.3425.9703-.5384 1.5142-2.67989 1.5142-3.21831 0-.33914-.9536-1.4284-1.4048-2.34247-.9703-1.45148.6899-2.96571-.8243-2.27575-2.2757.43449-.9141-.01669-2.0034-.97028-2.3425-1.51422-.5384-1.51422-2.67994.00001-3.21836.95358-.33914 1.40476-1.42841.97027-2.34248-.68996-1.45148.82427-2.9657 2.27575-2.27575.91407.4345 2.00333-.01669 2.34247-.97026z" clipRule="evenodd" />
+  </svg>
+)
+
+export const LogoutIcon = () => (
+  <svg className="nav-icon-logout" stroke="currentColor" strokeWidth={1.5} fill="none" viewBox="0 0 24 24" height={22} width={22}>
+    <path d="M9 21H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3" />
+    <path d="M16 17l5-5-5-5" /><path d="M21 12H9" />
+  </svg>
+)
