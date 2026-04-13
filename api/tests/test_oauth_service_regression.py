@@ -92,7 +92,10 @@ def test_find_or_create_user_creates_new_user_when_missing():
         def flush(self):
             if "user" in created and getattr(created["user"], "id", None) is None:
                 created["user"].id = uuid4()
-            if "social_account" in created and getattr(created["social_account"], "id", None) is None:
+            if (
+                "social_account" in created
+                and getattr(created["social_account"], "id", None) is None
+            ):
                 created["social_account"].id = uuid4()
 
     db = FakeDB()

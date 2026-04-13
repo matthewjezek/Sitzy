@@ -37,7 +37,9 @@ def test_x_init_returns_authorization_url_and_state(monkeypatch: pytest.MonkeyPa
     client = create_client(router=auth.router, prefix="/auth", fake_db=fake_db)
 
     monkeypatch.setattr(auth.state_manager, "generate_state", lambda: "state-x")
-    monkeypatch.setattr(auth.x_client, "generate_pkce", lambda: ("verifier", "challenge"))
+    monkeypatch.setattr(
+        auth.x_client, "generate_pkce", lambda: ("verifier", "challenge")
+    )
     monkeypatch.setattr(auth.state_manager, "store_state", lambda *args, **kwargs: None)
     monkeypatch.setattr(
         auth.x_client,
@@ -60,11 +62,21 @@ def test_oauth_callback_success_returns_access_and_cookie(
     fake_db = FakeDB()
     client = create_client(router=auth.router, prefix="/auth", fake_db=fake_db)
 
-    fake_user = SimpleNamespace(id=uuid4(), social_accounts=[SimpleNamespace(id=uuid4())])
+    fake_user = SimpleNamespace(
+        id=uuid4(), social_accounts=[SimpleNamespace(id=uuid4())]
+    )
     fake_session = SimpleNamespace(id=uuid4())
 
-    monkeypatch.setattr(auth.state_manager, "validate_and_consume_state", lambda state: ("facebook", None))
-    monkeypatch.setattr(auth.fb_client, "exchange_code", lambda code: {"access_token": "provider-token", "expires_in": 3600})
+    monkeypatch.setattr(
+        auth.state_manager,
+        "validate_and_consume_state",
+        lambda state: ("facebook", None),
+    )
+    monkeypatch.setattr(
+        auth.fb_client,
+        "exchange_code",
+        lambda code: {"access_token": "provider-token", "expires_in": 3600},
+    )
 
     async def _fake_fb_user_info(access_token: str):
         return {
@@ -78,7 +90,9 @@ def test_oauth_callback_success_returns_access_and_cookie(
     monkeypatch.setattr(auth, "find_or_create_user", lambda **kwargs: fake_user)
     monkeypatch.setattr(auth, "create_or_update_session", lambda **kwargs: fake_session)
     monkeypatch.setattr(auth, "create_access_token", lambda payload: "access-xyz")
-    monkeypatch.setattr(auth, "create_refresh_token", lambda user_id, session_id: "refresh-xyz")
+    monkeypatch.setattr(
+        auth, "create_refresh_token", lambda user_id, session_id: "refresh-xyz"
+    )
 
     response = client.get("/auth/oauth/callback", params={"code": "abc", "state": "st"})
 
@@ -92,9 +106,13 @@ def test_oauth_callback_rejects_invalid_state(monkeypatch: pytest.MonkeyPatch):
     fake_db = FakeDB()
     client = create_client(router=auth.router, prefix="/auth", fake_db=fake_db)
 
-    monkeypatch.setattr(auth.state_manager, "validate_and_consume_state", lambda state: None)
+    monkeypatch.setattr(
+        auth.state_manager, "validate_and_consume_state", lambda state: None
+    )
 
-    response = client.get("/auth/oauth/callback", params={"code": "abc", "state": "invalid"})
+    response = client.get(
+        "/auth/oauth/callback", params={"code": "abc", "state": "invalid"}
+    )
 
     assert response.status_code == 400
     assert response.json()["detail"] == "Invalid or expired state token."
@@ -104,7 +122,9 @@ def test_oauth_callback_x_requires_code_verifier(monkeypatch: pytest.MonkeyPatch
     fake_db = FakeDB()
     client = create_client(router=auth.router, prefix="/auth", fake_db=fake_db)
 
-    monkeypatch.setattr(auth.state_manager, "validate_and_consume_state", lambda state: ("x", None))
+    monkeypatch.setattr(
+        auth.state_manager, "validate_and_consume_state", lambda state: ("x", None)
+    )
 
     response = client.get("/auth/oauth/callback", params={"code": "abc", "state": "st"})
 
@@ -122,10 +142,16 @@ def test_refresh_returns_new_access_token_and_renews_cookie(
         revoked_at=None,
         expires_at=datetime.now(timezone.utc) + timedelta(hours=1),
     )
-    fake_db = FakeDB(query_results={SocialSession: FakeQuery(first_result=valid_session)})
+    fake_db = FakeDB(
+        query_results={SocialSession: FakeQuery(first_result=valid_session)}
+    )
     client = create_client(router=auth.router, prefix="/auth", fake_db=fake_db)
 
-    monkeypatch.setattr(auth, "decode_refresh_token", lambda token: {"sub": str(user_id), "session_id": str(session_id)})
+    monkeypatch.setattr(
+        auth,
+        "decode_refresh_token",
+        lambda token: {"sub": str(user_id), "session_id": str(session_id)},
+    )
     monkeypatch.setattr(auth, "create_access_token", lambda payload: "new-access")
     monkeypatch.setattr(auth, "create_refresh_token", lambda uid, sid: "new-refresh")
     client.cookies.set("refresh_token", "old-refresh")
@@ -165,7 +191,9 @@ def test_refresh_rejects_invalid_token(monkeypatch: pytest.MonkeyPatch):
 
 def test_revoke_marks_session_revoked(fake_user_context):
     target_session = SimpleNamespace(id=fake_user_context.session_id, revoked_at=None)
-    fake_db = FakeDB(query_results={SocialSession: FakeQuery(first_result=target_session)})
+    fake_db = FakeDB(
+        query_results={SocialSession: FakeQuery(first_result=target_session)}
+    )
     client = create_client(
         router=auth.router,
         prefix="/auth",

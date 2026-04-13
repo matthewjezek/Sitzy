@@ -169,7 +169,9 @@ def test_create_ride_rejects_non_owner(fake_user_context):
         "/rides/",
         json={
             "car_id": str(car.id),
-            "departure_time": (datetime.now(timezone.utc) + timedelta(hours=1)).isoformat(),
+            "departure_time": (
+                datetime.now(timezone.utc) + timedelta(hours=1)
+            ).isoformat(),
             "destination": "Prague",
         },
     )
@@ -178,10 +180,14 @@ def test_create_ride_rejects_non_owner(fake_user_context):
     assert response.json()["detail"] == "Only the car owner can create a ride."
 
 
-def test_book_seat_rejects_already_booked(fake_user_context, monkeypatch: pytest.MonkeyPatch):
+def test_book_seat_rejects_already_booked(
+    fake_user_context, monkeypatch: pytest.MonkeyPatch
+):
     car = _car(fake_user_context.user.id)
     ride = _ride(car, fake_user_context.user.id)
-    existing = SimpleNamespace(user_id=fake_user_context.user.id, ride_id=ride.id, seat_position=2)
+    existing = SimpleNamespace(
+        user_id=fake_user_context.user.id, ride_id=ride.id, seat_position=2
+    )
 
     monkeypatch.setattr(rides, "_get_ride_or_404", lambda ride_id, db: ride)
     fake_db = FakeDB(query_results={Passenger: FakeQuery(first_result=existing)})
@@ -198,7 +204,9 @@ def test_book_seat_rejects_already_booked(fake_user_context, monkeypatch: pytest
     assert response.json()["detail"] == "Already booked."
 
 
-def test_invite_passenger_rejects_self_invite(fake_user_context, monkeypatch: pytest.MonkeyPatch):
+def test_invite_passenger_rejects_self_invite(
+    fake_user_context, monkeypatch: pytest.MonkeyPatch
+):
     car = _car(fake_user_context.user.id)
     ride = _ride(car, fake_user_context.user.id)
     monkeypatch.setattr(rides, "_get_ride_or_404", lambda ride_id, db: ride)
@@ -219,7 +227,9 @@ def test_invite_passenger_rejects_self_invite(fake_user_context, monkeypatch: py
     assert response.json()["detail"] == "You cannot invite yourself."
 
 
-def test_invite_passenger_rejects_duplicate_pending(fake_user_context, monkeypatch: pytest.MonkeyPatch):
+def test_invite_passenger_rejects_duplicate_pending(
+    fake_user_context, monkeypatch: pytest.MonkeyPatch
+):
     car = _car(fake_user_context.user.id)
     ride = _ride(car, fake_user_context.user.id)
     invitation = SimpleNamespace(status=InvitationStatus.PENDING)
@@ -242,7 +252,9 @@ def test_invite_passenger_rejects_duplicate_pending(fake_user_context, monkeypat
     assert response.json()["detail"] == "Invitation already sent."
 
 
-def test_transfer_driver_requires_passenger(fake_user_context, monkeypatch: pytest.MonkeyPatch):
+def test_transfer_driver_requires_passenger(
+    fake_user_context, monkeypatch: pytest.MonkeyPatch
+):
     car = _car(fake_user_context.user.id)
     ride = _ride(car, fake_user_context.user.id)
     monkeypatch.setattr(rides, "_get_ride_or_404", lambda ride_id, db: ride)
