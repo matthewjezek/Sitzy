@@ -37,3 +37,6 @@ jobs:
 
       - name: Run mypy (typing)
         run: mypy api/
+
+      - name: Run pytest (regression suite)
+        run: pytest api/tests -q
