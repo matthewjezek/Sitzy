@@ -43,3 +43,13 @@ jobs:
         run: |
           cd frontend
           npm run a11y:ci
+
+      - name: Install Playwright browsers
+        run: |
+          cd frontend
+          npx playwright install --with-deps chromium
+
+      - name: Run Playwright E2E tests
+        run: |
+          cd frontend
+          npm run test:e2e
