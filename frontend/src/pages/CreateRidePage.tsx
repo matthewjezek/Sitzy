@@ -10,12 +10,14 @@ import { localInputToUTC, nowForDatetimeInput } from '../utils/datetime'
 
 function CreateRideSkeleton() {
   return (
-    <div className="animate-pulse max-w-lg mx-auto mt-10 p-6 flex flex-col gap-6">
-      <div className="h-8 w-48 rounded skeleton-dark mx-auto" />
-      <div className="h-10 rounded-lg skeleton-dark" />
-      <div className="h-10 rounded-lg skeleton-dark" />
-      <div className="h-10 rounded-lg skeleton-dark" />
-      <div className="h-10 rounded-lg skeleton-dark" />
+    <div className="page-container flex-col items-center pt-24 pb-10">
+      <div className="animate-pulse page-content max-w-lg mx-auto w-full p-6 flex flex-col gap-6">
+        <div className="h-8 w-48 rounded skeleton-dark mx-auto" />
+        <div className="h-10 rounded-lg skeleton-dark" />
+        <div className="h-10 rounded-lg skeleton-dark" />
+        <div className="h-10 rounded-lg skeleton-dark" />
+        <div className="h-10 rounded-lg skeleton-dark" />
+      </div>
     </div>
   )
 }
@@ -67,8 +69,9 @@ export default function CreateRidePage() {
   if (carsLoading) return <CreateRideSkeleton />
 
   return (
-    <div className="max-w-lg mx-auto mt-10 p-6 flex flex-col gap-6">
-      <h1 className="text-2xl font-bold text-center">Nová jízda</h1>
+    <div className="page-container flex-col items-center pt-24 pb-10">
+      <div className="page-content max-w-lg mx-auto w-full p-6 flex flex-col gap-6">
+        <h1 className="text-2xl font-bold text-center">Nová jízda</h1>
 
       
       {!carsLoading && cars.length === 0 && (
@@ -83,7 +86,7 @@ export default function CreateRidePage() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
 
         
         <div className="flex flex-col gap-1">
@@ -138,15 +141,16 @@ export default function CreateRidePage() {
         </div>
 
         
-        <button
-          type="submit"
-          disabled={submitting || cars.length === 0}
-          className="w-full py-2 px-4 rounded-xl button-primary flex items-center justify-center"
-        >
-          {submitting ? 'Vytvářím...' : 'Vytvořit jízdu'}
-        </button>
+          <button
+            type="submit"
+            disabled={submitting || cars.length === 0}
+            className="w-full py-2 px-4 rounded-xl button-primary flex items-center justify-center"
+          >
+            {submitting ? 'Vytvářím...' : 'Vytvořit jízdu'}
+          </button>
 
-      </form>
+        </form>
+      </div>
     </div>
   )
 }
