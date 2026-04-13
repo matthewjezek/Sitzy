@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { FiBell, FiX } from 'react-icons/fi';
-import { useNavigate, Link } from 'react-router';
+import { useNavigate, Link, useLocation } from 'react-router';
 import { useInvites } from '../hooks/useInvites';
 import { useRide } from '../hooks/useRide';
 import { toast } from 'react-toastify';
@@ -41,7 +41,7 @@ function BellDropdown({ open, onClose, invites, loading, onRespond, responding }
     >
       <div className="flex items-center justify-between">
         <span className="font-semibold text-sm">Pozvánky</span>
-        <button onClick={onClose} className="close-button" aria-label="Close notifications area">
+        <button onClick={onClose} className="close-button" aria-label="Zavřít notifikace">
           <FiX size={18} />
         </button>
       </div>
@@ -95,11 +95,19 @@ function UnreadBadge({ count }: { count: number }) {
 
 export default function Navigation() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
   const [bellOpen, setBellOpen] = useState(false)
   const [responding, setResponding] = useState<string | null>(null)
   const { invites, loading: invitesLoading, respondInvite } = useInvites()  // single instance
   const { fetchRide } = useRide()
+
+  const isActive = (path: string) => {
+    if (path === '/') {
+      return location.pathname === '/'
+    }
+    return location.pathname === path || location.pathname.startsWith(`${path}/`)
+  }
 
   const unreadCount = invites.filter(i => i.status === 'Pending').length
 
@@ -117,9 +125,13 @@ export default function Navigation() {
         toast.success(
           <span>
             Přijato! Sedadlo přiřazeno.{' '}
-            <a href={`/rides/${rideId}`} className="underline font-semibold">
+            <button
+              type="button"
+              onClick={() => navigate(`/rides/${rideId}`)}
+              className="underline font-semibold"
+            >
               Zobrazit jízdu →
-            </a>
+            </button>
           </span>
         )
       } else {
@@ -139,13 +151,13 @@ export default function Navigation() {
             <ArrowLeftIcon />
             <span className="whitespace-nowrap max-w-0 overflow-hidden transition-all duration-300 ease-in group-hover:max-w-[100px]">Zpět</span>
           </button>
-          <button className="nav-button glass nav-hover-rocket" onClick={() => navigate('/')}>
+          <button className={`nav-button glass nav-hover-rocket ${isActive('/') ? 'glass-active' : ''}`} onClick={() => navigate('/')}>
             <RocketIcon />Start
           </button>
-          <button className="nav-button glass nav-hover-seat" onClick={() => navigate('/rides')}>
+          <button className={`nav-button glass nav-hover-seat ${isActive('/rides') ? 'glass-active' : ''}`} onClick={() => navigate('/rides')}>
             <SeatIcon />Jízdy
           </button>
-          <button className="nav-button glass nav-hover-car" onClick={() => navigate('/cars')}>
+          <button className={`nav-button glass nav-hover-car ${isActive('/cars') ? 'glass-active' : ''}`} onClick={() => navigate('/cars')}>
             <CarIcon /><span>Moje auta</span>
           </button>
         </div>
@@ -194,7 +206,7 @@ export default function Navigation() {
         <div className="w-full max-w-screen-xl grid grid-cols-[1fr_auto_1fr] items-center p-4">
           
           <div className="flex justify-start">
-            {window.location.pathname !== '/' ? (
+            {location.pathname !== '/' ? (
               <button
                 className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-muted rounded-lg hover-list-bg"
                 onClick={() => navigate(-1)}
