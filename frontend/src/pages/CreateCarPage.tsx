@@ -9,15 +9,17 @@ import { SedanSvg, CoupeSvg, MinivanSvg } from '../assets/icons'
 
 function CreateCarSkeleton() {
   return (
-    <div className="animate-pulse max-w-lg mx-auto mt-10 p-6 flex flex-col gap-6">
-      <div className="h-8 w-48 rounded skeleton-dark mx-auto" />
-      <div className="flex gap-4 justify-center">
-        {[1, 2, 3].map(i => (
-          <div key={i} className="h-24 w-24 rounded-xl skeleton-dark" />
-        ))}
+    <div className="page-container flex-col items-center pt-24 pb-10">
+      <div className="animate-pulse page-content max-w-lg mx-auto w-full p-6 flex flex-col gap-6">
+        <div className="h-8 w-48 rounded skeleton-dark mx-auto" />
+        <div className="flex gap-4 justify-center">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="h-24 w-24 rounded-xl skeleton-dark" />
+          ))}
+        </div>
+        <div className="h-10 rounded-lg skeleton-dark" />
+        <div className="h-10 rounded-lg skeleton-dark" />
       </div>
-      <div className="h-10 rounded-lg skeleton-dark" />
-      <div className="h-10 rounded-lg skeleton-dark" />
     </div>
   )
 }
@@ -81,12 +83,13 @@ export default function CreateCarPage() {
   if (initialLoading) return <CreateCarSkeleton />
 
   return (
-    <div className="max-w-lg mx-auto mt-10 p-6 flex flex-col gap-6">
-      <h1 className="text-2xl font-bold text-center">
-        {isEdit ? 'Upravit auto' : 'Přidat auto'}
-      </h1>
+    <div className="page-container flex-col items-center pt-24 pb-10">
+      <div className="page-content max-w-lg mx-auto w-full p-6 flex flex-col gap-6">
+        <h1 className="text-2xl font-bold text-center">
+          {isEdit ? 'Upravit auto' : 'Přidat auto'}
+        </h1>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 justify-items-center">
           {LAYOUTS.map(l => (
@@ -126,15 +129,16 @@ export default function CreateCarPage() {
           {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
         </div>
 
-        <button
-          type="submit"
-          disabled={submitting || loading}
-          className="w-full button-primary flex items-center justify-center"
-        >
-          {submitting ? 'Ukládám...' : isEdit ? 'Uložit změny' : 'Vytvořit auto'}
-        </button>
+          <button
+            type="submit"
+            disabled={submitting || loading}
+            className="w-full button-primary flex items-center justify-center"
+          >
+            {submitting ? 'Ukládám...' : isEdit ? 'Uložit změny' : 'Vytvořit auto'}
+          </button>
 
-      </form>
+        </form>
+      </div>
     </div>
   )
 }
