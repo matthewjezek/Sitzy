@@ -203,7 +203,7 @@ class CarFullOut(CarOut):
             layout=car.layout,
             seats=[SeatOut.from_orm_with_labels(seat) for seat in car.seats],
             drivers=[CarDriverOut.model_validate(d) for d in car.drivers],
-            rides=[RideOut.model_validate(r) for r in car.rides],
+            rides=[RideOut.from_ride(r) for r in car.rides],
         )
 
 

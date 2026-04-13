@@ -47,6 +47,7 @@ def read_car_by_id(
             selectinload(Car.seats),
             selectinload(Car.drivers),
             selectinload(Car.rides),
+            selectinload(Car.rides).selectinload(Ride.car_driver),
         )
         .filter(Car.id == car_id)
         .first()
@@ -173,4 +174,4 @@ def list_car_rides(
         "Car rides listed",
         extra={"user_id": str(ctx.user.id), "car_id": str(car_id), "count": len(rides)},
     )
-    return [RideOut.model_validate(ride) for ride in rides]
+    return [RideOut.from_ride(ride) for ride in rides]
