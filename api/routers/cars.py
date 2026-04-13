@@ -56,7 +56,9 @@ def read_car_by_id(
             "Car access denied - not owner",
             extra={"user_id": str(ctx.user.id), "car_id": str(car_id)},
         )
-        raise HTTPException(status_code=404, detail="Car not found or does not belong to you.")
+        raise HTTPException(
+            status_code=404, detail="Car not found or does not belong to you."
+        )
 
     db.refresh(car)
     return CarFullOut.from_orm_with_labels(car)
