@@ -212,12 +212,26 @@ def find_or_create_user(
     db: Session,
 ) -> models.User:
     """Find existing user by social account or email, or create new one."""
+
+    def apply_safe_profile_updates(user: models.User) -> None:
+        """Update user profile fields only when incoming values are better."""
+        if full_name and full_name != user.full_name:
+            user.full_name = full_name
+
+        if avatar_url and avatar_url != user.avatar_url:
+            user.avatar_url = avatar_url
+
+        if email and not email.endswith(".invalid"):
+            if not user.email or user.email.endswith(".invalid"):
+                user.email = email
+
     social_account = (
         db.query(models.SocialAccount)
         .filter_by(provider=provider, social_id=social_id)
         .first()
     )
     if social_account:
+        apply_safe_profile_updates(social_account.user)
         logger.debug(
             "Existing user found by social account",
             extra={"provider": provider, "user_id": str(social_account.user_id)},
@@ -238,6 +252,7 @@ def find_or_create_user(
             extra={"provider": provider, "email": email, "user_id": str(user.id)},
         )
     else:
+        apply_safe_profile_updates(user)
         logger.info(
             "User found by email",
             extra={"provider": provider, "email": email, "user_id": str(user.id)},
