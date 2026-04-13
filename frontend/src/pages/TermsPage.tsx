@@ -6,8 +6,8 @@ export default function TermsPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 py-12 px-4">
-      <div className="max-w-2xl mx-auto">
+    <div className="page-container flex-col items-center py-12 px-4">
+      <div className="page-content max-w-2xl w-full">
         <h1 className="text-3xl font-bold mb-8 text-gray-900 dark:text-white">
           Podmínky použití
         </h1>
@@ -16,11 +16,11 @@ export default function TermsPage() {
           Poslední aktualizace: {new Date().toLocaleDateString('cs-CZ')}
         </div>
 
-        <div className="bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 p-4 mb-8">
-          <h2 className="text-red-800 dark:text-red-200 font-bold text-lg mb-2">
+        <div className="bg-yellow-50 dark:bg-yellow-900/30 border-l-4 border-yellow-500 p-4 mb-8">
+          <h2 className="text-yellow-800 dark:text-yellow-200 font-bold text-lg mb-2">
             Upozornění: Akademický projekt (Bakalářská práce)
           </h2>
-          <p className="text-red-700 dark:text-red-300 text-sm">
+          <p className="text-yellow-700 dark:text-yellow-300 text-sm">
             Tato aplikace ("Sitzy") není komerčním produktem a není určena pro veřejnost. 
             Jedná se výhradně o studentský projekt vytvořený pro účely obhajoby bakalářské práce. 
             Aplikace neposkytuje reálné přepravní služby. Veškerá data jsou shromažďována 
