@@ -20,8 +20,8 @@ export default function DeletionStatusPage() {
   }, []);
 
   return (
-    <div className="page-container">
-      <div className="max-w-lg mx-auto mt-20 p-6">
+    <div className="page-container flex-col items-center py-12">
+      <div className="page-content max-w-lg mx-auto w-full p-6">
         <div className="card p-8 text-center">
           {status === 'confirmed' ? (
             <>
