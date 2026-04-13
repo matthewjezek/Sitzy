@@ -6,10 +6,12 @@ import { SedanSvg, CoupeSvg, MinivanSvg } from '../assets/icons'
 
 function CarsListSkeleton() {
   return (
-    <div className="animate-pulse flex flex-col gap-4 max-w-lg mx-auto mt-10 p-6">
-      {[1, 2, 3].map(i => (
-        <div key={i} className="h-20 rounded-xl skeleton-dark" />
-      ))}
+    <div className="page-container flex-col items-center pt-24 pb-10">
+      <div className="animate-pulse page-content max-w-lg mx-auto w-full p-6 flex flex-col gap-4">
+        {[1, 2, 3].map(i => (
+          <div key={i} className="h-20 rounded-xl skeleton-dark" />
+        ))}
+      </div>
     </div>
   )
 }
@@ -35,7 +37,8 @@ export default function CarsPage() {
   if (loading) return <CarsListSkeleton />
 
   return (
-    <div className="max-w-lg mx-auto mt-10 p-6 flex flex-col gap-6">
+    <div className="page-container flex-col items-center pt-24 pb-10">
+      <div className="page-content max-w-lg mx-auto w-full p-6 flex flex-col gap-6">
 
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Moje auta</h1>
@@ -90,6 +93,7 @@ export default function CarsPage() {
         </ul>
       )}
 
+      </div>
     </div>
   )
 }
