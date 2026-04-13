@@ -1,4 +1,4 @@
-name: Python Backend CI
+name: Backend Python CI
 
 on:
   push:
