@@ -13,17 +13,19 @@ import { useAuth } from '../hooks/useAuth';
 
 function SettingsSkeleton() {
   return (
-    <div className="animate-pulse flex flex-col gap-6 max-w-lg mx-auto mt-10 p-6">
-      <div className="flex items-center gap-4">
-        <div className="w-16 h-16 rounded-full skeleton-dark" />
-        <div className="flex flex-col gap-2">
-          <div className="h-4 w-40 rounded skeleton-dark" />
-          <div className="h-3 w-56 rounded skeleton-dark" />
+    <div className="page-container flex-col items-center pt-24 pb-10">
+      <div className="animate-pulse page-content max-w-lg mx-auto w-full p-6 flex flex-col gap-6">
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 rounded-full skeleton-dark" />
+          <div className="flex flex-col gap-2">
+            <div className="h-4 w-40 rounded skeleton-dark" />
+            <div className="h-3 w-56 rounded skeleton-dark" />
+          </div>
         </div>
+        <div className="h-10 rounded-lg skeleton-dark" />
+        <div className="h-10 rounded-lg skeleton-dark" />
+        <div className="h-10 rounded-lg skeleton-dark" />
       </div>
-      <div className="h-10 rounded-lg skeleton-dark" />
-      <div className="h-10 rounded-lg skeleton-dark" />
-      <div className="h-10 rounded-lg skeleton-dark" />
     </div>
   )
 }
@@ -73,7 +75,8 @@ export default function SettingsPage() {
   if (loading) return <SettingsSkeleton />
 
   return (
-    <div className="max-w-lg mx-auto mt-10 p-6 flex flex-col gap-6">
+    <div className="page-container flex-col items-center pt-24 pb-10">
+      <div className="page-content max-w-lg mx-auto w-full p-6 flex flex-col gap-6">
 
       
       <div className="card p-6 flex items-center gap-4">
@@ -206,6 +209,7 @@ export default function SettingsPage() {
         </ul>
       </DeleteDialog>
 
+      </div>
     </div>
   )
 }
