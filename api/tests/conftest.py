@@ -14,11 +14,6 @@ from slowapi.middleware import SlowAPIMiddleware
 from starlette.requests import Request as StarletteRequest
 from starlette.responses import Response as StarletteResponse
 
-from api.database import get_db
-from api.deps import UserContext, get_current_user
-from api.models import User
-from api.utils.limiter import limiter
-
 # Minimal env required by api.config imports in tests.
 os.environ.setdefault("ENVIRONMENT", "development")
 os.environ.setdefault("FACEBOOK_CLIENT_ID", "fb-client")
@@ -35,6 +30,11 @@ os.environ.setdefault("ACCESS_TOKEN_EXPIRE_MINUTES", "15")
 os.environ.setdefault("REFRESH_TOKEN_EXPIRE_DAYS", "7")
 os.environ.setdefault("FRONTEND_ORIGIN", "http://localhost:5173")
 os.environ.setdefault("DATABASE_URL", "sqlite+pysqlite:///:memory:")
+
+from api.database import get_db  # noqa: E402
+from api.deps import UserContext, get_current_user  # noqa: E402
+from api.models import User  # noqa: E402
+from api.utils.limiter import limiter  # noqa: E402
 
 
 def _rate_limit_exception_handler(
