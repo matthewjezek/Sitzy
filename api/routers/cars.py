@@ -51,14 +51,12 @@ def read_car_by_id(
         .filter(Car.id == car_id)
         .first()
     )
-    if not car:
-        raise HTTPException(status_code=404, detail="Car not found.")
-    if car.owner_id != ctx.user.id:
+    if not car or car.owner_id != ctx.user.id:
         logger.warning(
             "Car access denied - not owner",
             extra={"user_id": str(ctx.user.id), "car_id": str(car_id)},
         )
-        raise HTTPException(status_code=403, detail="This car does not belong to you.")
+        raise HTTPException(status_code=404, detail="Car not found or does not belong to you.")
 
     db.refresh(car)
     return CarFullOut.from_orm_with_labels(car)
