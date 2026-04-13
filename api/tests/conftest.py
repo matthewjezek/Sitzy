@@ -11,6 +11,13 @@ from fastapi.testclient import TestClient
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
+from starlette.requests import Request as StarletteRequest
+from starlette.responses import Response as StarletteResponse
+
+from api.database import get_db
+from api.deps import UserContext, get_current_user
+from api.models import User
+from api.utils.limiter import limiter
 
 # Minimal env required by api.config imports in tests.
 os.environ.setdefault("ENVIRONMENT", "development")
@@ -29,13 +36,19 @@ os.environ.setdefault("REFRESH_TOKEN_EXPIRE_DAYS", "7")
 os.environ.setdefault("FRONTEND_ORIGIN", "http://localhost:5173")
 os.environ.setdefault("DATABASE_URL", "sqlite+pysqlite:///:memory:")
 
-from api.database import get_db
-from api.deps import UserContext, get_current_user
-from api.routers import auth
+
+def _rate_limit_exception_handler(
+    request: StarletteRequest, exc: Exception
+) -> StarletteResponse:
+    if isinstance(exc, RateLimitExceeded):
+        return _rate_limit_exceeded_handler(request, exc)
+    raise exc
 
 
 class FakeQuery:
-    def __init__(self, *, first_result: Any = None, all_result: list[Any] | None = None):
+    def __init__(
+        self, *, first_result: Any = None, all_result: list[Any] | None = None
+    ):
         self._first_result = first_result
         self._all_result = all_result or []
 
@@ -113,9 +126,9 @@ def create_client(
     current_user: UserContext | None = None,
 ) -> TestClient:
     app = FastAPI()
-    app.state.limiter = auth.limiter
+    app.state.limiter = limiter
     app.add_middleware(SlowAPIMiddleware)
-    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exception_handler)
     app.include_router(router, prefix=prefix)
 
     def _get_db_override() -> Generator[FakeDB, None, None]:
@@ -131,19 +144,20 @@ def create_client(
 
 @pytest.fixture
 def fake_user_context() -> UserContext:
-    user = SimpleNamespace(
+    user = User(
         id=uuid4(),
         email="owner@example.com",
         full_name="Owner User",
         avatar_url=None,
         created_at=datetime.now(timezone.utc),
         updated_at=datetime.now(timezone.utc),
-        social_accounts=[],
     )
-    return UserContext(user=user, session_id=UUID("11111111-1111-1111-1111-111111111111"))
+    return UserContext(
+        user=user, session_id=UUID("11111111-1111-1111-1111-111111111111")
+    )
 
 
 @pytest.fixture(autouse=True)
 def reset_rate_limiter() -> None:
     # SlowAPI counters are global in process and must be reset for deterministic tests.
-    auth.limiter.reset()
+    limiter.reset()
