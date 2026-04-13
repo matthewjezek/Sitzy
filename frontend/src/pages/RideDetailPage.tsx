@@ -11,10 +11,12 @@ import { inviteSchema, type InviteFormValues } from '../utils/validation'
 
 function RideDetailSkeleton() {
   return (
-    <div className="animate-pulse max-w-lg mx-auto mt-10 p-6 flex flex-col gap-6">
-      <div className="h-32 rounded-xl skeleton-dark" />
-      <div className="h-48 rounded-xl skeleton-dark" />
-      <div className="h-10 rounded-xl skeleton-dark" />
+    <div className="page-container flex-col items-center pt-24 pb-10">
+      <div className="animate-pulse page-content max-w-lg mx-auto w-full p-6 flex flex-col gap-6">
+        <div className="h-32 rounded-xl skeleton-dark" />
+        <div className="h-48 rounded-xl skeleton-dark" />
+        <div className="h-10 rounded-xl skeleton-dark" />
+      </div>
     </div>
   )
 }
@@ -200,6 +202,10 @@ export default function RideDetailPage() {
     if (id) fetchRide(id)
   }, [id, fetchRide])
 
+  useEffect(() => {
+    document.title = ride ? `Sitzy - ${ride.destination}` : 'Sitzy - Jízda'
+  }, [ride])
+
   const handleDelete = async () => {
     if (!ride) return
     if (!window.confirm('Opravdu chcete smazat tuto jízdu?')) return
@@ -210,61 +216,65 @@ export default function RideDetailPage() {
     }
   }
   
-  document.title = ride ? `Sitzy - ${ride.destination}` : 'Sitzy - Jízda'
-
   if (loading) return <RideDetailSkeleton />
 
   if (error) return (
-    <div className="text-red-500 text-center mt-10">{error}</div>
+    <div className="page-container flex-col items-center pt-24 pb-10">
+      <div className="page-content max-w-lg mx-auto w-full p-6 text-red-500 text-center">{error}</div>
+    </div>
   )
 
   if (notFound || !ride) return (
-    <div className="max-w-lg mx-auto mt-10 p-6 text-center flex flex-col gap-4">
-      <p className="text-secondary">Jízda nebyla nalezena.</p>
-      <button
-        onClick={() => navigate('/rides')}
-        className="py-2 px-4 rounded-xl button-primary"
-      >
-        Zpět na jízdy
-      </button>
+    <div className="page-container flex-col items-center pt-24 pb-10">
+      <div className="page-content max-w-lg mx-auto w-full p-6 text-center flex flex-col gap-4">
+        <p className="text-secondary">Jízda nebyla nalezena.</p>
+        <button
+          onClick={() => navigate('/rides')}
+          className="py-2 px-4 rounded-xl button-primary"
+        >
+          Zpět na jízdy
+        </button>
+      </div>
     </div>
   )
 
   return (
-    <div className="max-w-lg mx-auto mt-10 p-6 flex flex-col gap-6">
+    <div className="page-container flex-col items-center pt-24 pb-10">
+      <div className="page-content max-w-lg mx-auto w-full p-6 flex flex-col gap-6">
 
-      <div className="card p-6 flex flex-col gap-3">
-        <div className="flex items-start justify-between gap-2">
-          <h1 className="text-2xl font-bold">{ride.destination}</h1>
-          <RideStatusBadge departureTime={ride.departure_time} />
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2 text-sm text-secondary">
-            <FiClock size={14} className="shrink-0 text-accent" />
-            {formatLocalDateTime(ride.departure_time)}
+        <div className="card p-6 flex flex-col gap-3">
+          <div className="flex items-start justify-between gap-2">
+            <h1 className="text-2xl font-bold">{ride.destination}</h1>
+            <RideStatusBadge departureTime={ride.departure_time} />
           </div>
-          {ride.car && (
+
+          <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2 text-sm text-secondary">
-              <FiMapPin size={14} className="shrink-0 text-accent" />
-              {ride.car.name} ({ride.car.layout})
+              <FiClock size={14} className="shrink-0 text-accent" />
+              {formatLocalDateTime(ride.departure_time)}
             </div>
-          )}
+            {ride.car && (
+              <div className="flex items-center gap-2 text-sm text-secondary">
+                <FiMapPin size={14} className="shrink-0 text-accent" />
+                {ride.car.name} ({ride.car.layout})
+              </div>
+            )}
+          </div>
+
+          <button
+            onClick={handleDelete}
+            className="self-end py-1.5 px-3 rounded-lg button-danger text-sm hover-opacity-80 flex items-center gap-2"
+          >
+            <FiTrash size={14} />
+            Smazat jízdu
+          </button>
         </div>
 
-        <button
-          onClick={handleDelete}
-          className="self-end py-1.5 px-3 rounded-lg button-danger text-sm hover-opacity-80 flex items-center gap-2"
-        >
-          <FiTrash size={14} />
-          Smazat jízdu
-        </button>
+        <PassengersSection passengers={ride.passengers ?? []} />
+
+        <InviteSection rideId={ride.id} />
+
       </div>
-
-      <PassengersSection passengers={ride.passengers ?? []} />
-
-      <InviteSection rideId={ride.id} />
-
     </div>
   )
 }
