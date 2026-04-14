@@ -1220,6 +1220,7 @@
 
   .text-link:hover {
     text-decoration: underline;
+    cursor: pointer;
   }
 
   .page-title {
@@ -1291,6 +1292,7 @@
 
   .hover-text-gray-600:hover {
     color: #4b5563;
+    cursor: pointer;
   }
 
   .hover-list-bg {
