@@ -63,9 +63,7 @@ def test_facebook_get_user_info_prefers_picture_data_url(
         "name": "Facebook User",
         "email": "fb@example.com",
         "picture": {
-            "data": {
-                "url": "https://platform-lookaside.fbsbx.com/temporary-signed-url"
-            }
+            "data": {"url": "https://platform-lookaside.fbsbx.com/temporary-signed-url"}
         },
     }
 
@@ -260,12 +258,15 @@ def test_find_or_create_user_updates_existing_social_account_user_safely():
 
     assert user is existing_user
     assert existing_user.full_name == "Updated Name"
-    assert existing_user.avatar_url == "https://graph.facebook.com/fb-1/picture?type=large"
+    assert (
+        existing_user.avatar_url == "https://graph.facebook.com/fb-1/picture?type=large"
+    )
     assert existing_user.email == "real@example.com"
 
 
 def test_create_or_update_session_sets_expiry_and_tokens():
     added: list[object] = []
+    before = datetime.now(timezone.utc)
 
     class FakeDB:
         def add(self, obj):
@@ -290,4 +291,5 @@ def test_create_or_update_session_sets_expiry_and_tokens():
     assert session.access_token == "access-token"
     assert session.refresh_token == "refresh-token"
     assert session.expires_at > datetime.now(timezone.utc) + timedelta(minutes=50)
+    assert session.created_at >= before
     assert len(added) == 1
