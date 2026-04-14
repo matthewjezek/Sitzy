@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import DateTime
+from sqlalchemy import JSON, DateTime
 from sqlalchemy import Enum as SqlEnum
 from sqlalchemy import ForeignKey, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
@@ -49,6 +49,9 @@ class User(Base):
     )
     passenger_entries: Mapped[list["Passenger"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
+    )
+    integration_audit_logs: Mapped[list["IntegrationAuditLog"]] = relationship(
+        back_populates="user"
     )
 
 
@@ -107,6 +110,30 @@ class SocialSession(Base):
 
     user: Mapped["User"] = relationship(back_populates="social_sessions")
     social_account: Mapped["SocialAccount"] = relationship(back_populates="sessions")
+
+
+class IntegrationAuditLog(Base):
+    __tablename__ = "integration_audit_logs"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    user_id: Mapped[uuid.UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    event: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    provider: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
+    metadata_json: Mapped[dict[str, object]] = mapped_column(
+        JSON, nullable=False, default=dict
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default="now()", index=True
+    )
+
+    user: Mapped["User | None"] = relationship(back_populates="integration_audit_logs")
 
 
 class Car(Base):
