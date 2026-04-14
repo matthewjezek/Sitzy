@@ -104,7 +104,6 @@ export default function SettingsPage() {
     try {
       setBusySessionId(session.id)
       await instance.post(`/auth/social/sessions/${session.id}/revoke`)
-      await refreshSocialDashboard()
 
       if (session.is_current) {
         toast.success('Aktuální relace byla odhlášena.')
@@ -112,6 +111,8 @@ export default function SettingsPage() {
         window.location.href = '/login'
         return
       }
+
+      await refreshSocialDashboard()
 
       toast.success('Relace byla zneplatněna.')
     } catch {
