@@ -4,8 +4,16 @@ from uuid import uuid4
 
 import pytest
 
-from api.models import Car, Invitation, Passenger, Ride
-from api.routers import cars, invitations, rides
+from api.models import (
+    Car,
+    IntegrationAuditLog,
+    Invitation,
+    Passenger,
+    Ride,
+    SocialAccount,
+    SocialSession,
+)
+from api.routers import auth, cars, invitations, rides
 from api.utils.enums import CarLayout, InvitationStatus
 
 from .conftest import FakeDB, FakeQuery, create_client
@@ -361,3 +369,97 @@ def test_reject_invitation_updates_status(fake_user_context):
     assert response.json()["status"] == "Rejected"
     assert invitation.status == InvitationStatus.REJECTED
     assert fake_db.commit_called is True
+
+
+def test_social_dashboard_returns_accounts_sessions_and_events(fake_user_context):
+    now = datetime.now(timezone.utc)
+    account = SimpleNamespace(
+        id=uuid4(),
+        user_id=fake_user_context.user.id,
+        provider="x",
+        social_id="x-123",
+        email="x-123@x.invalid",
+        linked_at=now - timedelta(days=1),
+    )
+    session = SimpleNamespace(
+        id=uuid4(),
+        user_id=fake_user_context.user.id,
+        social_account_id=account.id,
+        social_account=account,
+        created_at=now,
+        expires_at=now + timedelta(hours=2),
+        revoked_at=None,
+        user_agent="pytest-agent",
+    )
+    event = SimpleNamespace(
+        event="social_session_created",
+        provider="x",
+        created_at=now,
+        metadata_json={"session_id": str(session.id)},
+    )
+
+    fake_db = FakeDB(
+        query_results={
+            SocialAccount: FakeQuery(all_result=[account]),
+            SocialSession: FakeQuery(all_result=[session]),
+            IntegrationAuditLog: FakeQuery(all_result=[event]),
+        }
+    )
+    client = create_client(
+        router=auth.router,
+        prefix="/auth",
+        fake_db=fake_db,
+        current_user=fake_user_context,
+    )
+
+    response = client.get("/auth/social/dashboard")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["accounts"][0]["provider"] == "x"
+    assert payload["accounts"][0]["provider_email"] is None
+    assert payload["accounts"][0]["has_real_email"] is False
+    assert payload["sessions"][0]["is_current"] is False
+    assert payload["events"][0]["event"] == "social_session_created"
+
+
+def test_revoke_session_by_id_marks_revoked(fake_user_context):
+    now = datetime.now(timezone.utc)
+    account = SimpleNamespace(provider="facebook")
+    session_id = uuid4()
+    session = SimpleNamespace(
+        id=session_id,
+        user_id=fake_user_context.user.id,
+        social_account=account,
+        revoked_at=None,
+    )
+
+    fake_db = FakeDB(query_results={SocialSession: FakeQuery(first_result=session)})
+    client = create_client(
+        router=auth.router,
+        prefix="/auth",
+        fake_db=fake_db,
+        current_user=fake_user_context,
+    )
+
+    response = client.post(f"/auth/social/sessions/{session_id}/revoke")
+
+    assert response.status_code == 204
+    assert session.revoked_at is not None
+    assert fake_db.commit_called is True
+
+
+def test_unlink_provider_rejects_when_only_provider_left(fake_user_context):
+    account = SimpleNamespace(provider="facebook")
+    fake_db = FakeDB(query_results={SocialAccount: FakeQuery(all_result=[account])})
+    client = create_client(
+        router=auth.router,
+        prefix="/auth",
+        fake_db=fake_db,
+        current_user=fake_user_context,
+    )
+
+    response = client.post("/auth/social/providers/facebook/unlink")
+
+    assert response.status_code == 409
+    assert response.json()["detail"] == "Cannot unlink the only login provider."
