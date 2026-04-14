@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, cast
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, EmailStr, field_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 from .utils.base_models import BaseModelWithLabels
 from .utils.enums import CarLayout, InvitationStatus
@@ -18,6 +18,7 @@ class UserBase(BaseModel):
 
 class SocialAccountOut(BaseModel):
     provider: str
+    social_id: str
     email: str | None = None
     linked_at: datetime
 
@@ -42,6 +43,39 @@ class UserOut(BaseModelWithLabels["UserOut"], UserBase):
         if isinstance(v, str) and v.endswith(".invalid"):
             return None
         return v
+
+
+class SocialSessionOut(BaseModel):
+    id: UUID
+    provider: str
+    created_at: datetime
+    expires_at: datetime
+    revoked_at: datetime | None = None
+    user_agent: str | None = None
+    is_current: bool = False
+
+
+class SocialAccountDashboardOut(BaseModel):
+    provider: str
+    social_id: str
+    linked_at: datetime
+    provider_email: str | None = None
+    has_real_email: bool
+    active_sessions: int
+    last_login_at: datetime | None = None
+
+
+class IntegrationAuditEventOut(BaseModel):
+    event: str
+    provider: str | None = None
+    created_at: datetime
+    metadata: dict[str, object] = Field(default_factory=dict)
+
+
+class SocialDashboardOut(BaseModel):
+    accounts: list[SocialAccountDashboardOut]
+    sessions: list[SocialSessionOut]
+    events: list[IntegrationAuditEventOut]
 
 
 # === Car Driver ===
