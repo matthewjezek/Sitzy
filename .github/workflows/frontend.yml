@@ -1,5 +1,9 @@
 name: Frontend React CI
 
+permissions:
+  contents: read
+  statuses: write
+
 on:
   push:
     paths:
