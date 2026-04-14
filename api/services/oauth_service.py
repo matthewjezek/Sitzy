@@ -317,6 +317,7 @@ def create_or_update_session(
         refresh_token=provider_refresh_token,
         expires_at=expires_at,
         user_agent=user_agent,
+        created_at=datetime.now(timezone.utc),
     )
     db.add(session)
     db.flush()
