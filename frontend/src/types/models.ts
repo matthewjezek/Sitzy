@@ -9,8 +9,42 @@ export interface User {
 
 export interface SocialAccount {
   provider: string;
+  social_id: string;
   email: string | null;
   linked_at: string;
+}
+
+export interface SocialSessionInfo {
+  id: string;
+  provider: string;
+  created_at: string;
+  expires_at: string;
+  revoked_at: string | null;
+  user_agent: string | null;
+  is_current: boolean;
+}
+
+export interface SocialAccountDashboardInfo {
+  provider: string;
+  social_id: string;
+  linked_at: string;
+  provider_email: string | null;
+  has_real_email: boolean;
+  active_sessions: number;
+  last_login_at: string | null;
+}
+
+export interface IntegrationAuditEvent {
+  event: string;
+  provider: string | null;
+  created_at: string;
+  metadata: Record<string, unknown>;
+}
+
+export interface SocialDashboard {
+  accounts: SocialAccountDashboardInfo[];
+  sessions: SocialSessionInfo[];
+  events: IntegrationAuditEvent[];
 }
 
 export interface Car {
