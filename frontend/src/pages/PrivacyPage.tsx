@@ -53,6 +53,7 @@ export default function PrivacyPage() {
                   <li>Unikátní ID z poskytovatele</li>
                   <li>Jméno a profilový obrázek</li>
                   <li>Email (pokud je dostupný)</li>
+                  <li>Pokud email dostupný není (typicky X), účet běží na provider ID identitě</li>
                   <li>Přístupový token pro relaci</li>
                 </ul>
               </div>
@@ -78,6 +79,7 @@ export default function PrivacyPage() {
                 <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 mt-2 ml-2">
                   <li>Časy přihlášení a odhlášení</li>
                   <li>Údaje o relacích (session tokens)</li>
+                  <li>Auditní události OAuth integrace (stav OAuth, token exchange, refresh, revoke)</li>
                   <li>Chybové zprávy a logy (bez osobních údajů)</li>
                 </ul>
               </div>
