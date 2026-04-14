@@ -70,6 +70,9 @@ class FakeQuery:
     def options(self, *args: Any, **kwargs: Any) -> "FakeQuery":
         return self
 
+    def limit(self, *args: Any, **kwargs: Any) -> "FakeQuery":
+        return self
+
     def distinct(self) -> "FakeQuery":
         return self
 
