@@ -40,10 +40,7 @@ sequenceDiagram
     Frontend->>Backend: POST /rides/42/transfer-driver<br/>{new_driver_id: Bob}
     Backend->>Database: SELECT passengers<br/>WHERE ride.car_id=1 AND user.id=Bob
     Database->>Backend: ✅ Bob je pasažér na jízdě
-    Backend->>Database: UPDATE car_drivers<br/>SET is_active=false, revoked_at=now()
-    <br/>WHERE car_id=1 AND is_active=true
-    Backend->>Database: INSERT/UPDATE car_drivers<br/>(car_id=1, driver_id=Bob,
-    is_active=true)
+    Backend->>Database: UPDATE/INSERT car_drivers<br/>(nový aktivní řidič Bob)
     Database->>Backend: ✅ Bob je nový aktivní řidič
 
     Note over Alice,Database: ✅ Flow v praxi:
@@ -62,12 +59,13 @@ sequenceDiagram
 4. **Bob** přijme pozvánku → stává se pasažérem na jízdě
 5. **Alice** převede řízení na **Boba** → Bob se stává aktivním řidičem
 (kontroluje se, že je pasažér)
-6. Historie v `car_drivers`: Alice (revoked) → Bob (active)
+6. Historie v `car_drivers`: více záznamů pro stejná auta a řidiče,
+Bobův záznam je aktivní
 
 ## Výhody:
 
 - ✅ CarDriver vzniká až při vytvoření jízdy (když je skutečně potřeba)
 - ✅ Řízení lze převést pouze na pasažéra (jednoduchá kontrola)
 - ✅ Historie přenosů řízení (`car_drivers`)
-- ✅ Jen jeden aktivní řidič na auto (`is_active=true`)
+- ✅ Aktivní řidič se ukládá přes `car_drivers`
 - ✅ Flexibilní delegování odpovědnosti

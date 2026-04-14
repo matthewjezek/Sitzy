@@ -6,50 +6,55 @@ sequenceDiagram
     participant Frontend as 🖥️ Frontend<br/>(React)
     participant AuthProvider as 🔐 OAuth<br/>(Facebook/X)
     participant Backend as 🔌 Backend<br/>(FastAPI)
+    participant Redis as 🧠 Redis
     participant Database as 💾 Database
 
     User->>Frontend: Klikne "Přihlásit se"
-    Frontend->>AuthProvider: Přesměruje na OAuth login
+    Frontend->>Backend: POST /auth/oauth/facebook/init<br/>nebo /auth/oauth/x/init
+    Backend->>Redis: Uloží state (+ PKCE pro X)<br/>TTL 10 minut
+    Backend->>Frontend: Vrátí authorization_url + state
+    Frontend->>AuthProvider: Redirect na authorization_url
     AuthProvider->>User: Zobrazí login formulář
     User->>AuthProvider: Zadá přihlášení
-    AuthProvider->>Frontend: Vrátí authorization code
-    Frontend->>Frontend: Uloží code
-    Frontend->>Backend: POST /auth/oauth/callback<br/>(code)
-    Backend->>AuthProvider: Ověří code<br/>Vyžádá access token
-    AuthProvider->>Backend: Vrátí access_token<br/>+ user info (email, name, id)
-    Backend->>Database: SELECT user WHERE email = ?
+    AuthProvider->>Backend: Redirect /auth/oauth/callback<br/>?code=...&state=...
+    Backend->>Redis: Ověří a spotřebuje state
+    Backend->>AuthProvider: Vymění code za access token
+    AuthProvider->>Backend: access_token + profile data
+    Backend->>Database: find_or_create_user + social_account
     
     alt User existuje
         Database->>Backend: Vrátí User data
-        Backend->>Backend: Vygeneruje JWT token<br/>(7 dní expiraci)
     else User neexistuje
-        Database->>Backend: User není nalezen
-        Backend->>Database: INSERT User<br/>(email, created_at)
+        Database->>Backend: INSERT User + SocialAccount
         Database->>Backend: Vrátí User ID
-        Backend->>Backend: Vygeneruje JWT token
     end
     
-    Backend->>Backend: Uloží OAuth token v session
-    Backend->>Frontend: 200 OK<br/>{<br/>  "access_token": "JWT...",<br/>  "token_type": "bearer",<br/>  "user": {...}<br/>}
+    Backend->>Database: create_or_update_session<br/>(SocialSession)
+    Backend->>Backend: Vygeneruje access token<br/>(15 minut) a refresh token
+    <br/>(7 dní)
+    Backend->>Frontend: 200 OK<br/>{<br/>  "access_token": "JWT...",<br/>  
+    "token_type": "bearer"<br/>}
+    Backend->>Frontend: Set-Cookie refresh_token=<br/>HttpOnly, SameSite=Lax
     Frontend->>Frontend: Uloží JWT do localStorage
     Frontend->>Frontend: Nastaví Auth header:<br/>Authorization: Bearer JWT...
-    Frontend->>User: Přesměruje na /dashboard
+    Frontend->>User: Přesměruje do aplikace
     
-    Note over User,Database: ✅ Uživatel je přihlášen<br/>Všechny další požadavky<br/>se odesílají s JWT tokenem
+    Note over User,Database: ✅ Uživatel je přihlášen
+    <br/>Access token je krátkodobý,<br/>refresh token je v HttpOnly cookie
 ```
 
 ## Klíčové kroky:
 
 1. **OAuth flow** - uživatel se přihlásí přes Facebook/X
-2. **Code exchange** - frontend vymění authorization code za access token
-3. **User lookup** - backend hledá uživatele podle emailu
+2. **State + PKCE** - backend uloží state do Redis, X používá PKCE
+3. **Code exchange** - backend vymění authorization code za provider access token
 4. **Auto-registration** - pokud user neexistuje, vytvoří se automaticky
-5. **JWT generation** - backend vrátí vlastní JWT token (7 dní)
-6. **Local storage** - frontend uloží JWT pro další požadavky
+5. **JWT generation** - backend vrátí krátkodobý access token (15 minut)
+6. **Refresh cookie** - dlouhodobý refresh token je v HttpOnly cookie
 
 ## Výhody tohoto přístupu:
 
 - ✅ OAuth token zůstává na backendu (bezpečnější)
-- ✅ Frontend používá JWT (bezstavová autentizace)
-- ✅ Plná kontrola nad expirací (můžete nastavit 7 dní)
-- ✅ Možnost refreshu tokenu
+- ✅ Frontend používá JWT access token
+- ✅ Plná kontrola nad expirací (access 15 minut, refresh 7 dní)
+- ✅ Možnost refreshu tokenu přes HttpOnly cookie

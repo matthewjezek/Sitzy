@@ -4,9 +4,9 @@
 classDiagram
     class User {
         -UUID id
-        -string email
-        -string full_name
-        -string avatar_url
+        -string | null email
+        -string | null full_name
+        -string | null avatar_url
         -datetime created_at
         -datetime updated_at
     }
@@ -16,7 +16,7 @@ classDiagram
         -UUID user_id
         -string provider
         -string social_id
-        -string email
+        -string | null email
         -datetime linked_at
     }
 
@@ -25,11 +25,20 @@ classDiagram
         -UUID user_id
         -UUID social_account_id
         -string access_token
-        -string refresh_token
+        -string | null refresh_token
         -datetime expires_at
+        -string | null user_agent
         -datetime created_at
         -datetime revoked_at
-        -string user_agent
+    }
+
+    class IntegrationAuditLog {
+        -UUID id
+        -UUID | null user_id
+        -string event
+        -string | null provider
+        -dict metadata_json
+        -datetime created_at
     }
 
     class Car {
@@ -84,6 +93,7 @@ classDiagram
     User "1" -- "N" Car : owns
     User "1" -- "N" SocialAccount : has
     User "1" -- "N" SocialSession : has
+    User "1" -- "N" IntegrationAuditLog : logs
     User "1" -- "N" CarDriver : drives
     User "1" -- "N" Passenger : books
     
@@ -110,6 +120,8 @@ classDiagram
 ### 🔑 Klíčové vlastnosti
 
 - Všechny modely používají **UUID** jako primární klíč
+- `User.email` a `SocialAccount.email` jsou nullable
+- `SocialSession.refresh_token` je nullable, `user_agent` je nullable
 - **Seat** má composite PK `(car_id, position)`
 - **CarDriver** vzniká až při vytvoření první jízdy, ne při vytvoření auta
 - Pouze jeden `is_active=true` CarDriver na auto
@@ -118,4 +130,4 @@ classDiagram
 
 - **SocialAccount** - trvalé propojení s OAuth providerem (Facebook, X)
 - **SocialSession** - dočasné tokeny s dual FK na User i SocialAccount
-- `User.email` je nullable (X neposkytuje vždy email)
+- **IntegrationAuditLog** - auditní záznamy pro OAuth a integrace
