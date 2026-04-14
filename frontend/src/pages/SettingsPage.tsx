@@ -10,6 +10,7 @@ import {
 } from '../utils/theme';
 import { DeleteDialog } from '../components/Dialog';
 import { useAuth } from '../hooks/useAuth';
+import type { SocialDashboard, SocialSessionInfo } from '../types/models';
 
 function SettingsSkeleton() {
   return (
@@ -31,15 +32,42 @@ function SettingsSkeleton() {
 }
 
 export default function SettingsPage() {
-  const { user, loading } = useAuth();
+  const { user, loading, refreshUser } = useAuth();
   const [themePreference, setThemePreference] = useState<ThemePreference>(() => getThemePreference())
   const [emailNotifications, setEmailNotifications] = useState<'enabled' | 'disabled'>('enabled')
+  const [socialDashboard, setSocialDashboard] = useState<SocialDashboard | null>(null)
+  const [socialLoading, setSocialLoading] = useState(false)
+  const [busySessionId, setBusySessionId] = useState<string | null>(null)
+  const [busyProvider, setBusyProvider] = useState<string | null>(null)
   const deleteDialogRef = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
-    
     document.title = 'Sitzy - Nastavení'
+
+    const loadDashboard = async () => {
+      setSocialLoading(true)
+      try {
+        const { data } = await instance.get<SocialDashboard>('/auth/social/dashboard')
+        setSocialDashboard(data)
+      } catch {
+        toast.error('Nepodařilo se načíst sociální připojení.')
+      } finally {
+        setSocialLoading(false)
+      }
+    }
+
+    loadDashboard()
   }, [])
+
+  const formatDate = (value: string | null) => {
+    if (!value) return '—'
+    return new Date(value).toLocaleString('cs-CZ')
+  }
+
+  const refreshSocialDashboard = async () => {
+    const { data } = await instance.get<SocialDashboard>('/auth/social/dashboard')
+    setSocialDashboard(data)
+  }
 
   const handleThemeChange = (nextTheme: ThemePreference) => {
     setThemePreference(nextTheme)
@@ -69,6 +97,44 @@ export default function SettingsPage() {
           : 'Nastala neočekávaná chyba.'
       )
       toggleDeleteDialog()
+    }
+  }
+
+  const handleRevokeSession = async (session: SocialSessionInfo) => {
+    try {
+      setBusySessionId(session.id)
+      await instance.post(`/auth/social/sessions/${session.id}/revoke`)
+      await refreshSocialDashboard()
+
+      if (session.is_current) {
+        toast.success('Aktuální relace byla odhlášena.')
+        localStorage.removeItem('access_token')
+        window.location.href = '/login'
+        return
+      }
+
+      toast.success('Relace byla zneplatněna.')
+    } catch {
+      toast.error('Relaci se nepodařilo zneplatnit.')
+    } finally {
+      setBusySessionId(null)
+    }
+  }
+
+  const handleUnlinkProvider = async (provider: string) => {
+    try {
+      setBusyProvider(provider)
+      await instance.post(`/auth/social/providers/${provider}/unlink`)
+      await Promise.all([refreshSocialDashboard(), refreshUser()])
+      toast.success(`Poskytovatel ${provider} byl odpojen.`)
+    } catch (err) {
+      toast.error(
+        isAxiosError(err)
+          ? (err.response?.data?.detail ?? 'Poskytovatele se nepodařilo odpojit.')
+          : 'Poskytovatele se nepodařilo odpojit.'
+      )
+    } finally {
+      setBusyProvider(null)
     }
   }
 
@@ -105,7 +171,89 @@ export default function SettingsPage() {
               )).reduce((acc, el, i) => i === 0 ? [el] : [...acc, ', ', el], [] as React.ReactNode[])}
             </p>
           )}
+          {!user?.email && (
+            <p className="text-xs text-secondary mt-1">
+              Primární identita je vedená přes poskytovatele (např. X ID), ne přes e-mail.
+            </p>
+          )}
         </div>
+      </div>
+
+      <div className="card p-4 flex flex-col gap-3">
+        <h3 className="text-sm font-semibold">Sociální účty a relace</h3>
+        {socialLoading && <p className="text-sm text-secondary">Načítám sociální dashboard...</p>}
+
+        {!socialLoading && socialDashboard && socialDashboard.accounts.length === 0 && (
+          <p className="text-sm text-secondary">Žádný připojený poskytovatel.</p>
+        )}
+
+        {!socialLoading && socialDashboard?.accounts.map(account => (
+          <div key={`${account.provider}-${account.social_id}`} className="rounded-lg border border-black/10 dark:border-white/10 p-3">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="font-medium capitalize">{account.provider}</p>
+                <p className="text-xs text-secondary">ID: {account.social_id}</p>
+                <p className="text-xs text-secondary">Propojeno: {formatDate(account.linked_at)}</p>
+                <p className="text-xs text-secondary">Poslední login: {formatDate(account.last_login_at)}</p>
+                <p className="text-xs text-secondary">Aktivní relace: {account.active_sessions}</p>
+                <p className="text-xs text-secondary">
+                  E-mail z poskytovatele: {account.has_real_email ? account.provider_email : 'Nedostupný (provider-only identita)'}
+                </p>
+              </div>
+              <button
+                onClick={() => handleUnlinkProvider(account.provider)}
+                className="setting-value-option"
+                disabled={busyProvider === account.provider}
+              >
+                {busyProvider === account.provider ? 'Odpojuji...' : 'Odpojit'}
+              </button>
+            </div>
+          </div>
+        ))}
+
+        {!socialLoading && socialDashboard && socialDashboard.sessions.length > 0 && (
+          <div className="pt-2 border-t border-black/10 dark:border-white/10">
+            <p className="text-sm font-medium mb-2">Relace</p>
+            <div className="flex flex-col gap-2">
+              {socialDashboard.sessions.map(session => (
+                <div key={session.id} className="rounded-lg border border-black/10 dark:border-white/10 p-3 flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-sm capitalize">
+                      {session.provider} {session.is_current ? '(aktuální)' : ''}
+                    </p>
+                    <p className="text-xs text-secondary">Vytvořeno: {formatDate(session.created_at)}</p>
+                    <p className="text-xs text-secondary">Platnost do: {formatDate(session.expires_at)}</p>
+                    <p className="text-xs text-secondary">UA: {session.user_agent ?? 'Neznámé zařízení'}</p>
+                  </div>
+                  <button
+                    onClick={() => handleRevokeSession(session)}
+                    className="setting-value-option"
+                    disabled={Boolean(session.revoked_at) || busySessionId === session.id}
+                  >
+                    {session.revoked_at
+                      ? 'Neaktivní'
+                      : busySessionId === session.id
+                        ? 'Ruším...'
+                        : 'Zneplatnit'}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {!socialLoading && socialDashboard && socialDashboard.events.length > 0 && (
+          <div className="pt-2 border-t border-black/10 dark:border-white/10">
+            <p className="text-sm font-medium mb-2">Audit integrace (posledních 30 událostí)</p>
+            <div className="flex flex-col gap-1 max-h-44 overflow-auto pr-1">
+              {socialDashboard.events.map((event, idx) => (
+                <p key={`${event.created_at}-${event.event}-${idx}`} className="text-xs text-secondary">
+                  {formatDate(event.created_at)} · {event.provider ?? 'oauth'} · {event.event}
+                </p>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       
