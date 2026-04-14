@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { isAxiosError } from 'axios';
 import { toast } from 'react-toastify';
 import instance from '../api/axios';
@@ -33,6 +33,7 @@ function SettingsSkeleton() {
 
 export default function SettingsPage() {
   const { user, loading, refreshUser } = useAuth();
+  const navigate = useNavigate();
   const [themePreference, setThemePreference] = useState<ThemePreference>(() => getThemePreference())
   const [socialDashboard, setSocialDashboard] = useState<SocialDashboard | null>(null)
   const [socialLoading, setSocialLoading] = useState(false)
@@ -105,7 +106,7 @@ export default function SettingsPage() {
       await instance.delete('/auth/delete-account')
       toast.success('Účet byl úspěšně smazán.')
       localStorage.removeItem('access_token')
-      window.location.href = '/login'
+      navigate('/login', { replace: true })
     } catch (err) {
       toast.error(
         isAxiosError(err)
@@ -124,7 +125,7 @@ export default function SettingsPage() {
       if (session.is_current) {
         toast.success('Aktuální relace byla odhlášena.')
         localStorage.removeItem('access_token')
-        window.location.href = '/login'
+        navigate('/login', { replace: true })
         return
       }
 
