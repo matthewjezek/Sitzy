@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
 from urllib.parse import parse_qs, urlparse
@@ -52,6 +53,107 @@ def test_facebook_oauth_authorization_url_contains_required_params():
     assert query["state"] == ["state-2"]
     assert query["response_type"] == ["code"]
     assert query["scope"] == ["email,public_profile"]
+
+
+def test_facebook_get_user_info_prefers_picture_data_url(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    payload = {
+        "id": "fb-123",
+        "name": "Facebook User",
+        "email": "fb@example.com",
+        "picture": {
+            "data": {
+                "url": "https://platform-lookaside.fbsbx.com/temporary-signed-url"
+            }
+        },
+    }
+
+    class _FakeResponse:
+        def raise_for_status(self) -> None:
+            return None
+
+        def json(self) -> dict[str, object]:
+            return payload
+
+    class _FakeAsyncClient:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc, tb):
+            return None
+
+        async def get(self, *args, **kwargs):
+            return _FakeResponse()
+
+    monkeypatch.setattr(oauth_service.httpx, "AsyncClient", _FakeAsyncClient)
+    client = oauth_service.FacebookOAuthClient()
+
+    user_info = asyncio.run(client.get_user_info("provider-token"))
+
+    assert user_info["id"] == "fb-123"
+    assert (
+        user_info["avatar_url"]
+        == "https://platform-lookaside.fbsbx.com/temporary-signed-url"
+    )
+
+
+def test_facebook_get_user_info_normalizes_http_avatar_url(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    payload = {
+        "id": "fb-123",
+        "name": "Facebook User",
+        "email": "fb@example.com",
+        "picture": {"data": {"url": "http://platform-lookaside.fbsbx.com/test"}},
+    }
+
+    class _FakeResponse:
+        def raise_for_status(self) -> None:
+            return None
+
+        def json(self) -> dict[str, object]:
+            return payload
+
+    class _FakeAsyncClient:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc, tb):
+            return None
+
+        async def get(self, *args, **kwargs):
+            return _FakeResponse()
+
+    monkeypatch.setattr(oauth_service.httpx, "AsyncClient", _FakeAsyncClient)
+    client = oauth_service.FacebookOAuthClient()
+
+    user_info = asyncio.run(client.get_user_info("provider-token"))
+
+    assert user_info["avatar_url"] == "https://platform-lookaside.fbsbx.com/test"
+
+
+def test_normalize_avatar_url_handles_http_and_protocol_relative():
+    assert oauth_service.normalize_avatar_url(None) is None
+    assert oauth_service.normalize_avatar_url("") is None
+    assert (
+        oauth_service.normalize_avatar_url("http://example.com/avatar.png")
+        == "https://example.com/avatar.png"
+    )
+    assert (
+        oauth_service.normalize_avatar_url("//cdn.example.com/avatar.png")
+        == "https://cdn.example.com/avatar.png"
+    )
+    assert (
+        oauth_service.normalize_avatar_url("https://example.com/avatar.png")
+        == "https://example.com/avatar.png"
+    )
 
 
 def test_find_or_create_user_creates_new_user_when_missing():
@@ -111,6 +213,55 @@ def test_find_or_create_user_creates_new_user_when_missing():
 
     assert user.email == "new@example.com"
     assert "social_account" in created
+
+
+def test_find_or_create_user_updates_existing_social_account_user_safely():
+    existing_user = SimpleNamespace(
+        id=uuid4(),
+        email="123@facebook.invalid",
+        full_name="Old Name",
+        avatar_url="https://old.example/avatar.png",
+    )
+    existing_social = SimpleNamespace(user=existing_user, user_id=existing_user.id)
+
+    class FakeDB:
+        def query(self, model):
+            class _Q:
+                def __init__(self, model_ref):
+                    self.model_ref = model_ref
+
+                def filter_by(self, **kwargs):
+                    return self
+
+                def filter(self, *args, **kwargs):
+                    return self
+
+                def first(self):
+                    if self.model_ref.__name__ == "SocialAccount":
+                        return existing_social
+                    return None
+
+            return _Q(model)
+
+        def add(self, obj):
+            return None
+
+        def flush(self):
+            return None
+
+    user = oauth_service.find_or_create_user(
+        provider="facebook",
+        social_id="fb-1",
+        email="real@example.com",
+        full_name="Updated Name",
+        avatar_url="https://graph.facebook.com/fb-1/picture?type=large",
+        db=FakeDB(),
+    )
+
+    assert user is existing_user
+    assert existing_user.full_name == "Updated Name"
+    assert existing_user.avatar_url == "https://graph.facebook.com/fb-1/picture?type=large"
+    assert existing_user.email == "real@example.com"
 
 
 def test_create_or_update_session_sets_expiry_and_tokens():

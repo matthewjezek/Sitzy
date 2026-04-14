@@ -28,6 +28,24 @@ _redis = redis_lib.from_url(settings.redis_url, **kwargs)  # type: ignore
 logger = get_logger(__name__)
 
 
+def normalize_avatar_url(url: str | None) -> str | None:
+    """Normalize provider avatar URLs for safe browser rendering.
+
+    Production runs on HTTPS, so http:// avatar URLs become mixed content
+    and are blocked by browsers.
+    """
+    if not url:
+        return None
+
+    if url.startswith("//"):
+        return f"https:{url}"
+
+    if url.startswith("http://"):
+        return f"https://{url[len('http://'):]}"
+
+    return url
+
+
 class OAuthStateManager:
     _PREFIX = "oauth:state:"
 
@@ -139,7 +157,7 @@ class XOAuthClient:
                 "id": data.get("id"),
                 "email": data.get("email") or None,
                 "full_name": data.get("name"),
-                "avatar_url": data.get("profile_image_url"),
+                "avatar_url": normalize_avatar_url(data.get("profile_image_url")),
             }
 
 
@@ -195,11 +213,14 @@ class FacebookOAuthClient:
             )
             response.raise_for_status()
             data = response.json()
+
             return {
                 "id": data.get("id"),
                 "email": data.get("email") or None,
                 "full_name": data.get("name"),
-                "avatar_url": data.get("picture", {}).get("data", {}).get("url"),
+                "avatar_url": normalize_avatar_url(
+                    data.get("picture", {}).get("data", {}).get("url")
+                ),
             }
 
 
@@ -215,11 +236,13 @@ def find_or_create_user(
 
     def apply_safe_profile_updates(user: models.User) -> None:
         """Update user profile fields only when incoming values are better."""
+        normalized_avatar_url = normalize_avatar_url(avatar_url)
+
         if full_name and full_name != user.full_name:
             user.full_name = full_name
 
-        if avatar_url and avatar_url != user.avatar_url:
-            user.avatar_url = avatar_url
+        if normalized_avatar_url and normalized_avatar_url != user.avatar_url:
+            user.avatar_url = normalized_avatar_url
 
         if email and not email.endswith(".invalid"):
             if not user.email or user.email.endswith(".invalid"):
@@ -244,7 +267,11 @@ def find_or_create_user(
         else None
     )
     if not user:
-        user = models.User(email=email, full_name=full_name, avatar_url=avatar_url)
+        user = models.User(
+            email=email,
+            full_name=full_name,
+            avatar_url=normalize_avatar_url(avatar_url),
+        )
         db.add(user)
         db.flush()
         logger.info(
