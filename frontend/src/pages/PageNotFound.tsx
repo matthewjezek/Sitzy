@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useEffect } from "react";
 
 const PageNotFound = () => {
@@ -23,9 +23,9 @@ const PageNotFound = () => {
             <button onClick={() => navigate(-1)} className="button-primary">
               Jít zpět
             </button>
-            <a href="/rides" className="not-found-link">
+            <Link to="/rides" className="not-found-link">
               Přejít na jízdy <span aria-hidden="true">&rarr;</span>
-            </a>
+            </Link>
           </div>
         </section>
       </div>
