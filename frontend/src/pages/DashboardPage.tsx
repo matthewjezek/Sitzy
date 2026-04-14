@@ -23,8 +23,8 @@ export default function Dashboard() {
     .sort((a, b) => new Date(a.departure_time).getTime() - new Date(b.departure_time).getTime())[0] || null;
 
   return (
-    <div className="page-container flex-col items-center pt-24 pb-10">
-      <div className="page-content max-w-2xl mx-auto w-full flex flex-col gap-8">
+    <div className="page-container flex-col pt-24 pb-10">
+      <div className="page-content max-w-2xl mx-auto flex flex-col gap-8">
         
         
         <header>

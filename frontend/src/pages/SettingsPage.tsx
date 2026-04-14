@@ -14,8 +14,8 @@ import type { SocialDashboard, SocialSessionInfo } from '../types/models';
 
 function SettingsSkeleton() {
   return (
-    <div className="page-container flex-col items-center pt-24 pb-10">
-      <div className="animate-pulse page-content max-w-lg mx-auto w-full p-6 flex flex-col gap-6">
+    <div className="page-container flex-col pt-24 pb-10">
+      <div className="animate-pulse page-content max-w-lg mx-auto p-6 flex flex-col gap-6">
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-full skeleton-dark" />
           <div className="flex flex-col gap-2">
@@ -174,8 +174,8 @@ export default function SettingsPage() {
   if (loading) return <SettingsSkeleton />
 
   return (
-    <div className="page-container flex-col items-center pt-24 pb-10">
-      <div className="page-content max-w-3xl mx-auto w-full px-3 sm:px-6 flex flex-col gap-4 sm:gap-6">
+    <div className="page-container flex-col pt-24 pb-10">
+      <div className="page-content max-w-3xl mx-auto px-3 sm:px-6 flex flex-col gap-4 sm:gap-6">
         <div className="settings-section p-4 sm:p-6">
           <div className="settings-section-header">
             <div>
@@ -234,7 +234,7 @@ export default function SettingsPage() {
         <div className="settings-section p-4 sm:p-6">
           <button
             type="button"
-            className="settings-section-header w-full flex items-center justify-between gap-3 text-left"
+            className="settings-section-header w-full justify-between text-left"
             onClick={() => setSocialExpanded((value) => !value)}
             aria-expanded={socialExpanded}
           >

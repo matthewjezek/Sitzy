@@ -10,7 +10,7 @@ const PageNotFound = () => {
 
   return (
     <main className="page-container text-center">
-      <div className="page-content max-w-2xl w-full">
+      <div className="page-content max-w-2xl">
         <section className="not-found-card">
           <p className="not-found-code">404</p>
           <h1 className="not-found-title">

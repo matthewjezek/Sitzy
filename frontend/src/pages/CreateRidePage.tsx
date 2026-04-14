@@ -10,8 +10,8 @@ import { localInputToUTC, nowForDatetimeInput } from '../utils/datetime'
 
 function CreateRideSkeleton() {
   return (
-    <div className="page-container flex-col items-center pt-24 pb-10">
-      <div className="animate-pulse page-content max-w-lg mx-auto w-full p-6 flex flex-col gap-6">
+    <div className="page-container flex-col pt-24 pb-10">
+      <div className="animate-pulse page-content max-w-lg mx-auto p-6 flex flex-col gap-6">
         <div className="h-8 w-48 rounded skeleton-dark mx-auto" />
         <div className="h-10 rounded-lg skeleton-dark" />
         <div className="h-10 rounded-lg skeleton-dark" />
@@ -69,8 +69,8 @@ export default function CreateRidePage() {
   if (carsLoading) return <CreateRideSkeleton />
 
   return (
-    <div className="page-container flex-col items-center pt-24 pb-10">
-      <div className="page-content max-w-lg mx-auto w-full p-6 flex flex-col gap-6">
+    <div className="page-container flex-col pt-24 pb-10">
+      <div className="page-content max-w-lg mx-auto p-6 flex flex-col gap-6">
         <h1 className="text-2xl font-bold text-center">Nová jízda</h1>
 
       
@@ -79,7 +79,7 @@ export default function CreateRidePage() {
           <p>Nemáte žádné auto. Nejprve přidejte auto.</p>
           <button
             onClick={() => navigate('/cars/new')}
-            className="py-2 px-4 rounded-xl button-primary self-start"
+              className="button-primary self-start"
           >
             Přidat auto
           </button>
@@ -144,7 +144,7 @@ export default function CreateRidePage() {
           <button
             type="submit"
             disabled={submitting || cars.length === 0}
-            className="w-full py-2 px-4 rounded-xl button-primary flex items-center justify-center"
+            className="w-full button-primary flex items-center justify-center"
           >
             {submitting ? 'Vytvářím...' : 'Vytvořit jízdu'}
           </button>

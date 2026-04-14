@@ -11,8 +11,8 @@ import { inviteSchema, type InviteFormValues } from '../utils/validation'
 
 function RideDetailSkeleton() {
   return (
-    <div className="page-container flex-col items-center pt-24 pb-10">
-      <div className="animate-pulse page-content max-w-lg mx-auto w-full p-6 flex flex-col gap-6">
+    <div className="page-container flex-col pt-24 pb-10">
+      <div className="animate-pulse page-content max-w-lg mx-auto p-6 flex flex-col gap-6">
         <div className="h-32 rounded-xl skeleton-dark" />
         <div className="h-48 rounded-xl skeleton-dark" />
         <div className="h-10 rounded-xl skeleton-dark" />
@@ -98,7 +98,7 @@ function InviteSection({ rideId }: { rideId: string }) {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="py-2 px-4 rounded-xl button-primary flex items-center gap-2 shrink-0"
+          className="button-primary flex items-center gap-2 shrink-0"
         >
           <FiUserPlus size={16} />
           Pozvat
@@ -140,14 +140,14 @@ function InviteSection({ rideId }: { rideId: string }) {
               <button
                 disabled={responding === inv.token}
                 onClick={() => handleRespond(inv.token, true)}
-                className="text-xs py-1 px-3 rounded-lg button-primary"
+                className="text-xs button-primary"
               >
                 Přijmout
               </button>
               <button
                 disabled={responding === inv.token}
                 onClick={() => handleRespond(inv.token, false)}
-                className="text-xs py-1 px-3 rounded-lg button-secondary"
+                className="text-xs button-secondary"
               >
                 Odmítnout
               </button>
@@ -219,18 +219,18 @@ export default function RideDetailPage() {
   if (loading) return <RideDetailSkeleton />
 
   if (error) return (
-    <div className="page-container flex-col items-center pt-24 pb-10">
-      <div className="page-content max-w-lg mx-auto w-full p-6 text-red-500 text-center">{error}</div>
+    <div className="page-container flex-col pt-24 pb-10">
+      <div className="page-content max-w-lg mx-auto p-6 text-red-500 text-center">{error}</div>
     </div>
   )
 
   if (notFound || !ride) return (
-    <div className="page-container flex-col items-center pt-24 pb-10">
-      <div className="page-content max-w-lg mx-auto w-full p-6 text-center flex flex-col gap-4">
+    <div className="page-container flex-col pt-24 pb-10">
+      <div className="page-content max-w-lg mx-auto p-6 text-center flex flex-col gap-4">
         <p className="text-secondary">Jízda nebyla nalezena.</p>
         <button
           onClick={() => navigate('/rides')}
-          className="py-2 px-4 rounded-xl button-primary"
+          className="button-primary"
         >
           Zpět na jízdy
         </button>
@@ -239,8 +239,8 @@ export default function RideDetailPage() {
   )
 
   return (
-    <div className="page-container flex-col items-center pt-24 pb-10">
-      <div className="page-content max-w-lg mx-auto w-full p-6 flex flex-col gap-6">
+    <div className="page-container flex-col pt-24 pb-10">
+      <div className="page-content max-w-lg mx-auto p-6 flex flex-col gap-6">
 
         <div className="card p-6 flex flex-col gap-3">
           <div className="flex items-start justify-between gap-2">
@@ -263,7 +263,7 @@ export default function RideDetailPage() {
 
           <button
             onClick={handleDelete}
-            className="self-end py-1.5 px-3 rounded-lg button-danger text-sm hover-opacity-80 flex items-center gap-2"
+            className="self-end button-danger text-sm hover-opacity-80 flex items-center gap-2"
           >
             <FiTrash size={14} />
             Smazat jízdu

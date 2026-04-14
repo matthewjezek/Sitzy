@@ -9,8 +9,8 @@ import { SedanSvg, CoupeSvg, MinivanSvg } from '../assets/icons'
 
 function CreateCarSkeleton() {
   return (
-    <div className="page-container flex-col items-center pt-24 pb-10">
-      <div className="animate-pulse page-content max-w-lg mx-auto w-full p-6 flex flex-col gap-6">
+    <div className="page-container flex-col pt-24 pb-10">
+      <div className="animate-pulse page-content max-w-lg mx-auto p-6 flex flex-col gap-6">
         <div className="h-8 w-48 rounded skeleton-dark mx-auto" />
         <div className="flex gap-4 justify-center">
           {[1, 2, 3].map(i => (
@@ -83,8 +83,8 @@ export default function CreateCarPage() {
   if (initialLoading) return <CreateCarSkeleton />
 
   return (
-    <div className="page-container flex-col items-center pt-24 pb-10">
-      <div className="page-content max-w-lg mx-auto w-full p-6 flex flex-col gap-6">
+    <div className="page-container flex-col pt-24 pb-10">
+      <div className="page-content max-w-lg mx-auto p-6 flex flex-col gap-6">
         <h1 className="text-2xl font-bold text-center">
           {isEdit ? 'Upravit auto' : 'Přidat auto'}
         </h1>

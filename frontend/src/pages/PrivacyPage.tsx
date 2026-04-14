@@ -6,8 +6,8 @@ export default function PrivacyPage() {
   }, [])
 
   return (
-    <div className="page-container flex-col items-center py-12 px-4">
-      <div className="page-content max-w-2xl w-full">
+    <div className="page-container flex-col py-12 px-4">
+      <div className="page-content max-w-2xl">
         <h1 className="text-3xl font-bold mb-8 text-gray-900 dark:text-white">
           Zásady ochrany osobních údajů
         </h1>

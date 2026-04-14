@@ -7,8 +7,8 @@ import { SedanSvg, CoupeSvg, MinivanSvg } from '../assets/icons'
 
 function CarDetailSkeleton() {
   return (
-    <div className="page-container flex-col items-center pt-24 pb-10">
-      <div className="animate-pulse page-content max-w-lg mx-auto w-full p-6 flex flex-col gap-6">
+    <div className="page-container flex-col pt-24 pb-10">
+      <div className="animate-pulse page-content max-w-lg mx-auto p-6 flex flex-col gap-6">
         <div className="h-8 w-48 rounded skeleton-dark mx-auto" />
         <div className="h-32 rounded-xl skeleton-dark" />
         <div className="h-10 rounded-lg skeleton-dark" />
@@ -57,18 +57,18 @@ export default function CarDetailPage() {
   if (loading) return <CarDetailSkeleton />
 
   if (error) return (
-    <div className="page-container flex-col items-center pt-24 pb-10">
-      <div className="page-content max-w-lg mx-auto w-full p-6 text-red-500 text-center">{error}</div>
+    <div className="page-container flex-col pt-24 pb-10">
+      <div className="page-content max-w-lg mx-auto p-6 text-red-500 text-center">{error}</div>
     </div>
   )
 
   if (notFound || !car) return (
-    <div className="page-container flex-col items-center pt-24 pb-10">
-      <div className="page-content max-w-lg mx-auto w-full p-6 text-center flex flex-col gap-4">
+    <div className="page-container flex-col pt-24 pb-10">
+      <div className="page-content max-w-lg mx-auto p-6 text-center flex flex-col gap-4">
         <p className="text-gray-500">Auto nebylo nalezeno.</p>
         <button
           onClick={() => navigate('/cars')}
-          className="py-2 px-4 rounded-xl button-primary"
+          className="button-primary"
         >
           Zpět na auta
         </button>
@@ -77,8 +77,8 @@ export default function CarDetailPage() {
   )
 
   return (
-    <div className="page-container flex-col items-center pt-24 pb-10">
-      <div className="page-content max-w-lg mx-auto w-full p-6 flex flex-col gap-6">
+    <div className="page-container flex-col pt-24 pb-10">
+      <div className="page-content max-w-lg mx-auto p-6 flex flex-col gap-6">
 
         <div className="card p-6 flex items-center gap-4">
           <div className="p-3 rounded-xl badge-indigo">
@@ -95,7 +95,7 @@ export default function CarDetailPage() {
 
         <button
           onClick={() => navigate(`/rides/new?car_id=${car.id}`)}
-          className="w-full py-3 px-4 rounded-xl button-primary flex items-center justify-center gap-2"
+          className="w-full button-primary flex items-center justify-center gap-2"
         >
           <FiPlus size={20} />
           Nová jízda s tímto autem
@@ -104,14 +104,14 @@ export default function CarDetailPage() {
         <div className="flex gap-3">
           <button
             onClick={() => navigate(`/cars/${car.id}/edit`)}
-            className="flex-1 py-2 px-4 rounded-xl button-secondary hover-opacity-80 flex items-center justify-center gap-2"
+            className="flex-1 button-secondary hover-opacity-80 flex items-center justify-center gap-2"
           >
             <FiEdit size={18} />
             Upravit
           </button>
           <button
             onClick={handleDelete}
-            className="py-2 px-4 rounded-xl button-danger hover-opacity-80 flex items-center justify-center gap-2"
+            className="button-danger hover-opacity-80 flex items-center justify-center gap-2"
           >
             <FiTrash size={18} />
             Smazat
