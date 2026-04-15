@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { FiTrash, FiUserPlus, FiMapPin, FiClock, FiRepeat, FiUserX, FiLogOut } from 'react-icons/fi'
+import { FiTrash, FiUserPlus, FiMapPin, FiClock, FiRepeat, FiUserX, FiLogOut, FiXCircle } from 'react-icons/fi'
 import { toast } from 'react-toastify'
 import { formatLocalDateTime } from '../utils/datetime'
 import { useRide } from '../hooks/useRide'
@@ -15,9 +15,9 @@ function RideDetailSkeleton() {
   return (
     <div className="page-container flex-col pt-24 pb-10">
       <div className="animate-pulse page-content max-w-lg mx-auto p-6 flex flex-col gap-6">
-        <div className="h-32 rounded-xl skeleton-dark" />
+        <div className="h-40 rounded-xl skeleton-dark" />
         <div className="h-48 rounded-xl skeleton-dark" />
-        <div className="h-10 rounded-xl skeleton-dark" />
+        <div className="h-40 rounded-xl skeleton-dark" />
       </div>
     </div>
   )
@@ -47,9 +47,9 @@ function RideStatusBadge({ departureTime }: { departureTime: string }) {
   )
 }
 
-function InviteSection({ rideId }: { rideId: string }) {
-  const { invites, loading, error, createInvite, respondInvite } = useInvites(rideId)
-  const [responding, setResponding] = useState<string | null>(null)
+function InviteSection({ rideId, canCancelInvites }: { rideId: string; canCancelInvites: boolean }) {
+  const { invites, loading, error, createInvite, cancelInvite } = useInvites(rideId)
+  const [cancellingToken, setCancellingToken] = useState<string | null>(null)
 
   const {
     register,
@@ -69,13 +69,15 @@ function InviteSection({ rideId }: { rideId: string }) {
     }
   }
 
-  const handleRespond = async (token: string, accept: boolean) => {
-    setResponding(token)
+  const handleCancelInvite = async (token: string, email: string) => {
+    if (!window.confirm(`Opravdu chcete zrušit pozvánku pro ${email}?`)) return
+
+    setCancellingToken(token)
     try {
-      await respondInvite(token, accept)
-      toast.success(accept ? 'Pozvánka přijata.' : 'Pozvánka odmítnuta.')
+      await cancelInvite(token)
+      toast.success('Pozvánka byla zrušena.')
     } finally {
-      setResponding(null)
+      setCancellingToken(null)
     }
   }
 
@@ -137,21 +139,16 @@ function InviteSection({ rideId }: { rideId: string }) {
             </span>
           </div>
 
-          {inv.status === 'Pending' && (
+          {inv.status === 'Pending' && canCancelInvites && (
             <div className="flex gap-2 shrink-0">
               <button
-                disabled={responding === inv.token}
-                onClick={() => handleRespond(inv.token, true)}
-                className="text-xs button-primary"
+                type="button"
+                disabled={cancellingToken === inv.token}
+                onClick={() => handleCancelInvite(inv.token, inv.invited_email)}
+                className="text-xs button-secondary flex items-center gap-1"
               >
-                Přijmout
-              </button>
-              <button
-                disabled={responding === inv.token}
-                onClick={() => handleRespond(inv.token, false)}
-                className="text-xs button-secondary"
-              >
-                Odmítnout
+                <FiXCircle size={12} />
+                {cancellingToken === inv.token ? 'Ruším...' : 'Zrušit'}
               </button>
             </div>
           )}
@@ -399,18 +396,31 @@ export default function RideDetailPage() {
   const isOwner = ride.car?.owner_id === user?.id
   const isCurrentDriver = ride.driver_user_id === user?.id
   const canLeaveRide = Boolean(user && !isOwner && !isCurrentDriver)
+  const roleBadge = isOwner ? 'Majitel auta' : isCurrentDriver ? 'Aktuální řidič' : 'Pasažér'
+  const roleBadgeClass = isOwner
+    ? 'status-info'
+    : isCurrentDriver
+      ? 'status-success'
+      : 'status-pending'
 
   return (
     <div className="page-container flex-col pt-24 pb-10">
       <div className="page-content max-w-lg mx-auto p-6 flex flex-col gap-6">
 
-        <div className="card p-6 flex flex-col gap-3">
+        <div className="card p-6 flex flex-col gap-4 relative overflow-hidden">
+          <div className="absolute -top-10 -right-10 w-36 h-36 rounded-full bg-accent/10 blur-2xl pointer-events-none" aria-hidden="true" />
+
           <div className="flex items-start justify-between gap-2">
-            <h1 className="text-2xl font-bold">{ride.destination}</h1>
-            <RideStatusBadge departureTime={ride.departure_time} />
+            <div className="flex flex-col gap-2">
+              <h1 className="text-2xl font-bold">{ride.destination}</h1>
+              <div className="flex items-center gap-2">
+                <span className={`text-xs px-2 py-0.5 rounded-full ${roleBadgeClass}`}>{roleBadge}</span>
+                <RideStatusBadge departureTime={ride.departure_time} />
+              </div>
+            </div>
           </div>
 
-          <div className="flex flex-col gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div className="flex items-center gap-2 text-sm text-secondary">
               <FiClock size={14} className="shrink-0 text-accent" />
               {formatLocalDateTime(ride.departure_time)}
@@ -423,25 +433,27 @@ export default function RideDetailPage() {
             )}
           </div>
 
-          {isOwner ? (
-            <button
-              onClick={handleDelete}
-              className="self-end button-danger text-sm hover-opacity-80 flex items-center gap-2"
-            >
-              <FiTrash size={14} />
-              Smazat jízdu
-            </button>
-          ) : (
-            <button
-              onClick={handleLeave}
-              disabled={!canLeaveRide}
-              className="self-end button-secondary text-sm flex items-center gap-2"
-              title={!canLeaveRide ? 'Aktuální řidič musí nejdříve předat řízení.' : undefined}
-            >
-              <FiLogOut size={14} />
-              Opustit jízdu
-            </button>
-          )}
+          <div className="flex justify-end">
+            {isOwner ? (
+              <button
+                onClick={handleDelete}
+                className="button-danger text-sm hover-opacity-80 flex items-center gap-2"
+              >
+                <FiTrash size={14} />
+                Smazat jízdu
+              </button>
+            ) : (
+              <button
+                onClick={handleLeave}
+                disabled={!canLeaveRide}
+                className="button-secondary text-sm flex items-center gap-2"
+                title={!canLeaveRide ? 'Aktuální řidič musí nejdříve předat řízení.' : undefined}
+              >
+                <FiLogOut size={14} />
+                Opustit jízdu
+              </button>
+            )}
+          </div>
         </div>
 
         <PassengersSection
@@ -456,7 +468,7 @@ export default function RideDetailPage() {
           onRemovePassenger={handleRemovePassenger}
         />
 
-        {isOwner || isCurrentDriver ? <InviteSection rideId={ride.id} /> : null}
+        {isOwner || isCurrentDriver ? <InviteSection rideId={ride.id} canCancelInvites={Boolean(isOwner)} /> : null}
 
       </div>
     </div>
