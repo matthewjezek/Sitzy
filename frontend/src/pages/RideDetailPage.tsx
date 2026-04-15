@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { FiTrash, FiUserPlus, FiMapPin, FiClock } from 'react-icons/fi'
+import { FiTrash, FiUserPlus, FiMapPin, FiClock, FiRepeat, FiUserX, FiLogOut } from 'react-icons/fi'
 import { toast } from 'react-toastify'
 import { formatLocalDateTime } from '../utils/datetime'
 import { useRide } from '../hooks/useRide'
 import { useInvites } from '../hooks/useInvites'
+import { useAuth } from '../hooks/useAuth'
+import type { PassengerOut } from '../types/models'
 import { inviteSchema, type InviteFormValues } from '../utils/validation'
 
 function RideDetailSkeleton() {
@@ -159,17 +161,89 @@ function InviteSection({ rideId }: { rideId: string }) {
   )
 }
 
-function PassengersSection({ passengers }: { passengers: import('../types/models').PassengerOut[] }) {
+interface PassengersSectionProps {
+  passengers: PassengerOut[]
+  ownerId: string | undefined
+  ownerName: string | undefined
+  currentDriverId: string
+  canManagePassengers: boolean
+  transferringUserId: string | null
+  removingUserId: string | null
+  onTransferDriver: (newDriverId: string, displayName: string) => Promise<void>
+  onRemovePassenger: (passengerId: string, displayName: string) => Promise<void>
+}
+
+function PassengersSection({
+  passengers,
+  ownerId,
+  ownerName,
+  currentDriverId,
+  canManagePassengers,
+  transferringUserId,
+  removingUserId,
+  onTransferDriver,
+  onRemovePassenger,
+}: PassengersSectionProps) {
+  const showOwnerTakeover = Boolean(ownerId && ownerId !== currentDriverId)
+
+  const ownerLabel = ownerName ?? 'Majitel auta'
+
   if (passengers.length === 0) return (
     <div className="card p-4 flex flex-col gap-2">
       <h2 className="font-semibold">Pasažéři</h2>
       <p className="text-sm text-muted text-center py-2">Zatím žádní pasažéři.</p>
+      {showOwnerTakeover && (
+        <div className="mt-2 p-3 rounded-lg list-item-bg flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-sm font-medium truncate">{ownerLabel}</p>
+            <p className="text-xs text-secondary">Majitel (aktuálně není řidič)</p>
+          </div>
+          {canManagePassengers && ownerId && (
+            <button
+              type="button"
+              onClick={() => onTransferDriver(ownerId, ownerLabel)}
+              disabled={transferringUserId === ownerId}
+              className="button-secondary text-xs flex items-center gap-1"
+            >
+              <FiRepeat size={12} />
+              {transferringUserId === ownerId ? 'Předávám...' : 'Předat řízení'}
+            </button>
+          )}
+        </div>
+      )}
     </div>
   )
 
   return (
     <div className="card p-4 flex flex-col gap-3">
       <h2 className="font-semibold">Pasažéři</h2>
+
+      {showOwnerTakeover && (
+        <div className="p-2 rounded-lg list-item-bg flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full initials-avatar flex items-center justify-center text-sm font-bold">
+            {ownerLabel[0]?.toUpperCase() ?? 'M'}
+          </div>
+          <div className="flex flex-col min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-medium truncate">{ownerLabel}</p>
+              <span className="text-[10px] px-2 py-0.5 rounded-full status-pending">Majitel</span>
+            </div>
+            <p className="text-xs text-secondary">Aktuálně není řidič</p>
+          </div>
+          {canManagePassengers && ownerId && (
+            <button
+              type="button"
+              onClick={() => onTransferDriver(ownerId, ownerLabel)}
+              disabled={transferringUserId === ownerId}
+              className="button-secondary text-xs flex items-center gap-1 shrink-0"
+            >
+              <FiRepeat size={12} />
+              {transferringUserId === ownerId ? 'Předávám...' : 'Předat řízení'}
+            </button>
+          )}
+        </div>
+      )}
+
       <ul className="flex flex-col gap-2">
         {passengers.map(p => (
           <li key={p.user_id} className="flex items-center gap-3 p-2 rounded-lg list-item-bg">
@@ -180,12 +254,43 @@ function PassengersSection({ passengers }: { passengers: import('../types/models
                 {p.full_name?.[0]?.toUpperCase() ?? '?'}
               </div>
             )}
-            <div className="flex flex-col min-w-0">
-              <p className="text-sm font-medium truncate">{p.full_name ?? 'Neznámý'}</p>
+            <div className="flex flex-col min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-medium truncate">{p.full_name ?? 'Neznámý'}</p>
+                {p.user_id === currentDriverId && (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full status-info">Řidič</span>
+                )}
+              </div>
               {p.seat_position != null && (
                 <p className="text-xs text-secondary">Sedadlo {p.seat_position}</p>
               )}
             </div>
+
+            {canManagePassengers && (
+              <div className="flex items-center gap-2 shrink-0">
+                {p.user_id !== currentDriverId && (
+                  <button
+                    type="button"
+                    onClick={() => onTransferDriver(p.user_id, p.full_name ?? 'Neznámý')}
+                    disabled={transferringUserId === p.user_id}
+                    className="button-secondary text-xs flex items-center gap-1"
+                  >
+                    <FiRepeat size={12} />
+                    {transferringUserId === p.user_id ? 'Předávám...' : 'Předat řízení'}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => onRemovePassenger(p.user_id, p.full_name ?? 'Neznámý')}
+                  disabled={removingUserId === p.user_id || p.user_id === currentDriverId}
+                  className="button-danger text-xs flex items-center gap-1"
+                  title={p.user_id === currentDriverId ? 'Nejdříve předejte řízení.' : undefined}
+                >
+                  <FiUserX size={12} />
+                  {removingUserId === p.user_id ? 'Odebírám...' : 'Vyhodit'}
+                </button>
+              </div>
+            )}
           </li>
         ))}
       </ul>
@@ -196,7 +301,20 @@ function PassengersSection({ passengers }: { passengers: import('../types/models
 export default function RideDetailPage() {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
-  const { ride, loading, error, notFound, fetchRide, cancelRide } = useRide()  // ✅
+  const { user } = useAuth()
+  const {
+    ride,
+    loading,
+    error,
+    notFound,
+    fetchRide,
+    cancelRide,
+    leaveRide,
+    transferDriver,
+    removePassenger,
+  } = useRide()
+  const [transferringUserId, setTransferringUserId] = useState<string | null>(null)
+  const [removingUserId, setRemovingUserId] = useState<string | null>(null)
 
   useEffect(() => {
     if (id) fetchRide(id)
@@ -213,6 +331,46 @@ export default function RideDetailPage() {
     if (success) {
       toast.success('Jízda byla smazána.')
       navigate('/rides')
+    }
+  }
+
+  const handleLeave = async () => {
+    if (!ride || !user) return
+    if (!window.confirm('Opravdu chcete opustit tuto jízdu?')) return
+    const success = await leaveRide(ride.id, user.id)
+    if (success) {
+      toast.success('Jízdu jste opustili.')
+      navigate('/rides')
+    }
+  }
+
+  const handleTransferDriver = async (newDriverId: string, displayName: string) => {
+    if (!ride) return
+    if (!window.confirm(`Opravdu chcete předat řízení uživateli ${displayName}?`)) return
+
+    setTransferringUserId(newDriverId)
+    try {
+      const updated = await transferDriver(ride.id, newDriverId, ride.driver_user_id)
+      if (updated) {
+        toast.success('Řízení bylo předáno.')
+      }
+    } finally {
+      setTransferringUserId(null)
+    }
+  }
+
+  const handleRemovePassenger = async (passengerId: string, displayName: string) => {
+    if (!ride) return
+    if (!window.confirm(`Opravdu chcete vyhodit uživatele ${displayName} z jízdy?`)) return
+
+    setRemovingUserId(passengerId)
+    try {
+      const success = await removePassenger(ride.id, passengerId)
+      if (success) {
+        toast.success('Pasažér byl odebrán z jízdy.')
+      }
+    } finally {
+      setRemovingUserId(null)
     }
   }
   
@@ -238,6 +396,10 @@ export default function RideDetailPage() {
     </div>
   )
 
+  const isOwner = ride.car?.owner_id === user?.id
+  const isCurrentDriver = ride.driver_user_id === user?.id
+  const canLeaveRide = Boolean(user && !isOwner && !isCurrentDriver)
+
   return (
     <div className="page-container flex-col pt-24 pb-10">
       <div className="page-content max-w-lg mx-auto p-6 flex flex-col gap-6">
@@ -261,18 +423,40 @@ export default function RideDetailPage() {
             )}
           </div>
 
-          <button
-            onClick={handleDelete}
-            className="self-end button-danger text-sm hover-opacity-80 flex items-center gap-2"
-          >
-            <FiTrash size={14} />
-            Smazat jízdu
-          </button>
+          {isOwner ? (
+            <button
+              onClick={handleDelete}
+              className="self-end button-danger text-sm hover-opacity-80 flex items-center gap-2"
+            >
+              <FiTrash size={14} />
+              Smazat jízdu
+            </button>
+          ) : (
+            <button
+              onClick={handleLeave}
+              disabled={!canLeaveRide}
+              className="self-end button-secondary text-sm flex items-center gap-2"
+              title={!canLeaveRide ? 'Aktuální řidič musí nejdříve předat řízení.' : undefined}
+            >
+              <FiLogOut size={14} />
+              Opustit jízdu
+            </button>
+          )}
         </div>
 
-        <PassengersSection passengers={ride.passengers ?? []} />
+        <PassengersSection
+          passengers={ride.passengers ?? []}
+          ownerId={ride.car?.owner_id}
+          ownerName={ride.car?.owner_name ?? undefined}
+          currentDriverId={ride.driver_user_id}
+          canManagePassengers={Boolean(isOwner)}
+          transferringUserId={transferringUserId}
+          removingUserId={removingUserId}
+          onTransferDriver={handleTransferDriver}
+          onRemovePassenger={handleRemovePassenger}
+        />
 
-        <InviteSection rideId={ride.id} />
+        {isOwner || isCurrentDriver ? <InviteSection rideId={ride.id} /> : null}
 
       </div>
     </div>
