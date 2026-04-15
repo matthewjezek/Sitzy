@@ -57,8 +57,3 @@ jobs:
         run: |
           cd frontend
           npm run test:e2e
-        
-      - name: 'notify vercel'
-        uses: 'vercel/repository-dispatch/actions/status@v1'
-        with:
-          name: 'Vercel - sitzy: full check'
