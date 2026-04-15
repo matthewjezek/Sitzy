@@ -37,11 +37,7 @@ export function useInvites(rideId?: string): UseInvitesReturn {
         : `/invitations/received`;
       const res = await instance.get<Invitation[]>(url);
       const data = Array.isArray(res.data) ? res.data : [];
-      setInvites(
-        rideId
-          ? data
-          : data.filter((i) => i.status === "Pending")
-      );
+      setInvites(data.filter((i) => i.status === "Pending"));
     } catch (err) {
       handleError(err, "Nepodařilo se načíst pozvánky.");
     } finally {

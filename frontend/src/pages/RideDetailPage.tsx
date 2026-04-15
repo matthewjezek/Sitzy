@@ -50,6 +50,7 @@ function RideStatusBadge({ departureTime }: { departureTime: string }) {
 function InviteSection({ rideId, canCancelInvites }: { rideId: string; canCancelInvites: boolean }) {
   const { invites, loading, error, createInvite, cancelInvite } = useInvites(rideId)
   const [cancellingToken, setCancellingToken] = useState<string | null>(null)
+  const pendingInvites = invites.filter(inv => inv.status === 'Pending')
 
   const {
     register,
@@ -117,29 +118,21 @@ function InviteSection({ rideId, canCancelInvites }: { rideId: string; canCancel
         </div>
       )}
 
-      {!loading && invites.length === 0 && (
-        <p className="text-sm text-muted text-center py-2">Zatím žádné pozvánky.</p>
+      {!loading && pendingInvites.length === 0 && (
+        <p className="text-sm text-muted text-center py-2">Žádné aktivní pozvánky.</p>
       )}
 
-      {!loading && invites.map(inv => (
+      {!loading && pendingInvites.map(inv => (
         <div
           key={inv.token}
           className="flex items-center justify-between gap-2 p-3 rounded-lg list-item-bg"
         >
           <div className="flex flex-col gap-0.5 min-w-0">
             <p className="text-sm font-medium truncate">{inv.invited_email}</p>
-            <span className={`text-xs w-fit px-2 py-0.5 rounded-full
-              ${inv.status === 'Accepted' ? 'status-success' : ''}
-              ${inv.status === 'Pending' ? 'status-pending' : ''}
-              ${inv.status === 'Rejected' ? 'status-danger' : ''}
-            `}>
-              {inv.status === 'Accepted' && 'Přijato'}
-              {inv.status === 'Pending' && 'Čeká'}
-              {inv.status === 'Rejected' && 'Odmítnuto'}
-            </span>
+            <span className="text-xs w-fit px-2 py-0.5 rounded-full status-pending">Čeká</span>
           </div>
 
-          {inv.status === 'Pending' && canCancelInvites && (
+          {canCancelInvites && (
             <div className="flex gap-2 shrink-0">
               <button
                 type="button"
@@ -468,7 +461,7 @@ export default function RideDetailPage() {
           onRemovePassenger={handleRemovePassenger}
         />
 
-        {isOwner || isCurrentDriver ? <InviteSection rideId={ride.id} canCancelInvites={Boolean(isOwner)} /> : null}
+        {isOwner ? <InviteSection rideId={ride.id} canCancelInvites /> : null}
 
       </div>
     </div>
