@@ -224,6 +224,13 @@ const SeatButton = styled.button<{
 
   width: ${props => props.$layout === 'praq' || props.$layout === 'minivan (7 seats)' ? '26.4%' : '29.33%'};
   height: ${props => props.$layout === 'praq' || props.$layout === 'minivan (7 seats)' ? '31.7%' : '35.2%'};
+  /* Seat SVG has transparent margins; clip hit-test area to seat core to avoid overlap clicks */
+  clip-path: ${props => props.$layout === 'praq' || props.$layout === 'minivan (7 seats)'
+    ? 'inset(16% 0 12% 0)'
+    : 'inset(17% 0 12% 0)'};
+  -webkit-clip-path: ${props => props.$layout === 'praq' || props.$layout === 'minivan (7 seats)'
+    ? 'inset(16% 0 12% 0)'
+    : 'inset(17% 0 12% 0)'};
   border: none;
   background: transparent;
   padding: 0;
