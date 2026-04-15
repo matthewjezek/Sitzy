@@ -1,6 +1,6 @@
 import { type Page } from '@playwright/test'
 
-import type { Car, Invitation, RideOut, User } from '../../src/types/models'
+import type { Car, Invitation, RideOut, SocialDashboard, User } from '../../src/types/models'
 
 const apiBaseUrl = /localhost:8000/
 
@@ -10,7 +10,45 @@ export const mockUser: User = {
   email: 'jan@example.com',
   avatar_url: null,
   created_at: '2026-01-01T10:00:00.000Z',
-  social_accounts: [{ provider: 'facebook', email: 'jan@example.com', linked_at: '2026-01-01T10:00:00.000Z' }],
+  social_accounts: [{
+    provider: 'facebook',
+    social_id: 'fb-jan-001',
+    email: 'jan@example.com',
+    linked_at: '2026-01-01T10:00:00.000Z',
+  }],
+}
+
+export const mockSocialDashboard: SocialDashboard = {
+  accounts: [
+    {
+      provider: 'facebook',
+      social_id: 'fb-jan-001',
+      linked_at: '2026-01-01T10:00:00.000Z',
+      provider_email: 'jan@example.com',
+      has_real_email: true,
+      active_sessions: 1,
+      last_login_at: '2026-04-12T10:00:00.000Z',
+    },
+  ],
+  sessions: [
+    {
+      id: 'session-1',
+      provider: 'facebook',
+      created_at: '2026-04-12T09:00:00.000Z',
+      expires_at: '2026-04-19T09:00:00.000Z',
+      revoked_at: null,
+      user_agent: 'Playwright',
+      is_current: true,
+    },
+  ],
+  events: [
+    {
+      event: 'linked',
+      provider: 'facebook',
+      created_at: '2026-01-01T10:00:00.000Z',
+      metadata: {},
+    },
+  ],
 }
 
 export const mockCar: Car = {
@@ -70,12 +108,14 @@ export async function mockAuthenticatedApi(page: Page, overrides?: {
   cars?: Car[]
   car?: Car
   invites?: Invitation[]
+  socialDashboard?: SocialDashboard
 }) {
   const rides = overrides?.rides ?? [mockRide]
   const ride = overrides?.ride ?? mockRide
   const cars = overrides?.cars ?? [mockCar]
   const car = overrides?.car ?? mockCar
   const invites = overrides?.invites ?? mockInvites
+  const socialDashboard = overrides?.socialDashboard ?? mockSocialDashboard
 
   await page.route(apiBaseUrl, async (route) => {
     const url = new URL(route.request().url())
@@ -89,6 +129,21 @@ export async function mockAuthenticatedApi(page: Page, overrides?: {
 
     if (pathname === '/invitations/received' && method === 'GET') {
       await route.fulfill({ json: invites })
+      return
+    }
+
+    if (pathname === '/auth/social/dashboard' && method === 'GET') {
+      await route.fulfill({ json: socialDashboard })
+      return
+    }
+
+    if (pathname.startsWith('/auth/social/sessions/') && pathname.endsWith('/revoke') && method === 'POST') {
+      await route.fulfill({ status: 200, json: { ok: true } })
+      return
+    }
+
+    if (pathname.startsWith('/auth/social/providers/') && pathname.endsWith('/unlink') && method === 'POST') {
+      await route.fulfill({ status: 200, json: { ok: true } })
       return
     }
 
