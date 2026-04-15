@@ -10,6 +10,7 @@ from api.models import Car, Invitation, Passenger, Ride
 from api.schemas import InvitationOut, PassengerSeatInOptional, RideOut
 from api.utils.enums import InvitationStatus
 from api.utils.logging_config import get_logger
+from api.utils.seats import get_layout_seat_positions
 
 router = APIRouter()
 logger = get_logger(__name__)
@@ -154,9 +155,13 @@ def accept_invitation(
         )
 
     ride = invitation.ride
+    seat_positions = [s.position for s in ride.car.seats]
+    if not seat_positions:
+        seat_positions = get_layout_seat_positions(ride.car.layout)
+
     occupied = {p.seat_position for p in ride.passengers}
     occupied.add(1)
-    available = [s.position for s in ride.car.seats if s.position not in occupied]
+    available = [position for position in seat_positions if position not in occupied]
 
     if not available:
         raise HTTPException(status_code=400, detail="No available seats.")
