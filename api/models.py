@@ -1,9 +1,9 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import JSON, DateTime, func, text
+from sqlalchemy import JSON, DateTime
 from sqlalchemy import Enum as SqlEnum
-from sqlalchemy import ForeignKey, String, UniqueConstraint
+from sqlalchemy import ForeignKey, String, UniqueConstraint, func, text
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -130,7 +130,10 @@ class IntegrationAuditLog(Base):
         JSON, nullable=False, default=dict
     )
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=text("now()"), index=True
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=text("now()"),
+        index=True,
     )
 
     user: Mapped["User | None"] = relationship(back_populates="integration_audit_logs")
