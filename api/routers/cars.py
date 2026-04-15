@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session, selectinload
 from api import models
 from api.database import get_db
 from api.deps import UserContext, get_current_user
-from api.models import Car, Ride
+from api.models import Car, Ride, Seat
 from api.schemas import (
     CarBase,
     CarCreate,
@@ -15,6 +15,7 @@ from api.schemas import (
     RideOut,
 )
 from api.utils.logging_config import get_logger
+from api.utils.seats import get_layout_seat_positions
 
 router = APIRouter()
 logger = get_logger(__name__)
@@ -78,6 +79,11 @@ def create_car(
     """Create a new car"""
     new_car = models.Car(**car_in.model_dump(), owner_id=ctx.user.id)
     db.add(new_car)
+    db.flush()
+
+    for position in get_layout_seat_positions(new_car.layout):
+        db.add(Seat(car_id=new_car.id, position=position))
+
     db.commit()
     db.refresh(new_car)
     logger.info(
@@ -110,8 +116,14 @@ def change_car(
             status_code=404, detail="Car not found or does not belong to you."
         )
 
+    layout_changed = car.layout != car_in.layout
     car.name = car_in.name
     car.layout = car_in.layout
+
+    if layout_changed:
+        db.query(Seat).filter(Seat.car_id == car.id).delete()
+        for position in get_layout_seat_positions(car.layout):
+            db.add(Seat(car_id=car.id, position=position))
 
     db.commit()
     db.refresh(car)
