@@ -1,5 +1,5 @@
 import React from 'react';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import sedanSvg from '../assets/sedan.svg';
 import coupeSvg from '../assets/coupe.svg';
 import minivanSvg from '../assets/minivan.svg';
@@ -35,45 +35,184 @@ export const SeatState = {
 
 export type SeatStateType = typeof SeatState[keyof typeof SeatState];
 
+const seatFilters = {
+  [SeatState.FREE]: 'grayscale(0.18) brightness(1.06) contrast(0.96)',
+  [SeatState.SELECTED]: 'sepia(0.72) saturate(2.35) hue-rotate(92deg) brightness(1.08) drop-shadow(0 0 10px rgba(34, 197, 94, 0.24))',
+  [SeatState.OCCUPIED]: 'sepia(0.82) saturate(1.9) hue-rotate(205deg) brightness(0.94) drop-shadow(0 0 10px rgba(59, 130, 246, 0.18))',
+  [SeatState.DRIVER]: 'sepia(1) saturate(2.9) hue-rotate(30deg) brightness(1.08) drop-shadow(0 0 10px rgba(245, 158, 11, 0.24))',
+} as const;
+
 // Styled components
-const SeatRendererContainer = styled.div`
+const SeatRendererContainer = styled.section`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  padding: clamp(1rem, 2vw, 1.5rem);
+  border-radius: 1.5rem;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.92) 48%, rgba(241, 245, 249, 0.88) 100%);
+  box-shadow:
+    0 24px 70px rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+
+  html.dark & {
+    border: 1px solid rgba(71, 85, 105, 0.45);
+    background:
+      radial-gradient(circle at top, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.94) 52%, rgba(2, 6, 23, 0.94) 100%);
+    box-shadow:
+      0 28px 80px rgba(2, 6, 23, 0.55),
+      inset 0 1px 0 rgba(148, 163, 184, 0.18);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not(.light) & {
+      border: 1px solid rgba(71, 85, 105, 0.45);
+      background:
+        radial-gradient(circle at top, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.94) 52%, rgba(2, 6, 23, 0.94) 100%);
+      box-shadow:
+        0 28px 80px rgba(2, 6, 23, 0.55),
+        inset 0 1px 0 rgba(148, 163, 184, 0.18);
+    }
+  }
+`;
+
+const RendererHeader = styled.header`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
-  padding: 1.5rem;
-  // background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  border-radius: 1rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  gap: 0.25rem;
+  text-align: center;
 `;
 
-const CarContainer = styled.div`
+const RendererTitle = styled.h3`
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.3;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #0f172a;
+
+  html.dark & {
+    color: #f8fafc;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not(.light) & {
+      color: #f8fafc;
+    }
+  }
+`;
+
+const RendererSubtitle = styled.p`
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #64748b;
+
+  html.dark & {
+    color: #94a3b8;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not(.light) & {
+      color: #94a3b8;
+    }
+  }
+`;
+
+const CarStage = styled.div`
   position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 100%;
+`;
+
+const CarFrame = styled.div`
+  position: relative;
+  width: min(100%, 26rem);
+  padding: clamp(0.75rem, 1.8vw, 1rem);
+  border-radius: 1.5rem;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(241, 245, 249, 0.86));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 12px 30px rgba(15, 23, 42, 0.06);
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 10% 12% auto;
+    height: 58%;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(125, 211, 252, 0.18) 0%, rgba(125, 211, 252, 0.08) 35%, rgba(255, 255, 255, 0) 72%);
+    filter: blur(10px);
+    pointer-events: none;
+  }
+
+  html.dark & {
+    border: 1px solid rgba(71, 85, 105, 0.45);
+    background: linear-gradient(180deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.92));
+    box-shadow:
+      inset 0 1px 0 rgba(148, 163, 184, 0.18),
+      0 14px 36px rgba(2, 6, 23, 0.5);
+
+    &::before {
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.16) 0%, rgba(56, 189, 248, 0.07) 35%, rgba(2, 6, 23, 0) 72%);
+    }
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not(.light) & {
+      border: 1px solid rgba(71, 85, 105, 0.45);
+      background: linear-gradient(180deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.92));
+      box-shadow:
+        inset 0 1px 0 rgba(148, 163, 184, 0.18),
+        0 14px 36px rgba(2, 6, 23, 0.5);
+
+      &::before {
+        background: radial-gradient(circle, rgba(56, 189, 248, 0.16) 0%, rgba(56, 189, 248, 0.07) 35%, rgba(2, 6, 23, 0) 72%);
+      }
+    }
+  }
 `;
 
 const CarImage = styled.img`
-  max-width: 300px;
+  position: relative;
+  z-index: 1;
   width: 100%;
   height: auto;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
-  opacity: 0.9;
+  display: block;
+  filter: drop-shadow(0 10px 20px rgba(15, 23, 42, 0.16));
+  opacity: 0.95;
 `;
 
 const SeatOverlay = styled.div`
   position: absolute;
-  top: 0;
-  left: 0;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+`;
+
+const SeatVisual = styled.img<{ $state: SeatStateType }>`
   width: 100%;
   height: 100%;
+  object-fit: contain;
+  display: block;
+  user-select: none;
   pointer-events: none;
+  filter: ${props => seatFilters[props.$state]};
+  transition: transform 0.2s ease, filter 0.2s ease, opacity 0.2s ease;
 `;
 
 const SeatButton = styled.button<{
   $state: SeatStateType;
   $interactive: boolean;
+  $layout: string;
   $top: number;
   $left: number;
 }>`
@@ -83,88 +222,178 @@ const SeatButton = styled.button<{
   transform: translate(-50%, -50%);
   pointer-events: auto;
 
-  width: 29.33%;   // approx 5.5rem/300px = 29.33%
-  height: 35.2%;  // approx 6.6rem/300px = 35.2%
+  width: ${props => props.$layout === 'praq' || props.$layout === 'minivan (7 seats)' ? '26.4%' : '29.33%'};
+  height: ${props => props.$layout === 'praq' || props.$layout === 'minivan (7 seats)' ? '31.7%' : '35.2%'};
   border: none;
-  background: none;
+  background: transparent;
   padding: 0;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: transform 0.2s ease, opacity 0.2s ease, filter 0.2s ease;
   cursor: ${props => props.$interactive && props.$state !== SeatState.OCCUPIED && props.$state !== SeatState.DRIVER ? 'pointer' : 'default'};
+  z-index: ${props => props.$state === SeatState.SELECTED ? 4 : props.$state === SeatState.OCCUPIED ? 3 : 2};
 
-  .seat-icon {
-    width: 100%;
-    height: 100%;
-    transition: all 0.2s ease;
-    
-    ${props => {
-      switch (props.$state) {
-        case SeatState.DRIVER:
-          return `
-            filter: sepia(1) saturate(3) hue-rotate(30deg) brightness(1.1);
-          `;
-        case SeatState.OCCUPIED:
-          return `
-            filter: sepia(0.8) saturate(2) hue-rotate(200deg) brightness(0.9);
-          `;
-        case SeatState.SELECTED:
-          return `
-            filter: sepia(0.7) saturate(2.5) hue-rotate(90deg) brightness(1.1);
-          `;
-        case SeatState.FREE:
-        default:
-          return `
-            filter: grayscale(0.3) brightness(1.1) contrast(0.9);
-            
-            ${props.$interactive ? `
-              &:hover {
-                filter: sepia(0.2) saturate(1.5) hue-rotate(200deg) brightness(1.2);
-                transform: scale(1.1);
-              }
-            ` : ''}
-          `;
-      }
-    }}
+  &:hover:not(:disabled) {
+    transform: translate(-50%, -50%) scale(1.04);
   }
+
+  &:focus-visible {
+    outline: 3px solid rgba(59, 130, 246, 0.35);
+    outline-offset: 0.3rem;
+    border-radius: 1rem;
+  }
+
+  &:hover:not(:disabled) ${SeatVisual} {
+    transform: scale(1.04);
+  }
+
+  ${props => props.$state === SeatState.SELECTED && css`
+    filter: drop-shadow(0 12px 18px rgba(34, 197, 94, 0.16));
+  `}
+
+  ${props => props.$state === SeatState.OCCUPIED && css`
+    opacity: 0.94;
+  `}
+
+  ${props => props.$state === SeatState.DRIVER && css`
+    opacity: 0.98;
+  `}
+
+  ${props => !props.$interactive && css`
+    cursor: default;
+  `}
+
+  ${props => props.$interactive && props.$state === SeatState.FREE && css`
+    &:hover:not(:disabled) {
+      filter: drop-shadow(0 10px 18px rgba(59, 130, 246, 0.16));
+    }
+  `}
 
   &:disabled {
     cursor: not-allowed;
-    opacity: 0.7;
+    opacity: 0.84;
   }
 `;
 
 const SeatNumber = styled.span`
   position: absolute;
-  top: 50%;
+  top: 59%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
+  min-width: 1.3rem;
+  padding: 0.08rem 0.35rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   font-weight: 700;
-  font-size: 0.75rem;
-  color: #2d3748;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+  font-size: 0.64rem;
+  line-height: 1.2;
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.18);
   pointer-events: none;
+
+  html.dark & {
+    background: rgba(2, 6, 23, 0.88);
+    border: 1px solid rgba(148, 163, 184, 0.28);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not(.light) & {
+      background: rgba(2, 6, 23, 0.88);
+      border: 1px solid rgba(148, 163, 184, 0.28);
+    }
+  }
 `;
 
-const DriverIcon = styled.span`
+const DriverBadge = styled.span`
   position: absolute;
-  top: 22%;
-  right: 12%;
-  font-size: 14px;
-  color: #d69e2e;
+  top: 38%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.2rem;
+  height: 1.2rem;
+  padding: 0 0.28rem;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #fde68a 0%, #f59e0b 100%);
+  border: 1px solid rgba(120, 53, 15, 0.12);
+  color: #7c2d12;
+  font-size: 0.55rem;
+  font-weight: 800;
   line-height: 1;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+  letter-spacing: 0.04em;
+  box-shadow: 0 10px 18px rgba(245, 158, 11, 0.2);
   pointer-events: none;
 `;
 
-const LayoutTitle = styled.h3`
-  margin: 0 0 1rem 0;
-  font-size: 1.125rem;
+const Legend = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8.75rem, 1fr));
+  gap: 0.75rem;
+  width: 100%;
+`;
+
+const LegendItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.7rem 0.8rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(255, 255, 255, 0.7);
+  color: #334155;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+
+  html.dark & {
+    border: 1px solid rgba(71, 85, 105, 0.48);
+    background: rgba(15, 23, 42, 0.58);
+    color: #e2e8f0;
+    box-shadow: inset 0 1px 0 rgba(148, 163, 184, 0.12);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not(.light) & {
+      border: 1px solid rgba(71, 85, 105, 0.48);
+      background: rgba(15, 23, 42, 0.58);
+      color: #e2e8f0;
+      box-shadow: inset 0 1px 0 rgba(148, 163, 184, 0.12);
+    }
+  }
+`;
+
+const LegendSwatch = styled.img<{ $state: SeatStateType }>`
+  width: 1rem;
+  height: 1rem;
+  object-fit: contain;
+  flex: 0 0 auto;
+  filter: ${props => seatFilters[props.$state]};
+`;
+
+const LegendText = styled.span`
+  font-size: 0.84rem;
+  line-height: 1.35;
   font-weight: 600;
-  color: #374151;
+`;
+
+const LegendHint = styled.p`
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: #64748b;
   text-align: center;
+
+  html.dark & {
+    color: #94a3b8;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not(.light) & {
+      color: #94a3b8;
+    }
+  }
 `;
 
 // Main component
@@ -323,19 +552,18 @@ export const SeatRenderer: React.FC<SeatRendererProps> = ({
       <SeatButton
         $state={state}
         $interactive={isInteractive}
+        $layout={normalizedLayout}
         $top={seatPosition.top}
         $left={seatPosition.left}
+        type="button"
         onClick={() => handleSeatClick(position)}
         disabled={!isInteractive || state === SeatState.OCCUPIED || state === SeatState.DRIVER}
         title={tooltipText}
         aria-label={ariaLabel}
+        aria-pressed={state === SeatState.SELECTED}
       >
-        <img 
-          src={seatSvg} 
-          alt="Sedadlo" 
-          className="seat-icon"
-        />
-        {isDriver && <DriverIcon>🚗</DriverIcon>}
+        <SeatVisual src={seatSvg} alt="" aria-hidden="true" $state={state} />
+        {isDriver && <DriverBadge title="Řidič">D</DriverBadge>}
         <SeatNumber>{seat?.position_label || position}</SeatNumber>
       </SeatButton>
     );
@@ -346,19 +574,27 @@ export const SeatRenderer: React.FC<SeatRendererProps> = ({
     const { carSvgSrc, altText, maxSeats } = carMeta;
 
     return (
-      <div>
-        <LayoutTitle>{altText} ({maxSeats} míst)</LayoutTitle>
-        <CarContainer>
-          <CarImage
-            src={carSvgSrc}
-            alt={`${altText} - pohled shora`}
-          />
-          <SeatOverlay>
-            {Array.from({ length: maxSeats }, (_, i) => i + 1).map(position => (
-              <SeatComponent key={position} position={position} />
-            ))}
-          </SeatOverlay>
-        </CarContainer>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem', width: '100%' }}>
+        <RendererHeader>
+          <RendererTitle>{altText}</RendererTitle>
+          <RendererSubtitle>
+            {maxSeats} míst{mode === 'interactive' ? ' • vyberte volné sedadlo' : ' • přehled rozložení'}
+          </RendererSubtitle>
+        </RendererHeader>
+
+        <CarStage>
+          <CarFrame>
+            <CarImage
+              src={carSvgSrc}
+              alt={`${altText} - pohled shora`}
+            />
+            <SeatOverlay>
+              {Array.from({ length: maxSeats }, (_, i) => i + 1).map(position => (
+                <SeatComponent key={position} position={position} />
+              ))}
+            </SeatOverlay>
+          </CarFrame>
+        </CarStage>
       </div>
     );
   };
@@ -379,63 +615,28 @@ export const SeatRenderer: React.FC<SeatRendererProps> = ({
       
       {/* Legend */}
       {mode === 'interactive' && (
-        <div style={{ 
-          display: 'flex', 
-          gap: '1rem', 
-          fontSize: '0.75rem', 
-          flexWrap: 'wrap',
-          justifyContent: 'center',
-          marginTop: '0.5rem'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-            <img 
-              src={seatSvg} 
-              alt="Řidič" 
-              style={{ 
-                width: '16px', 
-                height: '16px',
-                filter: 'sepia(1) saturate(3) hue-rotate(30deg) brightness(1.1)'
-              }}
-            />
-            <span>Řidič</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-            <img 
-              src={seatSvg} 
-              alt="Volné" 
-              style={{ 
-                width: '16px', 
-                height: '16px',
-                filter: 'grayscale(0.3) brightness(1.1) contrast(0.9)'
-              }}
-            />
-            <span>Volné</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-            <img 
-              src={seatSvg} 
-              alt="Vybrané" 
-              style={{ 
-                width: '16px', 
-                height: '16px',
-                filter: 'sepia(0.7) saturate(2.5) hue-rotate(90deg) brightness(1.1)'
-              }}
-            />
-            <span>Vybrané</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-            <img 
-              src={seatSvg} 
-              alt="Obsazené" 
-              style={{ 
-                width: '16px', 
-                height: '16px',
-                filter: 'sepia(0.8) saturate(2) hue-rotate(200deg) brightness(0.9)'
-              }}
-            />
-            <span>Obsazené</span>
-          </div>
-        </div>
+        <Legend aria-label="Legenda stavů sedadel">
+          <LegendItem>
+            <LegendSwatch src={seatSvg} alt="" aria-hidden="true" $state={SeatState.DRIVER} />
+            <LegendText>Řidič</LegendText>
+          </LegendItem>
+          <LegendItem>
+            <LegendSwatch src={seatSvg} alt="" aria-hidden="true" $state={SeatState.FREE} />
+            <LegendText>Volné</LegendText>
+          </LegendItem>
+          <LegendItem>
+            <LegendSwatch src={seatSvg} alt="" aria-hidden="true" $state={SeatState.SELECTED} />
+            <LegendText>Vybrané</LegendText>
+          </LegendItem>
+          <LegendItem>
+            <LegendSwatch src={seatSvg} alt="" aria-hidden="true" $state={SeatState.OCCUPIED} />
+            <LegendText>Obsazené</LegendText>
+          </LegendItem>
+        </Legend>
+      )}
+
+      {mode === 'interactive' && (
+        <LegendHint>Volná sedadla jsou klikací. Řidič je vždy uzamčený a nelze jej vybrat.</LegendHint>
       )}
     </SeatRendererContainer>
   );
