@@ -26,8 +26,7 @@ sequenceDiagram
 
     Alice->>Frontend: Pošle pozvánky
     Frontend->>Backend: POST /rides/42/invite<br/>{emails: ["bob@ex.com", "charlie@ex.com"]}
-    Backend->>Database: INSERT invitations<br/>(ride_id=42, invited_email="bob@ex.com")
-    <br/>(ride_id=42, invited_email="charlie@ex.com")
+    Backend->>Database: INSERT invitations<br/>(ride_id=42, invited_email="bob@ex.com")<br/>(ride_id=42, invited_email="charlie@ex.com")
     Database->>Backend: ✅ Invitations sent
 
     Bob->>Frontend: Přijme pozvánku
@@ -43,12 +42,7 @@ sequenceDiagram
     Backend->>Database: UPDATE/INSERT car_drivers<br/>(nový aktivní řidič Bob)
     Database->>Backend: ✅ Bob je nový aktivní řidič
 
-    Note over Alice,Database: ✅ Flow v praxi:
-    <br/>1. Alice vytvoří auto
-    <br/>2. Vytvoří jízdu (stává se řidičem)
-    <br/>3. Pozve Boba a Charlieho
-    <br/>4. Bob přijme → stane se pasažérem
-    <br/>5. Alice převede řízení na Boba<br/>(Bob musí být pasažér)
+    Note over Alice,Database: ✅ Flow v praxi:<br/>1. Alice vytvoří auto<br/>2. Vytvoří jízdu (stává se řidičem)<br/>3. Pozve Boba a Charlieho<br/>4. Bob přijme → stane se pasažérem<br/>5. Alice převede řízení na Boba<br/>(Bob musí být pasažér)
 ```
 
 ## Scénář:

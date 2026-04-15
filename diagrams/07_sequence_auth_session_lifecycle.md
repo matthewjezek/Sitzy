@@ -33,8 +33,7 @@ sequenceDiagram
         Backend->>Frontend: Smaže refresh cookie
     end
 
-    note over Frontend,Database: Access token je krátkodobý (15 minut),<br/>
-    refresh token je v HttpOnly cookie (7 dní).
+    note over Frontend,Database: Access token je krátkodobý (15 minut),<br/>refresh token je v HttpOnly cookie (7 dní).
 ```
 
 ## Co diagram pokrývá

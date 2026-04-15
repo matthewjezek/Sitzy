@@ -30,17 +30,14 @@ sequenceDiagram
     end
     
     Backend->>Database: create_or_update_session<br/>(SocialSession)
-    Backend->>Backend: Vygeneruje access token<br/>(15 minut) a refresh token
-    <br/>(7 dní)
-    Backend->>Frontend: 200 OK<br/>{<br/>  "access_token": "JWT...",<br/>  
-    "token_type": "bearer"<br/>}
+    Backend->>Backend: Vygeneruje access token<br/>(15 minut) a refresh token<br/>(7 dní)
+    Backend->>Frontend: 200 OK<br/>{<br/>  "access_token": "JWT...",<br/>  "token_type": "bearer"<br/>}
     Backend->>Frontend: Set-Cookie refresh_token=<br/>HttpOnly, SameSite=Lax
     Frontend->>Frontend: Uloží JWT do localStorage
     Frontend->>Frontend: Nastaví Auth header:<br/>Authorization: Bearer JWT...
     Frontend->>User: Přesměruje do aplikace
     
-    Note over User,Database: ✅ Uživatel je přihlášen
-    <br/>Access token je krátkodobý,<br/>refresh token je v HttpOnly cookie
+    Note over User,Database: ✅ Uživatel je přihlášen<br/>Access token je krátkodobý,<br/>refresh token je v HttpOnly cookie
 ```
 
 ## Klíčové kroky:
