@@ -180,7 +180,7 @@ export function useRide() {
     setError(null)
     // Optimistic update
     setRide(prev =>
-      prev ? { ...prev, car_driver_id: newDriverId } : prev
+      prev ? { ...prev, driver_user_id: newDriverId } : prev
     )
     try {
       const res = await instance.post<RideOut>(`/rides/${rideId}/transfer-driver`, {
@@ -191,12 +191,56 @@ export function useRide() {
     } catch (err) {
       // Rollback
       setRide(prev =>
-        prev ? { ...prev, car_driver_id: previousDriverId } : prev
+        prev ? { ...prev, driver_user_id: previousDriverId } : prev
       )
       handleError(err, 'Nepodařilo se předat řízení.')
       return null
     }
   }, [])
+
+  // DELETE /rides/:id/leave – odchod z jízdy pro pasažéra
+  const leaveRide = useCallback(async (rideId: string, userId: string) => {
+    setError(null)
+    // Optimistic update
+    setRide(prev =>
+      prev
+        ? {
+            ...prev,
+            passengers: prev.passengers.filter(p => p.user_id !== userId),
+          }
+        : prev
+    )
+    try {
+      await instance.delete(`/rides/${rideId}/leave`)
+      return true
+    } catch (err) {
+      await fetchRide(rideId)
+      handleError(err, 'Nepodařilo se opustit jízdu.')
+      return false
+    }
+  }, [fetchRide])
+
+  // DELETE /rides/:id/passengers/:userId – odebrání pasažéra majitelem
+  const removePassenger = useCallback(async (rideId: string, passengerUserId: string) => {
+    setError(null)
+    // Optimistic update
+    setRide(prev =>
+      prev
+        ? {
+            ...prev,
+            passengers: prev.passengers.filter(p => p.user_id !== passengerUserId),
+          }
+        : prev
+    )
+    try {
+      await instance.delete(`/rides/${rideId}/passengers/${passengerUserId}`)
+      return true
+    } catch (err) {
+      await fetchRide(rideId)
+      handleError(err, 'Nepodařilo se odebrat pasažéra.')
+      return false
+    }
+  }, [fetchRide])
 
   const resetState = useCallback(() => {
     setRide(null)
@@ -220,6 +264,8 @@ export function useRide() {
     bookSeat,
     cancelBooking,
     transferDriver,
+    leaveRide,
+    removePassenger,
     resetState,
   }
 }
