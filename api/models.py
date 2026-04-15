@@ -1,9 +1,9 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 
-from sqlalchemy import JSON, DateTime
+from sqlalchemy import JSON, DateTime, func, text
 from sqlalchemy import Enum as SqlEnum
-from sqlalchemy import ForeignKey, String, UniqueConstraint, text
+from sqlalchemy import ForeignKey, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -31,8 +31,8 @@ class User(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
-        server_default="now()",
-        onupdate=datetime.now(timezone.utc),
+        server_default=text("now()"),
+        onupdate=func.now(),
     )
 
     cars: Mapped[list["Car"]] = relationship(
@@ -71,7 +71,7 @@ class SocialAccount(Base):
     social_id: Mapped[str] = mapped_column(String, nullable=False)
     email: Mapped[str | None] = mapped_column(String, nullable=True)
     linked_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default="now()"
+        DateTime(timezone=True), nullable=False, server_default=text("now()")
     )
 
     user: Mapped["User"] = relationship(back_populates="social_accounts")
@@ -102,7 +102,7 @@ class SocialSession(Base):
     )
     user_agent: Mapped[str | None] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default="now()"
+        DateTime(timezone=True), nullable=False, server_default=text("now()")
     )
     revoked_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True, index=True
@@ -130,7 +130,7 @@ class IntegrationAuditLog(Base):
         JSON, nullable=False, default=dict
     )
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default="now()", index=True
+        DateTime(timezone=True), nullable=False, server_default=text("now()"), index=True
     )
 
     user: Mapped["User | None"] = relationship(back_populates="integration_audit_logs")
@@ -150,13 +150,13 @@ class Car(Base):
         SqlEnum(CarLayout, name="car_layouts"), nullable=False
     )
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default="now()"
+        DateTime(timezone=True), nullable=False, server_default=text("now()")
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
-        server_default="now()",
-        onupdate=datetime.now(timezone.utc),
+        server_default=text("now()"),
+        onupdate=func.now(),
     )
 
     owner: Mapped["User"] = relationship(back_populates="cars")
@@ -188,7 +188,7 @@ class Invitation(Base):
         nullable=False,
     )
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default="now()"
+        DateTime(timezone=True), nullable=False, server_default=text("now()")
     )
     expires_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, index=True
@@ -211,7 +211,7 @@ class CarDriver(Base):
     )
     is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
     assigned_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default="now()"
+        DateTime(timezone=True), nullable=False, server_default=text("now()")
     )
     revoked_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
@@ -241,7 +241,7 @@ class Ride(Base):
     )
     destination: Mapped[str] = mapped_column(String, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default="now()"
+        DateTime(timezone=True), nullable=False, server_default=text("now()")
     )
 
     car: Mapped["Car"] = relationship(back_populates="rides")
