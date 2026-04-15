@@ -4,12 +4,14 @@ import { useNavigate, Link, useLocation } from 'react-router';
 import { useInvites } from '../hooks/useInvites';
 import { useRide } from '../hooks/useRide';
 import { toast } from 'react-toastify';
+import { formatLocalDateTime } from '../utils/datetime';
 import logoLight from '../assets/sitzy_logo_full.svg';
 import logoDark from '../assets/sitzy_logo_full_dark.svg';
 import { ArrowLeftIcon, RocketIcon, SeatIcon, CarIcon, SettingsIcon, LogoutIcon } from '../assets/icons';
 
 interface BellDropdownProps {
   open: boolean
+  interactive: boolean
   onClose: () => void
   invites: import('../types/models').Invitation[]
   loading: boolean
@@ -17,11 +19,11 @@ interface BellDropdownProps {
   responding: string | null
 }
 
-function BellDropdown({ open, onClose, invites, loading, onRespond, responding }: BellDropdownProps) {
+function BellDropdown({ open, interactive, onClose, invites, loading, onRespond, responding }: BellDropdownProps) {
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!open) return
+    if (!open || !interactive) return
     const handler = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         onClose()
@@ -29,7 +31,7 @@ function BellDropdown({ open, onClose, invites, loading, onRespond, responding }
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
-  }, [open, onClose])
+  }, [open, interactive, onClose])
 
   if (!open) return null
 
@@ -61,18 +63,26 @@ function BellDropdown({ open, onClose, invites, loading, onRespond, responding }
       {!loading && invites.map(inv => (
         <div key={inv.token} className="flex flex-col gap-2 p-3 rounded-lg list-item-bg">
           <p className="text-sm font-medium">Pozvánka na jízdu</p>
-          <p className="text-xs text-gray-500">{new Date(inv.created_at).toLocaleString('cs-CZ')}</p>
+          <p className="text-xs text-gray-500">{formatLocalDateTime(inv.created_at)}</p>
           <div className="flex gap-2 mt-1">
             <button
+              type="button"
               disabled={responding === inv.token}
-              onClick={() => onRespond(inv.token, true, inv.ride_id)}
+              onClick={(e) => {
+                e.stopPropagation()
+                void onRespond(inv.token, true, inv.ride_id)
+              }}
               className="flex-1 text-sm py-1 px-3 rounded-lg button-primary"
             >
               {responding === inv.token ? 'Zpracovávám...' : 'Přijmout'}
             </button>
             <button
+              type="button"
               disabled={responding === inv.token}
-              onClick={() => onRespond(inv.token, false, inv.ride_id)}
+              onClick={(e) => {
+                e.stopPropagation()
+                void onRespond(inv.token, false, inv.ride_id)
+              }}
               className="flex-1 text-sm py-1 px-3 rounded-lg button-secondary"
             >
               Odmítnout
@@ -99,7 +109,14 @@ export default function Navigation() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [bellOpen, setBellOpen] = useState(false)
   const [responding, setResponding] = useState<string | null>(null)
-  const { invites, loading: invitesLoading, respondInvite } = useInvites()  // single instance
+  const [isDesktop, setIsDesktop] = useState(() => window.matchMedia('(min-width: 1024px)').matches)
+  const {
+    invites,
+    loading: invitesLoading,
+    error: invitesError,
+    respondInvite,
+    fetchInvites,
+  } = useInvites()  // single instance
   const { fetchRide } = useRide()
 
   const isActive = (path: string) => {
@@ -110,6 +127,27 @@ export default function Navigation() {
   }
 
   const unreadCount = invites.filter(i => i.status === 'Pending').length
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(min-width: 1024px)')
+    const handleChange = (event: MediaQueryListEvent) => {
+      setIsDesktop(event.matches)
+    }
+
+    setIsDesktop(mediaQuery.matches)
+    mediaQuery.addEventListener('change', handleChange)
+    return () => mediaQuery.removeEventListener('change', handleChange)
+  }, [])
+
+  useEffect(() => {
+    if (!bellOpen) return
+    fetchInvites()
+  }, [bellOpen, fetchInvites])
+
+  useEffect(() => {
+    if (!invitesError) return
+    toast.error(invitesError)
+  }, [invitesError])
 
   const handleLogout = () => {
     localStorage.removeItem('access_token')
@@ -137,6 +175,8 @@ export default function Navigation() {
       } else {
         toast.info('Pozvánka odmítnuta.')
       }
+    } catch {
+      // Error toast is handled centrally from hook error state.
     } finally {
       setResponding(null)
     }
@@ -179,6 +219,7 @@ export default function Navigation() {
             </button>
             <BellDropdown
               open={bellOpen}
+              interactive={isDesktop}
               onClose={() => setBellOpen(false)}
               invites={invites}
               loading={invitesLoading}
@@ -241,6 +282,7 @@ export default function Navigation() {
               
               <BellDropdown
                 open={bellOpen}
+                interactive={!isDesktop}
                 onClose={() => setBellOpen(false)}
                 invites={invites}
                 loading={invitesLoading}
