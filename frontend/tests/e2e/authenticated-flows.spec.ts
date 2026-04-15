@@ -1,7 +1,10 @@
 import { expect, test } from '@playwright/test'
 
 import {
+  mockCar,
   mockAuthenticatedApi,
+  mockRide,
+  mockUser,
   seedAuthenticated,
   seedLoggedOut,
 } from './helpers'
@@ -87,4 +90,60 @@ test('ride detail supports inviting and canceling pending invites', async ({ pag
 
   await expect(page.getByText('friend@example.com', { exact: true })).toHaveCount(0)
   await expect(page.getByText('novy.host@example.com', { exact: true })).toBeVisible()
+})
+
+test('ride detail prevents duplicate invitation for same email', async ({ page }) => {
+  await seedAuthenticated(page)
+  await mockAuthenticatedApi(page)
+
+  await page.goto('/rides/ride-1')
+
+  await page.getByLabel('E-mail pro pozvánku').fill('friend@example.com')
+  await page.getByRole('button', { name: 'Pozvat' }).click()
+
+  await expect(page.getByText('friend@example.com', { exact: true })).toHaveCount(1)
+  await expect(page.getByText('novy.host@example.com', { exact: true })).toHaveCount(0)
+})
+
+test('ride detail keeps invite when cancel confirmation is dismissed', async ({ page }) => {
+  await seedAuthenticated(page)
+  await mockAuthenticatedApi(page)
+
+  await page.goto('/rides/ride-1')
+
+  const existingInviteRow = page.locator('div.list-item-bg').filter({ hasText: 'friend@example.com' })
+  page.once('dialog', dialog => dialog.dismiss())
+  await existingInviteRow.getByRole('button', { name: 'Zrušit' }).click()
+
+  await expect(page.getByText('friend@example.com', { exact: true })).toBeVisible()
+})
+
+test('ride detail hides invite management for non-owner passenger', async ({ page }) => {
+  await seedAuthenticated(page)
+
+  const passengerRide = {
+    ...mockRide,
+    driver_user_id: 'driver-2',
+    car: {
+      ...mockCar,
+      owner_id: 'owner-2',
+      owner_name: 'Alena Majitelová',
+    },
+    passengers: [
+      {
+        user_id: mockUser.id,
+        seat_position: 2,
+        full_name: mockUser.full_name,
+        avatar_url: null,
+      },
+    ],
+  }
+
+  await mockAuthenticatedApi(page, { ride: passengerRide, rides: [passengerRide] })
+
+  await page.goto('/rides/ride-1')
+
+  await expect(page.getByRole('button', { name: 'Opustit jízdu' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Pozvánky' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Smazat jízdu' })).toHaveCount(0)
 })
