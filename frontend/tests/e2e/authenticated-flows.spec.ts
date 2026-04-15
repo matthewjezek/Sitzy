@@ -70,7 +70,7 @@ test('logged out users stay on login when opening protected pages', async ({ pag
   await expect(page.getByRole('heading', { name: 'Přihlášení' })).toBeVisible()
 })
 
-test('ride detail supports inviting and accepting passengers', async ({ page }) => {
+test('ride detail supports inviting and canceling pending invites', async ({ page }) => {
   await seedAuthenticated(page)
   await mockAuthenticatedApi(page)
 
@@ -82,7 +82,8 @@ test('ride detail supports inviting and accepting passengers', async ({ page }) 
   await expect(page.getByText('novy.host@example.com', { exact: true })).toBeVisible()
 
   const existingInviteRow = page.locator('div.list-item-bg').filter({ hasText: 'friend@example.com' })
-  await existingInviteRow.getByRole('button', { name: 'Přijmout' }).click()
+  page.once('dialog', dialog => dialog.accept())
+  await existingInviteRow.getByRole('button', { name: 'Zrušit' }).click()
 
   await expect(page.getByText('friend@example.com', { exact: true })).toHaveCount(0)
   await expect(page.getByText('novy.host@example.com', { exact: true })).toBeVisible()
