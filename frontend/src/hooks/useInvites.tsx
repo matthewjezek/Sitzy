@@ -95,7 +95,8 @@ export function useInvites(rideId?: string): UseInvitesReturn {
       const endpoint = accept
         ? `/invitations/${token}/accept`
         : `/invitations/${token}/reject`;
-      await instance.post(endpoint);
+      // Backend accept endpoint expects an optional body model.
+      await instance.post(endpoint, {});
       setInvites((prev) => prev.filter((i) => i.token !== token));
     } catch (err) {
       // Rollback
@@ -105,6 +106,7 @@ export function useInvites(rideId?: string): UseInvitesReturn {
         )
       );
       handleError(err, "Nepodařilo se odpovědět na pozvánku.");
+      throw err;
     }
   }, []);
 
