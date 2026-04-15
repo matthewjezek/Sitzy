@@ -29,10 +29,7 @@ import DashboardPage from './pages/DashboardPage'
 
 const isDev = import.meta.env.MODE === 'development'
 
-const SeatRendererTestPage = isDev ? lazy(() => import('./pages/SeatRendererTestPage')) : null
-const SeatRendererDemo = isDev ? lazy(() => import('./pages/SeatRendererDemo')) : null
-const SeatPositionTest = isDev ? lazy(() => import('./pages/SeatPositionTest')) : null
-const DialogExamples = isDev ? lazy(() => import('./examples/DialogExamples')) : null
+const SeatRendererLabPage = isDev ? lazy(() => import('./pages/SeatRendererLabPage')) : null
 
 function AppRoutes() {
   const navigate = useNavigate()
@@ -106,17 +103,8 @@ function AppRoutes() {
         <Route path="/settings" element={<SettingsPage />} />
 
         {/* Dev only */}
-        {isDev && SeatRendererTestPage && (
-          <Route path="/test-seats" element={<Suspense fallback={null}><SeatRendererTestPage /></Suspense>} />
-        )}
-        {isDev && SeatRendererDemo && (
-          <Route path="/demo-seats" element={<Suspense fallback={null}><SeatRendererDemo /></Suspense>} />
-        )}
-        {isDev && SeatPositionTest && (
-          <Route path="/position-test" element={<Suspense fallback={null}><SeatPositionTest /></Suspense>} />
-        )}
-        {isDev && DialogExamples && (
-          <Route path="/dialogs" element={<Suspense fallback={null}><DialogExamples /></Suspense>} />
+        {isDev && SeatRendererLabPage && (
+          <Route path="/seat-lab" element={<Suspense fallback={null}><SeatRendererLabPage /></Suspense>} />
         )}
       </Route>
     </Routes>
