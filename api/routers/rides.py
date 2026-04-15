@@ -335,8 +335,9 @@ def transfer_driver(
     ride = _get_ride_or_404(ride_id, db)
     _assert_ride_access(ride, ctx.user.id, owner_only=True)
 
+    is_owner_target = transfer_in.new_driver_id == ride.car.owner_id
     is_passenger = any(p.user_id == transfer_in.new_driver_id for p in ride.passengers)
-    if not is_passenger:
+    if not is_owner_target and not is_passenger:
         raise HTTPException(
             status_code=400,
             detail="New driver must be a passenger on this ride.",
@@ -374,6 +375,7 @@ def transfer_driver(
         new_car_driver.revoked_at = None
 
     ride.car_driver_id = new_car_driver.id
+    ride.car_driver = new_car_driver
     db.commit()
     db.refresh(ride)
 
@@ -386,3 +388,81 @@ def transfer_driver(
         },
     )
     return RideOut.from_ride(ride)
+
+
+@router.delete("/{ride_id}/leave", status_code=204)
+def leave_ride(
+    ride_id: UUID,
+    request: Request,
+    db: Session = Depends(get_db),
+    ctx: UserContext = Depends(get_current_user),
+) -> Response:
+    """Leave a ride as a passenger. Car owner cannot leave own ride.
+    Current driver must transfer driver role first."""
+    ride = _get_ride_or_404(ride_id, db)
+    _assert_ride_access(ride, ctx.user.id)
+
+    if ctx.user.id == ride.car.owner_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Car owner cannot leave their own ride. Cancel it instead.",
+        )
+
+    if ctx.user.id == ride.car_driver.driver_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Current driver cannot leave the ride. Transfer driver role first.",
+        )
+
+    passenger = (
+        db.query(Passenger).filter_by(user_id=ctx.user.id, ride_id=ride_id).first()
+    )
+    if not passenger:
+        raise HTTPException(status_code=404, detail="Passenger booking not found.")
+
+    db.delete(passenger)
+    db.commit()
+    logger.info(
+        "Passenger left ride",
+        extra={"user_id": str(ctx.user.id), "ride_id": str(ride_id)},
+    )
+    return Response(status_code=204)
+
+
+@router.delete("/{ride_id}/passengers/{passenger_user_id}", status_code=204)
+def remove_passenger(
+    ride_id: UUID,
+    passenger_user_id: UUID,
+    request: Request,
+    db: Session = Depends(get_db),
+    ctx: UserContext = Depends(get_current_user),
+) -> Response:
+    """Remove a passenger from a ride. Only car owner can remove passengers."""
+    ride = _get_ride_or_404(ride_id, db)
+    _assert_ride_access(ride, ctx.user.id, owner_only=True)
+
+    if passenger_user_id == ride.car_driver.driver_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot remove the current driver. Transfer driver role first.",
+        )
+
+    passenger = (
+        db.query(Passenger)
+        .filter_by(user_id=passenger_user_id, ride_id=ride_id)
+        .first()
+    )
+    if not passenger:
+        raise HTTPException(status_code=404, detail="Passenger not found on this ride.")
+
+    db.delete(passenger)
+    db.commit()
+    logger.info(
+        "Passenger removed from ride",
+        extra={
+            "owner_id": str(ctx.user.id),
+            "ride_id": str(ride_id),
+            "passenger_user_id": str(passenger_user_id),
+        },
+    )
+    return Response(status_code=204)
