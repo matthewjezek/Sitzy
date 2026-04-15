@@ -20,6 +20,7 @@ from api.schemas import (
 )
 from api.utils.enums import InvitationStatus
 from api.utils.logging_config import get_logger
+from api.utils.seats import get_layout_seat_positions
 from api.utils.security import generate_token
 
 router = APIRouter()
@@ -219,9 +220,13 @@ def book_seat(
     """Book a specific seat on a ride. seat_position is required."""
     ride = _get_ride_or_404(ride_id, db)
 
+    seat_positions = [s.position for s in ride.car.seats]
+    if not seat_positions:
+        seat_positions = get_layout_seat_positions(ride.car.layout)
+
     occupied = {p.seat_position for p in ride.passengers}
     occupied.add(1)  # Driver seat is always occupied
-    available = [s.position for s in ride.car.seats if s.position not in occupied]
+    available = [position for position in seat_positions if position not in occupied]
 
     if not available:
         raise HTTPException(status_code=400, detail="No available seats.")
@@ -294,7 +299,11 @@ def invite_passenger(
     ):
         raise HTTPException(status_code=400, detail="You cannot invite yourself.")
 
-    if len(ride.passengers) >= len(ride.car.seats) - 1:
+    seat_positions = [s.position for s in ride.car.seats]
+    if not seat_positions:
+        seat_positions = get_layout_seat_positions(ride.car.layout)
+
+    if len(ride.passengers) >= len(seat_positions) - 1:
         raise HTTPException(status_code=400, detail="No available seats in this ride.")
 
     existing = (
