@@ -188,15 +188,15 @@ export default function SettingsPage() {
           </div>
 
           <div className="grid gap-2 sm:gap-3 grid-cols-2 sm:grid-cols-3">
-            <div className="rounded-xl border border-black/10 dark:border-white/10 p-2.5 sm:p-3">
+            <div className="rounded-xl border theme-border theme-surface-muted p-2.5 sm:p-3">
               <p className="text-xs text-secondary">Propojení</p>
               <p className="text-base sm:text-lg font-semibold">{providerCount}</p>
             </div>
-            <div className="rounded-xl border border-black/10 dark:border-white/10 p-2.5 sm:p-3">
+            <div className="rounded-xl border theme-border theme-surface-muted p-2.5 sm:p-3">
               <p className="text-xs text-secondary">Aktivní relace</p>
               <p className="text-base sm:text-lg font-semibold">{activeSessionCount}</p>
             </div>
-            <div className="rounded-xl border border-black/10 dark:border-white/10 p-2.5 sm:p-3 col-span-2 sm:col-span-1">
+            <div className="rounded-xl border theme-border theme-surface-muted p-2.5 sm:p-3 col-span-2 sm:col-span-1">
               <p className="text-xs text-secondary">Email</p>
               <p className="text-base sm:text-lg font-semibold">{user?.email ? 'Ano' : 'Ne'}</p>
             </div>
@@ -259,7 +259,7 @@ export default function SettingsPage() {
               )}
 
               {!socialLoading && socialDashboard?.accounts.map(account => (
-                <div key={`${account.provider}-${account.social_id}`} className="rounded-xl border border-black/10 dark:border-white/10 p-3 sm:p-4">
+                <div key={`${account.provider}-${account.social_id}`} className="rounded-xl border theme-border theme-surface-muted p-3 sm:p-4">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                     <div className="min-w-0">
                       <p className="font-medium capitalize">{account.provider}</p>
@@ -283,7 +283,7 @@ export default function SettingsPage() {
               ))}
 
               {!socialLoading && socialDashboard && socialDashboard.sessions.length > 0 && (
-                <div className="pt-2 border-t border-black/10 dark:border-white/10">
+                <div className="pt-2 border-t theme-divider">
                   <div className="mb-2 flex items-center justify-between gap-2">
                     <p className="text-sm font-medium">Relace</p>
                     {hiddenRevokedCount > 0 && (
@@ -303,7 +303,14 @@ export default function SettingsPage() {
                   )}
                   <div className="flex flex-col gap-2">
                     {sessionsToShow.map(session => (
-                      <div key={session.id} className="rounded-xl border border-black/10 dark:border-white/10 p-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                      <div
+                        key={session.id}
+                        className={`rounded-xl border p-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 ${
+                          session.is_current
+                            ? 'session-current'
+                            : 'theme-border theme-surface-muted'
+                        }`}
+                      >
                         <div>
                           <p className="text-sm capitalize">
                             {session.provider} {session.is_current ? '(aktuální)' : ''}
@@ -330,7 +337,7 @@ export default function SettingsPage() {
               )}
 
               {!socialLoading && socialDashboard && socialDashboard.events.length > 0 && (
-                <div className="pt-2 border-t border-black/10 dark:border-white/10">
+                <div className="pt-2 border-t theme-divider">
                   <p className="text-sm font-medium mb-2">Audit integrace (posledních 30 událostí)</p>
                   <div className="flex flex-col gap-1 max-h-44 overflow-auto pr-1">
                     {socialDashboard.events.map((event, idx) => (
