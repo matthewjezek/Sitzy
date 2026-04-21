@@ -35,12 +35,15 @@ export function useRide() {
   }, [])
 
   // GET /rides/:id
-  const fetchRide = useCallback(async (rideId: string) => {
+  const fetchRide = useCallback(async (rideId: string, inviteToken?: string) => {
     setLoading(true)
     setError(null)
     setNotFound(false)
     try {
-      const res = await instance.get<RideOut>(`/rides/${rideId}`)
+      const url = inviteToken
+        ? `/rides/${rideId}?invite_token=${encodeURIComponent(inviteToken)}`
+        : `/rides/${rideId}`
+      const res = await instance.get<RideOut>(url)
       setRide(res.data)
       return res.data
     } catch (err) {
