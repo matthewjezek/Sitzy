@@ -109,6 +109,13 @@ export async function mockAuthenticatedApi(page: Page, overrides?: {
   car?: Car
   invites?: Invitation[]
   socialDashboard?: SocialDashboard
+  inviteTokenErrors?: Record<string, { status: number; detail: string }>
+  acceptInvitationStatus?: number
+  acceptInvitationDetail?: string
+  acceptInvitationDelayMs?: number
+  onAcceptInvitationRequest?: (payload: { token: string; body: { seat_position?: number } }) => void
+  refreshStatus?: number
+  refreshAccessToken?: string
 }) {
   const rides = overrides?.rides ?? [mockRide]
   const ride = overrides?.ride ?? mockRide
@@ -116,6 +123,12 @@ export async function mockAuthenticatedApi(page: Page, overrides?: {
   const car = overrides?.car ?? mockCar
   const invites = overrides?.invites ?? mockInvites
   const socialDashboard = overrides?.socialDashboard ?? mockSocialDashboard
+  const inviteTokenErrors = overrides?.inviteTokenErrors ?? {}
+  const acceptInvitationStatus = overrides?.acceptInvitationStatus ?? 200
+  const acceptInvitationDetail = overrides?.acceptInvitationDetail ?? 'Invitation acceptance failed.'
+  const acceptInvitationDelayMs = overrides?.acceptInvitationDelayMs ?? 0
+  const refreshStatus = overrides?.refreshStatus ?? 200
+  const refreshAccessToken = overrides?.refreshAccessToken ?? 'refreshed-access-token'
 
   await page.route(apiBaseUrl, async (route) => {
     const url = new URL(route.request().url())
@@ -171,6 +184,20 @@ export async function mockAuthenticatedApi(page: Page, overrides?: {
       const token = pathname.split('/')[2]
       const invitation = invites.find(inv => inv.token === token)
       const requestBody = (route.request().postDataJSON() ?? {}) as { seat_position?: number }
+      overrides?.onAcceptInvitationRequest?.({ token, body: requestBody })
+
+      if (acceptInvitationDelayMs > 0) {
+        await new Promise(resolve => setTimeout(resolve, acceptInvitationDelayMs))
+      }
+
+      if (acceptInvitationStatus !== 200) {
+        await route.fulfill({
+          status: acceptInvitationStatus,
+          json: { detail: acceptInvitationDetail },
+        })
+        return
+      }
+
       const selectedSeat = requestBody.seat_position
       const occupiedSeats = new Set(ride.passengers.map(p => p.seat_position))
       occupiedSeats.add(1)
@@ -210,11 +237,25 @@ export async function mockAuthenticatedApi(page: Page, overrides?: {
 
     if (pathname === `/rides/${ride.id}` && method === 'GET') {
       const inviteToken = url.searchParams.get('invite_token')
+      if (inviteToken && inviteTokenErrors[inviteToken]) {
+        const error = inviteTokenErrors[inviteToken]
+        await route.fulfill({ status: error.status, json: { detail: error.detail } })
+        return
+      }
       if (inviteToken && !invites.some(inv => inv.token === inviteToken)) {
         await route.fulfill({ status: 403, json: { detail: 'You are not part of this ride.' } })
         return
       }
       await route.fulfill({ json: ride })
+      return
+    }
+
+    if (pathname === '/auth/refresh' && method === 'POST') {
+      if (refreshStatus === 200) {
+        await route.fulfill({ status: 200, json: { access_token: refreshAccessToken } })
+      } else {
+        await route.fulfill({ status: refreshStatus, json: { detail: 'Refresh failed.' } })
+      }
       return
     }
 
