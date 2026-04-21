@@ -16,6 +16,11 @@ router = APIRouter()
 logger = get_logger(__name__)
 
 
+def _assert_invitation_ride_not_past(invitation: Invitation) -> None:
+    if invitation.ride.departure_time < datetime.now(timezone.utc):
+        raise HTTPException(status_code=409, detail="Past rides are read-only.")
+
+
 @router.get("/received", response_model=list[InvitationOut])
 def get_received_invitations(
     request: Request,
@@ -88,6 +93,8 @@ def cancel_invitation(
             status_code=403, detail="User is not the owner of this car."
         )
 
+    _assert_invitation_ride_not_past(invitation)
+
     db.delete(invitation)
     db.commit()
     logger.info(
@@ -129,6 +136,7 @@ def accept_invitation(
             extra={"user_id": str(ctx.user.id), "token": token},
         )
         raise HTTPException(status_code=410, detail="Invitation has expired.")
+    _assert_invitation_ride_not_past(invitation)
     if invitation.status != InvitationStatus.PENDING:
         raise HTTPException(
             status_code=400, detail="Invitation has already been processed."
@@ -212,6 +220,7 @@ def reject_invitation(
         raise HTTPException(
             status_code=400, detail="Invitation has already been processed."
         )
+    _assert_invitation_ride_not_past(invitation)
     if not ctx.user.email or invitation.invited_email.lower() != ctx.user.email.lower():
         logger.warning(
             "Invitation rejection denied - email mismatch",
