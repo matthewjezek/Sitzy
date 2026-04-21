@@ -147,3 +147,45 @@ test('ride detail hides invite management for non-owner passenger', async ({ pag
   await expect(page.getByRole('heading', { name: 'Pozvánky' })).toHaveCount(0)
   await expect(page.getByRole('button', { name: 'Smazat jízdu' })).toHaveCount(0)
 })
+
+test('accept-then-seat flow finalizes invitation only after seat confirmation', async ({ page }) => {
+  await seedAuthenticated(page)
+
+  const pendingInviteToken = 'invite-seat-flow'
+  await mockAuthenticatedApi(page, {
+    invites: [
+      {
+        invited_email: 'jan@example.com',
+        status: 'Pending',
+        created_at: '2026-04-10T12:00:00.000Z',
+        token: pendingInviteToken,
+        ride_id: mockRide.id,
+      },
+    ],
+    ride: {
+      ...mockRide,
+      passengers: [],
+      driver_user_id: 'driver-2',
+      car: {
+        ...mockCar,
+        owner_id: 'owner-2',
+        owner_name: 'Alena Majitelová',
+      },
+    },
+  })
+
+  await page.goto('/rides')
+  await page.getByRole('button', { name: 'Otevřít notifikace' }).click()
+  await page.getByRole('button', { name: 'Přijmout' }).click()
+
+  await expect(page).toHaveURL(/\/rides\/ride-1\?invite=invite-seat-flow$/)
+  await expect(page.getByText('Vyberte sedadlo pro dokončení přijetí pozvánky.')).toBeVisible()
+
+  await expect(page.getByRole('button', { name: 'Potvrdit vybrané sedadlo' })).toBeDisabled()
+
+  await page.getByRole('button', { name: 'Nechat systém vybrat' }).click()
+
+  await expect(page.getByText('Pozvánka přijata a sedadlo potvrzeno.')).toBeVisible()
+  await expect(page).toHaveURL(/\/rides\/ride-1$/)
+  await expect(page.getByText('Vyberte sedadlo pro dokončení přijetí pozvánky.')).toHaveCount(0)
+})
