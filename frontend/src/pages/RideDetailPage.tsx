@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { FiTrash, FiUserPlus, FiMapPin, FiClock, FiRepeat, FiUserX, FiLogOut, FiXCircle } from 'react-icons/fi'
+import { FiTrash, FiUserPlus, FiClock, FiRepeat, FiUserX, FiLogOut, FiXCircle } from 'react-icons/fi'
+import { BiCar } from "react-icons/bi";
 import { toast } from 'react-toastify'
 import { formatLocalDateTime } from '../utils/datetime'
 import instance from '../api/axios'
@@ -17,7 +18,7 @@ import type { SeatData } from '../components/SeatRenderer'
 function RideDetailSkeleton() {
   return (
     <div className="page-container flex-col pt-24 pb-10">
-      <div className="animate-pulse page-content max-w-lg mx-auto p-6 flex flex-col gap-6">
+      <div className="animate-pulse page-content max-w-md md:max-w-2xl lg:max-w-4xl mx-auto p-4 md:p-6 flex flex-col gap-6">
         <div className="h-40 rounded-xl skeleton-dark" />
         <div className="h-48 rounded-xl skeleton-dark" />
         <div className="h-40 rounded-xl skeleton-dark" />
@@ -91,7 +92,7 @@ function InviteSection({ rideId, canCancelInvites, disabled = false }: { rideId:
     <div className="card p-4 flex flex-col gap-4">
       <h2 className="font-semibold">Pozvánky</h2>
 
-      <form onSubmit={handleSubmit(onInvite)} className="flex gap-2">
+      <form onSubmit={handleSubmit(onInvite)} className="flex flex-col sm:flex-row gap-2">
         <div className="flex-1 flex flex-col gap-1">
           <label htmlFor="invite-email" className="sr-only">E-mail pro pozvánku</label>
           <input
@@ -108,10 +109,11 @@ function InviteSection({ rideId, canCancelInvites, disabled = false }: { rideId:
         <button
           type="submit"
           disabled={isSubmitting || disabled}
-          className="button-primary flex items-center gap-2 shrink-0"
+          className="button-primary flex items-center justify-center gap-2 sm:shrink-0 h-10 sm:h-auto"
         >
           <FiUserPlus size={16} />
-          Pozvat
+          <span className="sm:hidden">Pozvat</span>
+          <span className="hidden sm:inline">Pozvat</span>
         </button>
       </form>
 
@@ -190,8 +192,8 @@ function PassengersSection({
       <h2 className="font-semibold">Pasažéři</h2>
       <p className="text-sm text-muted text-center py-2">Zatím žádní pasažéři.</p>
       {showOwnerTakeover && (
-        <div className="mt-2 p-3 rounded-lg list-item-bg flex items-center justify-between gap-3">
-          <div className="min-w-0">
+        <div className="mt-2 p-3 rounded-lg list-item-bg flex flex-col md:flex-row md:items-center gap-3">
+          <div className="min-w-0 flex-1">
             <p className="text-sm font-medium truncate">{ownerLabel}</p>
             <p className="text-xs text-secondary">Majitel (aktuálně není řidič)</p>
           </div>
@@ -200,7 +202,7 @@ function PassengersSection({
               type="button"
               onClick={() => onTransferDriver(ownerId, ownerLabel)}
               disabled={transferringUserId === ownerId || disabled}
-              className="button-secondary text-xs flex items-center gap-1"
+              className="button-secondary text-xs flex items-center justify-center gap-1 w-full md:w-auto h-10"
             >
               <FiRepeat size={12} />
               {transferringUserId === ownerId ? 'Předávám...' : 'Předat řízení'}
@@ -216,12 +218,12 @@ function PassengersSection({
       <h2 className="font-semibold">Pasažéři</h2>
 
       {showOwnerTakeover && (
-        <div className="p-2 rounded-lg list-item-bg flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full initials-avatar flex items-center justify-center text-sm font-bold">
+        <div className="p-2 rounded-lg list-item-bg flex flex-col md:flex-row md:items-center gap-3">
+          <div className="w-8 h-8 rounded-full initials-avatar flex items-center justify-center text-sm font-bold shrink-0">
             {ownerLabel[0]?.toUpperCase() ?? 'M'}
           </div>
           <div className="flex flex-col min-w-0 flex-1">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <p className="text-sm font-medium truncate">{ownerLabel}</p>
               <span className="text-[10px] px-2 py-0.5 rounded-full status-pending">Majitel</span>
             </div>
@@ -232,7 +234,7 @@ function PassengersSection({
               type="button"
               onClick={() => onTransferDriver(ownerId, ownerLabel)}
               disabled={transferringUserId === ownerId || disabled}
-              className="button-secondary text-xs flex items-center gap-1 shrink-0"
+              className="button-secondary text-xs flex items-center justify-center gap-1 shrink-0 w-full md:w-auto h-10"
             >
               <FiRepeat size={12} />
               {transferringUserId === ownerId ? 'Předávám...' : 'Předat řízení'}
@@ -243,16 +245,16 @@ function PassengersSection({
 
       <ul className="flex flex-col gap-2">
         {passengers.map(p => (
-          <li key={p.user_id} className="flex items-center gap-3 p-2 rounded-lg list-item-bg">
+          <li key={p.user_id} className="flex flex-col md:flex-row md:items-center gap-3 p-2 rounded-lg list-item-bg">
             {p.avatar_url ? (
-              <img src={p.avatar_url} alt={p.full_name ?? ''} className="w-8 h-8 rounded-full object-cover" />
+              <img src={p.avatar_url} alt={p.full_name ?? ''} className="w-8 h-8 rounded-full object-cover shrink-0" />
             ) : (
-              <div className="w-8 h-8 rounded-full initials-avatar flex items-center justify-center text-sm font-bold">
+              <div className="w-8 h-8 rounded-full initials-avatar flex items-center justify-center text-sm font-bold shrink-0">
                 {p.full_name?.[0]?.toUpperCase() ?? '?'}
               </div>
             )}
             <div className="flex flex-col min-w-0 flex-1">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <p className="text-sm font-medium truncate">{p.full_name ?? 'Neznámý'}</p>
                 {p.user_id === currentDriverId && (
                   <span className="text-[10px] px-2 py-0.5 rounded-full status-info">Řidič</span>
@@ -264,13 +266,13 @@ function PassengersSection({
             </div>
 
             {canManagePassengers && (
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-2 w-full md:w-auto md:shrink-0">
                 {p.user_id !== currentDriverId && (
                   <button
                     type="button"
                     onClick={() => onTransferDriver(p.user_id, p.full_name ?? 'Neznámý')}
                     disabled={transferringUserId === p.user_id || disabled}
-                    className="button-secondary text-xs flex items-center gap-1"
+                    className="button-secondary text-xs flex items-center justify-center gap-1 flex-1 sm:flex-none h-10"
                   >
                     <FiRepeat size={12} />
                     {transferringUserId === p.user_id ? 'Předávám...' : 'Předat řízení'}
@@ -280,7 +282,7 @@ function PassengersSection({
                   type="button"
                   onClick={() => onRemovePassenger(p.user_id, p.full_name ?? 'Neznámý')}
                   disabled={removingUserId === p.user_id || p.user_id === currentDriverId || disabled}
-                  className="button-danger text-xs flex items-center gap-1"
+                  className="button-danger text-xs flex items-center justify-center gap-1 flex-1 sm:flex-none h-10"
                   title={p.user_id === currentDriverId ? 'Nejdříve předejte řízení.' : undefined}
                 >
                   <FiUserX size={12} />
@@ -419,13 +421,13 @@ export default function RideDetailPage() {
 
   if (error) return (
     <div className="page-container flex-col pt-24 pb-10">
-      <div className="page-content max-w-lg mx-auto p-6 text-red-500 text-center">{error}</div>
+      <div className="page-content max-w-md md:max-w-2xl lg:max-w-4xl mx-auto p-4 md:p-6 text-red-500 text-center">{error}</div>
     </div>
   )
 
   if (notFound || !ride) return (
     <div className="page-container flex-col pt-24 pb-10">
-      <div className="page-content max-w-lg mx-auto p-6 text-center flex flex-col gap-4">
+      <div className="page-content max-w-md md:max-w-2xl lg:max-w-4xl mx-auto p-4 md:p-6 text-center flex flex-col gap-4">
         <p className="text-secondary">Jízda nebyla nalezena.</p>
         <button
           onClick={() => navigate('/rides')}
@@ -460,30 +462,30 @@ export default function RideDetailPage() {
 
   return (
     <div className="page-container flex-col pt-24 pb-10">
-      <div className="page-content max-w-lg mx-auto p-6 flex flex-col gap-6">
+      <div className="page-content max-w-md md:max-w-2xl lg:max-w-4xl mx-auto p-4 md:p-6 flex flex-col gap-6">
 
-        <div className="card p-6 flex flex-col gap-4 relative overflow-hidden">
+        <div className="card p-4 md:p-6 flex flex-col gap-4 relative overflow-hidden">
           <div className="absolute -top-10 -right-10 w-36 h-36 rounded-full bg-accent/10 blur-2xl pointer-events-none" aria-hidden="true" />
 
-          <div className="flex items-start justify-between gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
             <div className="flex flex-col gap-2">
-              <h1 className="text-2xl font-bold">{ride.destination}</h1>
-              <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold break-words">{ride.destination}</h1>
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className={`text-xs px-2 py-0.5 rounded-full ${roleBadgeClass}`}>{roleBadge}</span>
                 <RideStatusBadge departureTime={ride.departure_time} />
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="flex items-center gap-2 text-sm text-secondary">
               <FiClock size={14} className="shrink-0 text-accent" />
-              {formatLocalDateTime(ride.departure_time)}
+              <span className="break-words">{formatLocalDateTime(ride.departure_time)}</span>
             </div>
             {ride.car && (
               <div className="flex items-center gap-2 text-sm text-secondary">
-                <FiMapPin size={14} className="shrink-0 text-accent" />
-                {ride.car.name} ({ride.car.layout})
+                <BiCar size={15} className="shrink-0 text-accent" />
+                <span className="break-words">{ride.car.name} ({ride.car.layout})</span>
               </div>
             )}
           </div>
@@ -493,27 +495,27 @@ export default function RideDetailPage() {
               <button
                 onClick={handleDelete}
                 disabled={isPastRide}
-                className="button-danger text-sm hover-opacity-80 flex items-center gap-2"
+                className="button-danger text-sm hover-opacity-80 flex items-center gap-2 h-10"
               >
                 <FiTrash size={14} />
-                Smazat jízdu
+                <span>Smazat jízdu</span>
               </button>
             ) : (
               <button
                 onClick={handleLeave}
                 disabled={!canLeaveRide || isPastRide}
-                className="button-secondary text-sm flex items-center gap-2"
+                className="button-secondary text-sm flex items-center gap-2 h-10"
                 title={isPastRide ? 'Minulá jízda je jen pro čtení.' : (!canLeaveRide ? 'Aktuální řidič musí nejdříve předat řízení.' : undefined)}
               >
                 <FiLogOut size={14} />
-                Opustit jízdu
+                <span>Opustit jízdu</span>
               </button>
             )}
           </div>
         </div>
 
-        <div className="card p-4 flex flex-col gap-4">
-          <div className="flex items-start justify-between gap-3">
+        <div className="card p-4 md:p-6 flex flex-col gap-4">
+          <div className="flex flex-col gap-3">
             <div>
               <h2 className="font-semibold">Rozložení sedadel</h2>
               <p className="text-sm text-secondary mt-1">
@@ -539,7 +541,7 @@ export default function RideDetailPage() {
                 type="button"
                 onClick={() => void handleFinalizeInvite(false)}
                 disabled={finishingInvite || selectedSeat == null}
-                className="button-primary"
+                className="button-primary flex-1 sm:flex-none h-10"
               >
                 {finishingInvite ? 'Ukládám...' : 'Potvrdit vybrané sedadlo'}
               </button>
@@ -547,7 +549,7 @@ export default function RideDetailPage() {
                 type="button"
                 onClick={() => void handleFinalizeInvite(true)}
                 disabled={finishingInvite}
-                className="button-secondary"
+                className="button-secondary flex-1 sm:flex-none h-10"
               >
                 {finishingInvite ? 'Ukládám...' : 'Nechat systém vybrat'}
               </button>
