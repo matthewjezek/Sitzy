@@ -168,7 +168,28 @@ export async function mockAuthenticatedApi(page: Page, overrides?: {
     }
 
     if (pathname.startsWith('/invitations/') && pathname.endsWith('/accept') && method === 'POST') {
-      await route.fulfill({ status: 200, json: ride })
+      const token = pathname.split('/')[2]
+      const invitation = invites.find(inv => inv.token === token)
+      const requestBody = (route.request().postDataJSON() ?? {}) as { seat_position?: number }
+      const selectedSeat = requestBody.seat_position
+      const occupiedSeats = new Set(ride.passengers.map(p => p.seat_position))
+      occupiedSeats.add(1)
+
+      const seat = selectedSeat ?? [2, 3, 4, 5, 6, 7].find(position => !occupiedSeats.has(position)) ?? 2
+      const acceptedRide: RideOut = {
+        ...ride,
+        passengers: [
+          ...ride.passengers,
+          {
+            user_id: mockUser.id,
+            seat_position: seat,
+            full_name: mockUser.full_name,
+            avatar_url: mockUser.avatar_url,
+          },
+        ],
+      }
+
+      await route.fulfill({ status: 200, json: acceptedRide })
       return
     }
 
@@ -188,6 +209,11 @@ export async function mockAuthenticatedApi(page: Page, overrides?: {
     }
 
     if (pathname === `/rides/${ride.id}` && method === 'GET') {
+      const inviteToken = url.searchParams.get('invite_token')
+      if (inviteToken && !invites.some(inv => inv.token === inviteToken)) {
+        await route.fulfill({ status: 403, json: { detail: 'You are not part of this ride.' } })
+        return
+      }
       await route.fulfill({ json: ride })
       return
     }
