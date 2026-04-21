@@ -50,7 +50,7 @@ function RideStatusBadge({ departureTime }: { departureTime: string }) {
   )
 }
 
-function InviteSection({ rideId, canCancelInvites }: { rideId: string; canCancelInvites: boolean }) {
+function InviteSection({ rideId, canCancelInvites, disabled = false }: { rideId: string; canCancelInvites: boolean; disabled?: boolean }) {
   const { invites, loading, error, createInvite, cancelInvite } = useInvites(rideId)
   const [cancellingToken, setCancellingToken] = useState<string | null>(null)
   const pendingInvites = invites.filter(inv => inv.status === 'Pending')
@@ -66,6 +66,7 @@ function InviteSection({ rideId, canCancelInvites }: { rideId: string; canCancel
   })
 
   const onInvite = async (data: InviteFormValues) => {
+    if (disabled) return
     await createInvite(data.email)
     if (!error) {
       toast.success(`Pozvánka odeslána na ${data.email}.`)
@@ -74,6 +75,7 @@ function InviteSection({ rideId, canCancelInvites }: { rideId: string; canCancel
   }
 
   const handleCancelInvite = async (token: string, email: string) => {
+    if (disabled) return
     if (!window.confirm(`Opravdu chcete zrušit pozvánku pro ${email}?`)) return
 
     setCancellingToken(token)
@@ -105,7 +107,7 @@ function InviteSection({ rideId, canCancelInvites }: { rideId: string; canCancel
         </div>
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || disabled}
           className="button-primary flex items-center gap-2 shrink-0"
         >
           <FiUserPlus size={16} />
@@ -139,7 +141,7 @@ function InviteSection({ rideId, canCancelInvites }: { rideId: string; canCancel
             <div className="flex gap-2 shrink-0">
               <button
                 type="button"
-                disabled={cancellingToken === inv.token}
+                disabled={cancellingToken === inv.token || disabled}
                 onClick={() => handleCancelInvite(inv.token, inv.invited_email)}
                 className="text-xs button-secondary flex items-center gap-1"
               >
@@ -164,6 +166,7 @@ interface PassengersSectionProps {
   removingUserId: string | null
   onTransferDriver: (newDriverId: string, displayName: string) => Promise<void>
   onRemovePassenger: (passengerId: string, displayName: string) => Promise<void>
+  disabled?: boolean
 }
 
 function PassengersSection({
@@ -176,6 +179,7 @@ function PassengersSection({
   removingUserId,
   onTransferDriver,
   onRemovePassenger,
+  disabled = false,
 }: PassengersSectionProps) {
   const showOwnerTakeover = Boolean(ownerId && ownerId !== currentDriverId)
 
@@ -195,7 +199,7 @@ function PassengersSection({
             <button
               type="button"
               onClick={() => onTransferDriver(ownerId, ownerLabel)}
-              disabled={transferringUserId === ownerId}
+              disabled={transferringUserId === ownerId || disabled}
               className="button-secondary text-xs flex items-center gap-1"
             >
               <FiRepeat size={12} />
@@ -227,7 +231,7 @@ function PassengersSection({
             <button
               type="button"
               onClick={() => onTransferDriver(ownerId, ownerLabel)}
-              disabled={transferringUserId === ownerId}
+              disabled={transferringUserId === ownerId || disabled}
               className="button-secondary text-xs flex items-center gap-1 shrink-0"
             >
               <FiRepeat size={12} />
@@ -265,7 +269,7 @@ function PassengersSection({
                   <button
                     type="button"
                     onClick={() => onTransferDriver(p.user_id, p.full_name ?? 'Neznámý')}
-                    disabled={transferringUserId === p.user_id}
+                    disabled={transferringUserId === p.user_id || disabled}
                     className="button-secondary text-xs flex items-center gap-1"
                   >
                     <FiRepeat size={12} />
@@ -275,7 +279,7 @@ function PassengersSection({
                 <button
                   type="button"
                   onClick={() => onRemovePassenger(p.user_id, p.full_name ?? 'Neznámý')}
-                  disabled={removingUserId === p.user_id || p.user_id === currentDriverId}
+                  disabled={removingUserId === p.user_id || p.user_id === currentDriverId || disabled}
                   className="button-danger text-xs flex items-center gap-1"
                   title={p.user_id === currentDriverId ? 'Nejdříve předejte řízení.' : undefined}
                 >
@@ -436,7 +440,8 @@ export default function RideDetailPage() {
   const isOwner = ride.car?.owner_id === user?.id
   const isCurrentDriver = ride.driver_user_id === user?.id
   const isPassenger = Boolean(user && (ride.passengers ?? []).some(p => p.user_id === user.id))
-  const requiresSeatSelection = Boolean(inviteToken && user && !isOwner && !isCurrentDriver && !isPassenger)
+  const isPastRide = new Date(ride.departure_time).getTime() < Date.now()
+  const requiresSeatSelection = Boolean(inviteToken && user && !isOwner && !isCurrentDriver && !isPassenger && !isPastRide)
 
   const seatRendererLayout = mapCarLayoutForSeatRenderer(ride.car?.layout)
   const seatRendererSeats: SeatData[] = (ride.passengers ?? []).map((p) => ({
@@ -487,6 +492,7 @@ export default function RideDetailPage() {
             {isOwner ? (
               <button
                 onClick={handleDelete}
+                disabled={isPastRide}
                 className="button-danger text-sm hover-opacity-80 flex items-center gap-2"
               >
                 <FiTrash size={14} />
@@ -495,9 +501,9 @@ export default function RideDetailPage() {
             ) : (
               <button
                 onClick={handleLeave}
-                disabled={!canLeaveRide}
+                disabled={!canLeaveRide || isPastRide}
                 className="button-secondary text-sm flex items-center gap-2"
-                title={!canLeaveRide ? 'Aktuální řidič musí nejdříve předat řízení.' : undefined}
+                title={isPastRide ? 'Minulá jízda je jen pro čtení.' : (!canLeaveRide ? 'Aktuální řidič musí nejdříve předat řízení.' : undefined)}
               >
                 <FiLogOut size={14} />
                 Opustit jízdu
@@ -559,9 +565,10 @@ export default function RideDetailPage() {
           removingUserId={removingUserId}
           onTransferDriver={handleTransferDriver}
           onRemovePassenger={handleRemovePassenger}
+          disabled={isPastRide}
         />
 
-        {isOwner ? <InviteSection rideId={ride.id} canCancelInvites /> : null}
+        {isOwner ? <InviteSection rideId={ride.id} canCancelInvites disabled={isPastRide} /> : null}
 
       </div>
     </div>
