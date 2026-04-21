@@ -27,6 +27,36 @@ router = APIRouter()
 logger = get_logger(__name__)
 
 
+def _has_pending_invitation_access(
+    db: Session,
+    *,
+    ride_id: UUID,
+    invite_token: str,
+    user_email: str | None,
+) -> bool:
+    """Allow invited users to open ride detail before they choose a seat.
+
+    Invitation must belong to this ride, be pending, unexpired, and match user email.
+    """
+    if not user_email:
+        return False
+
+    invitation = (
+        db.query(Invitation)
+        .filter(
+            Invitation.token == invite_token,
+            Invitation.ride_id == ride_id,
+            Invitation.status == InvitationStatus.PENDING,
+            Invitation.expires_at >= datetime.now(timezone.utc),
+        )
+        .first()
+    )
+    if not invitation:
+        return False
+
+    return invitation.invited_email.lower() == user_email.lower()
+
+
 def _get_ride_or_404(ride_id: UUID, db: Session) -> Ride:
     """Helper to get a ride by ID or raise 404 if not found."""
     ride = db.query(Ride).filter(Ride.id == ride_id).first()
@@ -39,6 +69,9 @@ def _assert_ride_access(
     ride: Ride,
     user_id: UUID,
     *,
+    db: Session | None = None,
+    invite_token: str | None = None,
+    user_email: str | None = None,
     owner_only: bool = False,
     driver_or_owner: bool = False,
 ) -> None:
@@ -65,11 +98,25 @@ def _assert_ride_access(
                 detail="Only the current driver or car owner can perform this action.",
             )
     else:
-        if not is_owner and not is_current_driver and not is_passenger:
-            raise HTTPException(
-                status_code=403,
-                detail="You are not part of this ride.",
+        if is_owner or is_current_driver or is_passenger:
+            return
+
+        if (
+            db
+            and invite_token
+            and _has_pending_invitation_access(
+                db,
+                ride_id=ride.id,
+                invite_token=invite_token,
+                user_email=user_email,
             )
+        ):
+            return
+
+        raise HTTPException(
+            status_code=403,
+            detail="You are not part of this ride.",
+        )
 
 
 @router.get("/", response_model=list[RideOut])
@@ -162,12 +209,19 @@ def create_ride(
 def get_ride(
     ride_id: UUID,
     request: Request,
+    invite_token: str | None = None,
     db: Session = Depends(get_db),
     ctx: UserContext = Depends(get_current_user),
 ) -> RideOut:
     """Get ride detail."""
     ride = _get_ride_or_404(ride_id, db)
-    _assert_ride_access(ride, ctx.user.id)
+    _assert_ride_access(
+        ride,
+        ctx.user.id,
+        db=db,
+        invite_token=invite_token,
+        user_email=ctx.user.email,
+    )
     return RideOut.from_ride(ride)
 
 
