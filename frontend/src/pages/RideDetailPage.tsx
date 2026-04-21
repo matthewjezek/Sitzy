@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router'
+import { useNavigate, useParams, useSearchParams } from 'react-router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { FiTrash, FiUserPlus, FiMapPin, FiClock, FiRepeat, FiUserX, FiLogOut, FiXCircle } from 'react-icons/fi'
 import { toast } from 'react-toastify'
 import { formatLocalDateTime } from '../utils/datetime'
+import instance from '../api/axios'
 import { useRide } from '../hooks/useRide'
 import { useInvites } from '../hooks/useInvites'
 import { useAuth } from '../hooks/useAuth'
 import type { PassengerOut } from '../types/models'
 import { inviteSchema, type InviteFormValues } from '../utils/validation'
+import SeatRenderer from '../components/SeatRenderer'
+import type { SeatData } from '../components/SeatRenderer'
 
 function RideDetailSkeleton() {
   return (
@@ -291,6 +294,7 @@ function PassengersSection({
 export default function RideDetailPage() {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
+  const [searchParams, setSearchParams] = useSearchParams()
   const { user } = useAuth()
   const {
     ride,
@@ -305,10 +309,16 @@ export default function RideDetailPage() {
   } = useRide()
   const [transferringUserId, setTransferringUserId] = useState<string | null>(null)
   const [removingUserId, setRemovingUserId] = useState<string | null>(null)
+  const [selectedSeat, setSelectedSeat] = useState<number | null>(null)
+  const [finishingInvite, setFinishingInvite] = useState(false)
+
+  const inviteToken = searchParams.get('invite')
 
   useEffect(() => {
-    if (id) fetchRide(id)
-  }, [id, fetchRide])
+    if (id) {
+      void fetchRide(id, inviteToken ?? undefined)
+    }
+  }, [id, fetchRide, inviteToken])
 
   useEffect(() => {
     document.title = ride ? `Sitzy - ${ride.destination}` : 'Sitzy - Jízda'
@@ -363,6 +373,43 @@ export default function RideDetailPage() {
       setRemovingUserId(null)
     }
   }
+
+  const mapCarLayoutForSeatRenderer = (layout: string | undefined): string => {
+    const normalized = layout?.toLowerCase() ?? ''
+    if (normalized.includes('coupe') || normalized.includes('kup')) return 'TRAPAQ'
+    if (normalized.includes('minivan')) return 'PRAQ'
+    if (normalized.includes('praq')) return 'PRAQ'
+    if (normalized.includes('trapaq')) return 'TRAPAQ'
+    return 'SEDAQ'
+  }
+
+  const clearInviteQueryParam = () => {
+    const next = new URLSearchParams(searchParams)
+    next.delete('invite')
+    setSearchParams(next, { replace: true })
+  }
+
+  const handleFinalizeInvite = async (autoAssign: boolean) => {
+    if (!inviteToken || !id) return
+
+    if (!autoAssign && selectedSeat == null) {
+      toast.info('Vyberte prosím sedadlo, nebo použijte automatické přiřazení.')
+      return
+    }
+
+    setFinishingInvite(true)
+    try {
+      await instance.post(`/invitations/${inviteToken}/accept`, autoAssign ? {} : { seat_position: selectedSeat })
+      await fetchRide(id)
+      clearInviteQueryParam()
+      setSelectedSeat(null)
+      toast.success('Pozvánka přijata a sedadlo potvrzeno.')
+    } catch {
+      toast.error('Nepodařilo se dokončit výběr sedadla. Pozvánka zůstává čekající.')
+    } finally {
+      setFinishingInvite(false)
+    }
+  }
   
   if (loading) return <RideDetailSkeleton />
 
@@ -388,6 +435,16 @@ export default function RideDetailPage() {
 
   const isOwner = ride.car?.owner_id === user?.id
   const isCurrentDriver = ride.driver_user_id === user?.id
+  const isPassenger = Boolean(user && (ride.passengers ?? []).some(p => p.user_id === user.id))
+  const requiresSeatSelection = Boolean(inviteToken && user && !isOwner && !isCurrentDriver && !isPassenger)
+
+  const seatRendererLayout = mapCarLayoutForSeatRenderer(ride.car?.layout)
+  const seatRendererSeats: SeatData[] = (ride.passengers ?? []).map((p) => ({
+    position: p.seat_position,
+    user_name: p.full_name ?? undefined,
+    occupied: true,
+  }))
+
   const canLeaveRide = Boolean(user && !isOwner && !isCurrentDriver)
   const roleBadge = isOwner ? 'Majitel auta' : isCurrentDriver ? 'Aktuální řidič' : 'Pasažér'
   const roleBadgeClass = isOwner
@@ -447,6 +504,49 @@ export default function RideDetailPage() {
               </button>
             )}
           </div>
+        </div>
+
+        <div className="card p-4 flex flex-col gap-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h2 className="font-semibold">Rozložení sedadel</h2>
+              <p className="text-sm text-secondary mt-1">
+                {requiresSeatSelection
+                  ? 'Vyberte sedadlo pro dokončení přijetí pozvánky.'
+                  : 'Přehled obsazenosti sedadel v této jízdě.'}
+              </p>
+            </div>
+          </div>
+
+          <SeatRenderer
+            layout={seatRendererLayout}
+            seats={seatRendererSeats}
+            ownerName={ride.car?.owner_name ?? 'Řidič'}
+            mode={requiresSeatSelection ? 'interactive' : 'display'}
+            selectedSeat={requiresSeatSelection ? selectedSeat : undefined}
+            onSeatSelect={requiresSeatSelection ? setSelectedSeat : undefined}
+          />
+
+          {requiresSeatSelection && (
+            <div className="flex flex-col sm:flex-row gap-2">
+              <button
+                type="button"
+                onClick={() => void handleFinalizeInvite(false)}
+                disabled={finishingInvite || selectedSeat == null}
+                className="button-primary"
+              >
+                {finishingInvite ? 'Ukládám...' : 'Potvrdit vybrané sedadlo'}
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleFinalizeInvite(true)}
+                disabled={finishingInvite}
+                className="button-secondary"
+              >
+                {finishingInvite ? 'Ukládám...' : 'Nechat systém vybrat'}
+              </button>
+            </div>
+          )}
         </div>
 
         <PassengersSection
