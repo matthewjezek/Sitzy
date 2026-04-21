@@ -503,7 +503,7 @@ def test_get_invitation_rejects_expired_token():
 
 
 def test_accept_invitation_requires_email_match(fake_user_context):
-    ride = SimpleNamespace(id=uuid4(), car=SimpleNamespace(seats=[]), passengers=[])
+    ride = SimpleNamespace(id=uuid4(), car=SimpleNamespace(seats=[]), departure_time=datetime.now(timezone.utc) + timedelta(minutes=10), passengers=[])
     invitation = SimpleNamespace(
         id=uuid4(),
         token="invite-token",
@@ -558,6 +558,8 @@ def test_accept_invitation_rejects_past_ride(fake_user_context):
 
 
 def test_reject_invitation_updates_status(fake_user_context):
+    car = _car(fake_user_context.user.id)
+    ride = _ride(car, fake_user_context.user.id)
     invitation = SimpleNamespace(
         id=uuid4(),
         token="invite-token",
@@ -565,8 +567,8 @@ def test_reject_invitation_updates_status(fake_user_context):
         status=InvitationStatus.PENDING,
         created_at=datetime.now(timezone.utc),
         expires_at=datetime.now(timezone.utc) + timedelta(hours=1),
-        ride_id=uuid4(),
-        ride=None,
+        ride_id=ride.id,
+        ride=ride,
     )
     fake_db = FakeDB(query_results={Invitation: FakeQuery(first_result=invitation)})
     client = create_client(
