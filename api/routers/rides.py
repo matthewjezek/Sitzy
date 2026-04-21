@@ -119,6 +119,12 @@ def _assert_ride_access(
         )
 
 
+def _assert_ride_not_past(ride: Ride) -> None:
+    """Past rides are immutable to preserve history integrity."""
+    if ride.departure_time < datetime.now(timezone.utc):
+        raise HTTPException(status_code=409, detail="Past rides are read-only.")
+
+
 @router.get("/", response_model=list[RideOut])
 def get_my_rides(
     request: Request,
@@ -236,6 +242,7 @@ def update_ride(
     """Update ride."""
     ride = _get_ride_or_404(ride_id, db)
     _assert_ride_access(ride, ctx.user.id, driver_or_owner=True)
+    _assert_ride_not_past(ride)
 
     ride.departure_time = ride_in.departure_time
     ride.destination = ride_in.destination
@@ -254,6 +261,7 @@ def cancel_ride(
     """Cancel a ride."""
     ride = _get_ride_or_404(ride_id, db)
     _assert_ride_access(ride, ctx.user.id, owner_only=True)
+    _assert_ride_not_past(ride)
 
     db.delete(ride)
     db.commit()
@@ -273,6 +281,7 @@ def book_seat(
 ) -> RideOut:
     """Book a specific seat on a ride. seat_position is required."""
     ride = _get_ride_or_404(ride_id, db)
+    _assert_ride_not_past(ride)
 
     seat_positions = [s.position for s in ride.car.seats]
     if not seat_positions:
@@ -324,6 +333,9 @@ def cancel_booking(
     ctx: UserContext = Depends(get_current_user),
 ) -> Response:
     """Cancel own booking on a ride."""
+    ride = _get_ride_or_404(ride_id, db)
+    _assert_ride_not_past(ride)
+
     passenger = (
         db.query(Passenger).filter_by(user_id=ctx.user.id, ride_id=ride_id).first()
     )
@@ -346,6 +358,7 @@ def invite_passenger(
     """Invite a passenger to a ride."""
     ride = _get_ride_or_404(ride_id, db)
     _assert_ride_access(ride, ctx.user.id, driver_or_owner=True)
+    _assert_ride_not_past(ride)
 
     if (
         ctx.user.email
@@ -397,6 +410,7 @@ def transfer_driver(
     Only car owner can transfer. New driver must be a passenger on the ride."""
     ride = _get_ride_or_404(ride_id, db)
     _assert_ride_access(ride, ctx.user.id, owner_only=True)
+    _assert_ride_not_past(ride)
 
     is_owner_target = transfer_in.new_driver_id == ride.car.owner_id
     is_passenger = any(p.user_id == transfer_in.new_driver_id for p in ride.passengers)
@@ -464,6 +478,7 @@ def leave_ride(
     Current driver must transfer driver role first."""
     ride = _get_ride_or_404(ride_id, db)
     _assert_ride_access(ride, ctx.user.id)
+    _assert_ride_not_past(ride)
 
     if ctx.user.id == ride.car.owner_id:
         raise HTTPException(
@@ -503,6 +518,7 @@ def remove_passenger(
     """Remove a passenger from a ride. Only car owner can remove passengers."""
     ride = _get_ride_or_404(ride_id, db)
     _assert_ride_access(ride, ctx.user.id, owner_only=True)
+    _assert_ride_not_past(ride)
 
     if passenger_user_id == ride.car_driver.driver_id:
         raise HTTPException(
