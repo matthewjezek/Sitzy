@@ -164,6 +164,55 @@ def test_get_my_rides_includes_owner_rides(fake_user_context):
     assert len(response.json()) == 1
 
 
+def test_get_ride_allows_pending_invited_user_with_invite_token(
+    fake_user_context, monkeypatch: pytest.MonkeyPatch
+):
+    car = _car(uuid4())
+    ride = _ride(car, car.owner_id)
+    invitation = SimpleNamespace(
+        id=uuid4(),
+        token="invite-token",
+        ride_id=ride.id,
+        invited_email="owner@example.com",
+        status=InvitationStatus.PENDING,
+        expires_at=datetime.now(timezone.utc) + timedelta(hours=1),
+    )
+    monkeypatch.setattr(rides, "_get_ride_or_404", lambda ride_id, db: ride)
+
+    fake_db = FakeDB(query_results={Invitation: FakeQuery(first_result=invitation)})
+    client = create_client(
+        router=rides.router,
+        prefix="/rides",
+        fake_db=fake_db,
+        current_user=fake_user_context,
+    )
+
+    response = client.get(f"/rides/{ride.id}?invite_token=invite-token")
+
+    assert response.status_code == 200
+    assert response.json()["id"] == str(ride.id)
+
+
+def test_get_ride_denies_pending_invited_user_when_invite_token_missing(
+    fake_user_context, monkeypatch: pytest.MonkeyPatch
+):
+    car = _car(uuid4())
+    ride = _ride(car, car.owner_id)
+    monkeypatch.setattr(rides, "_get_ride_or_404", lambda ride_id, db: ride)
+
+    client = create_client(
+        router=rides.router,
+        prefix="/rides",
+        fake_db=FakeDB(),
+        current_user=fake_user_context,
+    )
+
+    response = client.get(f"/rides/{ride.id}")
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == "You are not part of this ride."
+
+
 def test_create_ride_rejects_non_owner(fake_user_context):
     car = _car(uuid4())
     fake_db = FakeDB(query_results={Car: FakeQuery(first_result=car)})
