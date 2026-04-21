@@ -182,7 +182,6 @@ export async function mockAuthenticatedApi(page: Page, overrides?: {
 
     if (pathname.startsWith('/invitations/') && pathname.endsWith('/accept') && method === 'POST') {
       const token = pathname.split('/')[2]
-      const invitation = invites.find(inv => inv.token === token)
       const requestBody = (route.request().postDataJSON() ?? {}) as { seat_position?: number }
       overrides?.onAcceptInvitationRequest?.({ token, body: requestBody })
 
