@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from 'react';
 import { FiBell, FiX } from 'react-icons/fi';
 import { useNavigate, Link, useLocation } from 'react-router';
 import { useInvites } from '../hooks/useInvites';
-import { useRide } from '../hooks/useRide';
 import { toast } from 'react-toastify';
 import { formatLocalDateTime } from '../utils/datetime';
 import logoLight from '../assets/sitzy_logo_full.svg';
@@ -117,7 +116,6 @@ export default function Navigation() {
     respondInvite,
     fetchInvites,
   } = useInvites()  // single instance
-  const { fetchRide } = useRide()
 
   const isActive = (path: string) => {
     if (path === '/') {
@@ -157,22 +155,12 @@ export default function Navigation() {
   const handleRespond = async (token: string, accept: boolean, rideId: string) => {
     setResponding(token)
     try {
-      await respondInvite(token, accept)
       if (accept) {
-        await fetchRide(rideId)
-        toast.success(
-          <span>
-            Přijato! Sedadlo přiřazeno.{' '}
-            <button
-              type="button"
-              onClick={() => navigate(`/rides/${rideId}`)}
-              className="underline font-semibold"
-            >
-              Zobrazit jízdu →
-            </button>
-          </span>
-        )
+        setBellOpen(false)
+        navigate(`/rides/${rideId}?invite=${encodeURIComponent(token)}`)
+        toast.info('Dokončete přijetí pozvánky výběrem sedadla.')
       } else {
+        await respondInvite(token, false)
         toast.info('Pozvánka odmítnuta.')
       }
     } catch {
