@@ -262,6 +262,30 @@ def test_book_seat_rejects_already_booked(
     assert response.json()["detail"] == "Already booked."
 
 
+def test_transfer_driver_rejects_past_ride(
+    fake_user_context, monkeypatch: pytest.MonkeyPatch
+):
+    car = _car(fake_user_context.user.id)
+    ride = _ride(car, fake_user_context.user.id)
+    ride.departure_time = datetime.now(timezone.utc) - timedelta(minutes=5)
+    monkeypatch.setattr(rides, "_get_ride_or_404", lambda ride_id, db: ride)
+
+    client = create_client(
+        router=rides.router,
+        prefix="/rides",
+        fake_db=FakeDB(),
+        current_user=fake_user_context,
+    )
+
+    response = client.post(
+        f"/rides/{ride.id}/transfer-driver",
+        json={"new_driver_id": str(fake_user_context.user.id)},
+    )
+
+    assert response.status_code == 409
+    assert response.json()["detail"] == "Past rides are read-only."
+
+
 def test_invite_passenger_rejects_self_invite(
     fake_user_context, monkeypatch: pytest.MonkeyPatch
 ):
@@ -501,6 +525,36 @@ def test_accept_invitation_requires_email_match(fake_user_context):
 
     assert response.status_code == 403
     assert response.json()["detail"] == "This is not your invitation."
+
+
+def test_accept_invitation_rejects_past_ride(fake_user_context):
+    ride = SimpleNamespace(
+        id=uuid4(),
+        departure_time=datetime.now(timezone.utc) - timedelta(minutes=5),
+        car=SimpleNamespace(seats=[]),
+        passengers=[],
+    )
+    invitation = SimpleNamespace(
+        id=uuid4(),
+        token="invite-token",
+        ride_id=ride.id,
+        invited_email="owner@example.com",
+        status=InvitationStatus.PENDING,
+        expires_at=datetime.now(timezone.utc) + timedelta(hours=1),
+        ride=ride,
+    )
+    fake_db = FakeDB(query_results={Invitation: FakeQuery(first_result=invitation)})
+    client = create_client(
+        router=invitations.router,
+        prefix="/invitations",
+        fake_db=fake_db,
+        current_user=fake_user_context,
+    )
+
+    response = client.post("/invitations/invite-token/accept", json={})
+
+    assert response.status_code == 409
+    assert response.json()["detail"] == "Past rides are read-only."
 
 
 def test_reject_invitation_updates_status(fake_user_context):
