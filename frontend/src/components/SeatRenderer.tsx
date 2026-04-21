@@ -546,8 +546,8 @@ export const SeatRenderer: React.FC<SeatRendererProps> = ({
       tooltipText = 'Vaše vybrané sedadlo';
       ariaLabel = 'Vaše vybrané sedadlo';
     } else {
-      tooltipText = 'Volné sedadlo - klikněte pro výběr';
-      ariaLabel = 'Volné sedadlo, klikněte pro výběr';
+      tooltipText = isInteractive ? 'Volné sedadlo - klikněte pro výběr' : 'Volné sedadlo';
+      ariaLabel = isInteractive ? 'Volné sedadlo, klikněte pro výběr' : 'Volné sedadlo';
     }
 
     // Add seat number/label to aria-label
