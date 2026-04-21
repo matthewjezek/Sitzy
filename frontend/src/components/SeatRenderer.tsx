@@ -570,7 +570,7 @@ export const SeatRenderer: React.FC<SeatRendererProps> = ({
         aria-pressed={state === SeatState.SELECTED}
       >
         <SeatVisual src={seatSvg} alt="" aria-hidden="true" $state={state} />
-        {isDriver && <DriverBadge title="Řidič">D</DriverBadge>}
+        {isDriver && <DriverBadge title="Řidič">Ř</DriverBadge>}
         <SeatNumber>{seat?.position_label || position}</SeatNumber>
       </SeatButton>
     );
