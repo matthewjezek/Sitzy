@@ -51,7 +51,7 @@ function RideStatusBadge({ departureTime }: { departureTime: string }) {
   )
 }
 
-function InviteSection({ rideId, canCancelInvites, disabled = false }: { rideId: string; canCancelInvites: boolean; disabled?: boolean }) {
+function InviteSection({ rideId, canCancelInvites, hidden = false }: { rideId: string; canCancelInvites: boolean; hidden?: boolean }) {
   const { invites, loading, error, createInvite, cancelInvite } = useInvites(rideId)
   const [cancellingToken, setCancellingToken] = useState<string | null>(null)
   const pendingInvites = invites.filter(inv => inv.status === 'Pending')
@@ -67,7 +67,7 @@ function InviteSection({ rideId, canCancelInvites, disabled = false }: { rideId:
   })
 
   const onInvite = async (data: InviteFormValues) => {
-    if (disabled) return
+    if (hidden) return
     await createInvite(data.email)
     if (!error) {
       toast.success(`Pozvánka odeslána na ${data.email}.`)
@@ -76,7 +76,7 @@ function InviteSection({ rideId, canCancelInvites, disabled = false }: { rideId:
   }
 
   const handleCancelInvite = async (token: string, email: string) => {
-    if (disabled) return
+    if (hidden) return
     if (!window.confirm(`Opravdu chcete zrušit pozvánku pro ${email}?`)) return
 
     setCancellingToken(token)
@@ -89,7 +89,7 @@ function InviteSection({ rideId, canCancelInvites, disabled = false }: { rideId:
   }
 
   return (
-    <div className="card p-4 flex flex-col gap-4">
+    <div className="card p-4 flex flex-col gap-4" hidden={hidden}>
       <h2 className="font-semibold">Pozvánky</h2>
 
       <form onSubmit={handleSubmit(onInvite)} className="flex flex-col sm:flex-row gap-2">
@@ -108,7 +108,7 @@ function InviteSection({ rideId, canCancelInvites, disabled = false }: { rideId:
         </div>
         <button
           type="submit"
-          disabled={isSubmitting || disabled}
+          hidden={isSubmitting || hidden}
           className="button-primary flex items-center justify-center gap-2 sm:shrink-0 h-10 sm:h-auto"
         >
           <FiUserPlus size={16} />
@@ -143,7 +143,7 @@ function InviteSection({ rideId, canCancelInvites, disabled = false }: { rideId:
             <div className="flex gap-2 shrink-0">
               <button
                 type="button"
-                disabled={cancellingToken === inv.token || disabled}
+                hidden={cancellingToken === inv.token || hidden}
                 onClick={() => handleCancelInvite(inv.token, inv.invited_email)}
                 className="text-xs button-secondary flex items-center gap-1"
               >
@@ -168,7 +168,7 @@ interface PassengersSectionProps {
   removingUserId: string | null
   onTransferDriver: (newDriverId: string, displayName: string) => Promise<void>
   onRemovePassenger: (passengerId: string, displayName: string) => Promise<void>
-  disabled?: boolean
+  hidden?: boolean
 }
 
 function PassengersSection({
@@ -181,7 +181,7 @@ function PassengersSection({
   removingUserId,
   onTransferDriver,
   onRemovePassenger,
-  disabled = false,
+  hidden = false,
 }: PassengersSectionProps) {
   const showOwnerTakeover = Boolean(ownerId && ownerId !== currentDriverId)
 
@@ -201,7 +201,7 @@ function PassengersSection({
             <button
               type="button"
               onClick={() => onTransferDriver(ownerId, ownerLabel)}
-              disabled={transferringUserId === ownerId || disabled}
+              hidden={transferringUserId === ownerId || hidden}
               className="button-secondary text-xs flex items-center justify-center gap-1 w-full md:w-auto h-10"
             >
               <FiRepeat size={12} />
@@ -233,7 +233,7 @@ function PassengersSection({
             <button
               type="button"
               onClick={() => onTransferDriver(ownerId, ownerLabel)}
-              disabled={transferringUserId === ownerId || disabled}
+              hidden={transferringUserId === ownerId || hidden}
               className="button-secondary text-xs flex items-center justify-center gap-1 shrink-0 w-full md:w-auto h-10"
             >
               <FiRepeat size={12} />
@@ -271,7 +271,7 @@ function PassengersSection({
                   <button
                     type="button"
                     onClick={() => onTransferDriver(p.user_id, p.full_name ?? 'Neznámý')}
-                    disabled={transferringUserId === p.user_id || disabled}
+                    hidden={transferringUserId === p.user_id || hidden}
                     className="button-secondary text-xs flex items-center justify-center gap-1 flex-1 sm:flex-none h-10"
                   >
                     <FiRepeat size={12} />
@@ -281,7 +281,7 @@ function PassengersSection({
                 <button
                   type="button"
                   onClick={() => onRemovePassenger(p.user_id, p.full_name ?? 'Neznámý')}
-                  disabled={removingUserId === p.user_id || p.user_id === currentDriverId || disabled}
+                  hidden={removingUserId === p.user_id || p.user_id === currentDriverId || hidden}
                   className="button-danger text-xs flex items-center justify-center gap-1 flex-1 sm:flex-none h-10"
                   title={p.user_id === currentDriverId ? 'Nejdříve předejte řízení.' : undefined}
                 >
@@ -494,7 +494,7 @@ export default function RideDetailPage() {
             {isOwner ? (
               <button
                 onClick={handleDelete}
-                disabled={isPastRide}
+                hidden={isPastRide}
                 className="button-danger text-sm hover-opacity-80 flex items-center gap-2 h-10"
               >
                 <FiTrash size={14} />
@@ -503,7 +503,7 @@ export default function RideDetailPage() {
             ) : (
               <button
                 onClick={handleLeave}
-                disabled={!canLeaveRide || isPastRide}
+                hidden={!canLeaveRide || isPastRide}
                 className="button-secondary text-sm flex items-center gap-2 h-10"
                 title={isPastRide ? 'Minulá jízda je jen pro čtení.' : (!canLeaveRide ? 'Aktuální řidič musí nejdříve předat řízení.' : undefined)}
               >
@@ -540,7 +540,7 @@ export default function RideDetailPage() {
               <button
                 type="button"
                 onClick={() => void handleFinalizeInvite(false)}
-                disabled={finishingInvite || selectedSeat == null}
+                hidden={finishingInvite || selectedSeat == null}
                 className="button-primary flex-1 sm:flex-none h-10"
               >
                 {finishingInvite ? 'Ukládám...' : 'Potvrdit vybrané sedadlo'}
@@ -548,7 +548,7 @@ export default function RideDetailPage() {
               <button
                 type="button"
                 onClick={() => void handleFinalizeInvite(true)}
-                disabled={finishingInvite}
+                hidden={finishingInvite}
                 className="button-secondary flex-1 sm:flex-none h-10"
               >
                 {finishingInvite ? 'Ukládám...' : 'Nechat systém vybrat'}
@@ -567,10 +567,10 @@ export default function RideDetailPage() {
           removingUserId={removingUserId}
           onTransferDriver={handleTransferDriver}
           onRemovePassenger={handleRemovePassenger}
-          disabled={isPastRide}
+          hidden={isPastRide}
         />
 
-        {isOwner ? <InviteSection rideId={ride.id} canCancelInvites disabled={isPastRide} /> : null}
+        {isOwner ? <InviteSection rideId={ride.id} canCancelInvites hidden={isPastRide} /> : null}
 
       </div>
     </div>
