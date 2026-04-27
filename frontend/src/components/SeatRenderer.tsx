@@ -1,10 +1,9 @@
 import React from 'react';
-import styled, { css } from 'styled-components';
+import styled, { css, keyframes } from 'styled-components';
 import sedanSvg from '../assets/sedan.svg';
 import coupeSvg from '../assets/coupe.svg';
 import minivanSvg from '../assets/minivan.svg';
 import seatSvg from '../assets/seat.svg';
-import Loader from './Loader';
 
 // TODO: add names?
 
@@ -120,6 +119,85 @@ const RendererSubtitle = styled.p`
       color: #94a3b8;
     }
   }
+`;
+
+const skeletonShimmer = keyframes`
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+`;
+
+const SkeletonBlock = styled.div<{ $radius?: string; $height: string; $width?: string }>`
+  width: ${props => props.$width ?? '100%'};
+  height: ${props => props.$height};
+  border-radius: ${props => props.$radius ?? '0.75rem'};
+  background: linear-gradient(
+    90deg,
+    rgba(203, 213, 225, 0.42) 0%,
+    rgba(226, 232, 240, 0.72) 35%,
+    rgba(203, 213, 225, 0.42) 70%
+  );
+  background-size: 200% 100%;
+  animation: ${skeletonShimmer} 1.35s ease-in-out infinite;
+
+  html.dark & {
+    background: linear-gradient(
+      90deg,
+      rgba(51, 65, 85, 0.52) 0%,
+      rgba(71, 85, 105, 0.78) 35%,
+      rgba(51, 65, 85, 0.52) 70%
+    );
+    background-size: 200% 100%;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not(.light) & {
+      background: linear-gradient(
+        90deg,
+        rgba(51, 65, 85, 0.52) 0%,
+        rgba(71, 85, 105, 0.78) 35%,
+        rgba(51, 65, 85, 0.52) 70%
+      );
+      background-size: 200% 100%;
+    }
+  }
+`;
+
+const SkeletonHeader = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+const SkeletonCarShell = styled.div`
+  position: relative;
+  width: 100%;
+  border-radius: 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(255, 255, 255, 0.52);
+  padding: clamp(0.75rem, 1.8vw, 1rem);
+
+  html.dark & {
+    border: 1px solid rgba(71, 85, 105, 0.45);
+    background: rgba(15, 23, 42, 0.6);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not(.light) & {
+      border: 1px solid rgba(71, 85, 105, 0.45);
+      background: rgba(15, 23, 42, 0.6);
+    }
+  }
+`;
+
+const SkeletonLegend = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8.75rem, 1fr));
+  gap: 0.75rem;
 `;
 
 const CarStage = styled.div`
@@ -608,10 +686,35 @@ export const SeatRenderer: React.FC<SeatRendererProps> = ({
 
   const ready = carLoaded && seatLoaded;
 
+  const renderSkeleton = () => (
+    <>
+      <SkeletonHeader aria-hidden="true">
+        <SkeletonBlock $height="1.1rem" $width="7.5rem" $radius="999px" />
+        <SkeletonBlock $height="0.9rem" $width="12.5rem" $radius="999px" />
+      </SkeletonHeader>
+
+      <CarStage aria-hidden="true">
+        <CarFrame>
+          <SkeletonCarShell>
+            <SkeletonBlock $height="16rem" $radius="1rem" />
+          </SkeletonCarShell>
+        </CarFrame>
+      </CarStage>
+
+      {mode === 'interactive' && (
+        <SkeletonLegend aria-hidden="true">
+          {Array.from({ length: 4 }, (_, index) => (
+            <SkeletonBlock key={`skeleton-legend-${index}`} $height="3rem" $radius="0.9rem" />
+          ))}
+        </SkeletonLegend>
+      )}
+    </>
+  );
+
   if (!ready) {
     return (
       <SeatRendererContainer className={className}>
-        <Loader />
+        {renderSkeleton()}
       </SeatRendererContainer>
     );
   }
