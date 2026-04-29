@@ -13,6 +13,10 @@ from starlette.responses import Response
 
 from api.config import settings
 from api.routers import auth, cars, health, invitations, rides
+try:
+    from api.routers import dev_fixtures
+except Exception:
+    dev_fixtures = None
 from api.utils.limiter import limiter
 from api.utils.logging_config import (
     get_logger,
@@ -141,5 +145,9 @@ app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(cars.router, prefix="/cars", tags=["cars"])
 app.include_router(rides.router, prefix="/rides", tags=["rides"])
 app.include_router(invitations.router, prefix="/invitations", tags=["invitations"])
+
+# Development-only router registration
+if dev_fixtures is not None and settings.environment == "development":
+    app.include_router(dev_fixtures.router, prefix="/auth", tags=["auth"])
 
 logger.info("Sitzy API initialized", extra={"environment": settings.environment})
