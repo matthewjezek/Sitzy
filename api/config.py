@@ -40,6 +40,11 @@ class Settings(BaseSettings):
 
     # CORS
     frontend_origin: str = Field(..., validation_alias="FRONTEND_ORIGIN", min_length=1)
+    # Development-only feature flags
+    demo_fixtures_enabled: bool = Field(False, validation_alias="DEMO_FIXTURES_ENABLED")
+    demo_fixture_whitelist_emails: str = Field(
+        "", validation_alias="DEMO_FIXTURE_WHITELIST_EMAILS"
+    )
 
     @field_validator("x_redirect_uri", "facebook_redirect_uri")
     @classmethod
