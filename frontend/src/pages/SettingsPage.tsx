@@ -156,6 +156,37 @@ export default function SettingsPage() {
     }
   }
 
+  const [demoBusy, setDemoBusy] = useState(false)
+
+  const handleGenerateDemoData = async () => {
+    if (!confirm('Vygenerovat demo data pro aktuální účet?')) return
+    try {
+      setDemoBusy(true)
+      await instance.post('/auth/dev/fixtures/generate')
+      toast.success('Demo data byla vygenerována.')
+      // Refresh dashboard to show new data
+      await Promise.all([refreshSocialDashboard(), refreshUser()])
+    } catch (err) {
+      toast.error('Generování demo dat se nezdařilo.')
+    } finally {
+      setDemoBusy(false)
+    }
+  }
+
+  const handleResetDemoData = async () => {
+    if (!confirm('Smazat všechna demo data vygenerovaná pro tento účet?')) return
+    try {
+      setDemoBusy(true)
+      await instance.post('/auth/dev/fixtures/reset')
+      toast.success('Demo data byla smazána.')
+      await Promise.all([refreshSocialDashboard(), refreshUser()])
+    } catch (err) {
+      toast.error('Reset demo dat se nezdařil.')
+    } finally {
+      setDemoBusy(false)
+    }
+  }
+
   const sessionsToShow = socialDashboard
     ? (showRevokedSessions
         ? socialDashboard.sessions
@@ -415,6 +446,31 @@ export default function SettingsPage() {
             </Link>
           </div>
         </div>
+
+        {import.meta.env.MODE === 'development' && (
+          <div className="settings-section p-4 sm:p-6 border-dashed border-2 border-accent">
+            <div className="settings-section-header">
+              <h2 className="settings-section-title">Development / Tester</h2>
+            </div>
+            <p className="text-sm text-secondary mb-3">Nástroje pro generování a reset demo dat (pouze vývojové prostředí).</p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={handleGenerateDemoData}
+                className="button-primary w-full"
+                disabled={demoBusy}
+              >
+                {demoBusy ? 'Probíhá...' : 'Vygenerovat demo data'}
+              </button>
+              <button
+                onClick={handleResetDemoData}
+                className="button-secondary w-full"
+                disabled={demoBusy}
+              >
+                {demoBusy ? 'Probíhá...' : 'Reset demo dat'}
+              </button>
+            </div>
+          </div>
+        )}
 
       
       <DeleteDialog 
