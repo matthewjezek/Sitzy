@@ -143,6 +143,10 @@ export default function Navigation() {
   }, [bellOpen, fetchInvites])
 
   useEffect(() => {
+    void fetchInvites()
+  }, [location.pathname, fetchInvites])
+
+  useEffect(() => {
     if (!invitesError) return
     toast.error(invitesError)
   }, [invitesError])

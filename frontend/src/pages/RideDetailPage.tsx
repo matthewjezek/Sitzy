@@ -8,7 +8,7 @@ import { toast } from 'react-toastify'
 import { formatLocalDateTime } from '../utils/datetime'
 import instance from '../api/axios'
 import { useRide } from '../hooks/useRide'
-import { useInvites } from '../hooks/useInvites'
+import { useInvites, notifyInvitesChanged } from '../hooks/useInvites'
 import { useAuth } from '../hooks/useAuth'
 import type { PassengerOut } from '../types/models'
 import { inviteSchema, type InviteFormValues } from '../utils/validation'
@@ -403,6 +403,7 @@ export default function RideDetailPage() {
     try {
       await instance.post(`/invitations/${inviteToken}/accept`, autoAssign ? {} : { seat_position: selectedSeat })
       await fetchRide(id)
+      notifyInvitesChanged()
       clearInviteQueryParam()
       setSelectedSeat(null)
       toast.success('Pozvánka přijata a sedadlo potvrzeno.')
