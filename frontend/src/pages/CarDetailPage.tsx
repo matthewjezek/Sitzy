@@ -84,8 +84,8 @@ export default function CarDetailPage() {
           <div className="p-3 rounded-xl badge-indigo">
             <LayoutIcon layout={car.layout} />
           </div>
-          <div>
-            <h1 className="text-2xl font-bold">{car.name}</h1>
+          <div className="min-w-0">
+            <h1 className="text-2xl font-bold break-words whitespace-normal">{car.name}</h1>
             <p className="text-sm text-secondary">{car.layout}</p>
             {car.owner_name && (
               <p className="text-xs text-accent mt-1">Majitel: {car.owner_name}</p>
