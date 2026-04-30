@@ -122,6 +122,7 @@ export async function mockAuthenticatedApi(page: Page, overrides?: {
   const cars = overrides?.cars ?? [mockCar]
   const car = overrides?.car ?? mockCar
   const invites = overrides?.invites ?? mockInvites
+  let mutableInvites = Array.from(invites)
   const socialDashboard = overrides?.socialDashboard ?? mockSocialDashboard
   const inviteTokenErrors = overrides?.inviteTokenErrors ?? {}
   const acceptInvitationStatus = overrides?.acceptInvitationStatus ?? 200
@@ -141,7 +142,7 @@ export async function mockAuthenticatedApi(page: Page, overrides?: {
     }
 
     if (pathname === '/invitations/received' && method === 'GET') {
-      await route.fulfill({ json: invites })
+      await route.fulfill({ json: mutableInvites })
       return
     }
 
@@ -161,22 +162,22 @@ export async function mockAuthenticatedApi(page: Page, overrides?: {
     }
 
     if (pathname === `/invitations/ride/${ride.id}` && method === 'GET') {
-      await route.fulfill({ json: invites })
+      await route.fulfill({ json: mutableInvites })
       return
     }
 
     if (pathname === `/rides/${ride.id}/invite` && method === 'POST') {
       const requestBody = route.request().postDataJSON() as { invited_email?: string }
       const invitedEmail = requestBody.invited_email ?? 'new@example.com'
-      await route.fulfill({
-        json: {
-          invited_email: invitedEmail,
-          status: 'Pending',
-          created_at: '2026-04-14T12:00:00.000Z',
-          token: `invite-${invitedEmail}`,
-          ride_id: ride.id,
-        } satisfies Invitation,
-      })
+      const newInvite: Invitation = {
+        invited_email: invitedEmail,
+        status: 'Pending',
+        created_at: '2026-04-14T12:00:00.000Z',
+        token: `invite-${invitedEmail}`,
+        ride_id: ride.id,
+      }
+      mutableInvites.push(newInvite)
+      await route.fulfill({ json: newInvite })
       return
     }
 
@@ -215,16 +216,22 @@ export async function mockAuthenticatedApi(page: Page, overrides?: {
         ],
       }
 
+      // remove accepted invite from inbox
+      mutableInvites = mutableInvites.filter(i => i.token !== token)
       await route.fulfill({ status: 200, json: acceptedRide })
       return
     }
 
     if (pathname.startsWith('/invitations/') && pathname.endsWith('/reject') && method === 'POST') {
+      const token = pathname.split('/')[2]
+      mutableInvites = mutableInvites.filter(i => i.token !== token)
       await route.fulfill({ status: 200, json: ride })
       return
     }
 
     if (pathname.startsWith('/invitations/') && method === 'DELETE') {
+      const token = pathname.split('/')[2]
+      mutableInvites = mutableInvites.filter(i => i.token !== token)
       await route.fulfill({ status: 200, json: { ok: true } })
       return
     }
@@ -241,7 +248,7 @@ export async function mockAuthenticatedApi(page: Page, overrides?: {
         await route.fulfill({ status: error.status, json: { detail: error.detail } })
         return
       }
-      if (inviteToken && !invites.some(inv => inv.token === inviteToken)) {
+      if (inviteToken && !mutableInvites.some(inv => inv.token === inviteToken)) {
         await route.fulfill({ status: 403, json: { detail: 'You are not part of this ride.' } })
         return
       }

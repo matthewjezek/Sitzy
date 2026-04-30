@@ -456,10 +456,8 @@ test('accept finalization blocks duplicate submit while request is in flight', a
   await page.getByRole('button', { name: 'Přijmout' }).click()
 
   const autoAssignButton = page.getByRole('button', { name: 'Nechat systém vybrat' })
-  await Promise.allSettled([
-    autoAssignButton.click(),
-    autoAssignButton.click({ timeout: 250 }),
-  ])
+  
+  await autoAssignButton.dblclick()
 
   await expect(page.getByText('Pozvánka přijata a sedadlo potvrzeno.')).toBeVisible()
   expect(acceptCalls).toBe(1)
