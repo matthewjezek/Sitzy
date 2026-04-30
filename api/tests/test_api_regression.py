@@ -503,7 +503,12 @@ def test_get_invitation_rejects_expired_token():
 
 
 def test_accept_invitation_requires_email_match(fake_user_context):
-    ride = SimpleNamespace(id=uuid4(), car=SimpleNamespace(seats=[]), departure_time=datetime.now(timezone.utc) + timedelta(minutes=10), passengers=[])
+    ride = SimpleNamespace(
+        id=uuid4(),
+        car=SimpleNamespace(seats=[]),
+        departure_time=datetime.now(timezone.utc) + timedelta(minutes=10),
+        passengers=[],
+    )
     invitation = SimpleNamespace(
         id=uuid4(),
         token="invite-token",
