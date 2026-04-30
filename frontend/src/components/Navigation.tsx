@@ -73,7 +73,7 @@ function BellDropdown({ open, interactive, onClose, invites, loading, onRespond,
               }}
               className="flex-1 text-sm py-1 px-3 rounded-lg button-primary"
             >
-              {responding === inv.token ? 'Zpracovávám...' : 'Zobrazit'}
+              {responding === inv.token ? 'Zpracovávám...' : 'Přijmout'}
             </button>
             <button
               type="button"
