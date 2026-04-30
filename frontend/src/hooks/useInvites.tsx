@@ -130,7 +130,7 @@ export function useInvites(rideId?: string): UseInvitesReturn {
     } catch (err) {
       handleError(err, "Nepodařilo se zrušit pozvánku.");
     }
-  }, []);
+  }, [rideId]);
 
   // POST /invitations/:token/accept|reject
   const respondInvite = useCallback(async (token: string, accept: boolean) => {
@@ -161,7 +161,7 @@ export function useInvites(rideId?: string): UseInvitesReturn {
       handleError(err, "Nepodařilo se odpovědět na pozvánku.");
       throw err;
     }
-  }, []);
+  }, [rideId]);
 
   useEffect(() => {
     fetchInvites();
