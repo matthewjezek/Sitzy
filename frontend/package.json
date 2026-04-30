@@ -15,7 +15,8 @@
     "a11y:lint": "eslint . --ext .ts,.tsx --max-warnings=0",
     "a11y:audit": "echo 'Runtime audit placeholder - requires running dev server'",
     "a11y": "npm run a11y:lint",
-    "a11y:ci": "npm run a11y:lint"
+    "a11y:ci": "npm run a11y:lint",
+    "pre-commit": "npm run a11y:lint && npm run typecheck && npm run test:e2e"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
