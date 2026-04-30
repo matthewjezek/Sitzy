@@ -1,5 +1,6 @@
-from datetime import datetime, timedelta, timezone
 import uuid
+from datetime import datetime, timedelta, timezone
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import or_
@@ -20,8 +21,8 @@ from api.models import (
 from api.schemas import RideOut
 from api.utils.enums import CarLayout, InvitationStatus
 from api.utils.integration_audit import emit_integration_event
-from api.utils.seats import get_layout_seat_positions
 from api.utils.logging_config import get_logger
+from api.utils.seats import get_layout_seat_positions
 
 router = APIRouter()
 logger = get_logger(__name__)
@@ -75,7 +76,7 @@ def _demo_user_name(kind: str, index: int) -> str:
 @router.post("/dev/fixtures/generate")
 def generate_demo_fixtures(
     ctx: UserContext = Depends(get_current_user), db: Session = Depends(get_db)
-):
+) -> dict[str, Any]:
     """Generate deterministic demo fixtures for the current authenticated user.
 
     In production, only whitelisted demo accounts may use this endpoint.
@@ -128,7 +129,9 @@ def generate_demo_fixtures(
         except StopIteration:
             seat_pos = positions[-1]
 
-        passenger = Passenger(user_id=demo_user.id, ride_id=ride.id, seat_position=seat_pos)
+        passenger = Passenger(
+            user_id=demo_user.id, ride_id=ride.id, seat_position=seat_pos
+        )
         db.add(passenger)
         db.flush()
         created_passengers.append(str(passenger.id))
@@ -177,9 +180,13 @@ def generate_demo_fixtures(
         )
     )
 
-    current_user_email = (
-        ctx.user.email if _is_real_email(ctx.user.email) else _valid_demo_email("demo-current-user")
-    )
+    if not ctx.user.email:
+        current_user_email = _valid_demo_email("demo-current-user")
+        ctx.user.email = current_user_email
+        db.flush()
+    else:
+        current_user_email = ctx.user.email
+
     invite = Invitation(
         ride_id=visitor_ride.id,
         invited_email=current_user_email,
@@ -198,12 +205,17 @@ def generate_demo_fixtures(
         "invitation_token": invite.token,
     }
 
-    emit_integration_event(event="demo_fixtures_created", user_id=ctx.user.id, metadata=metadata, db=db)
+    emit_integration_event(
+        event="demo_fixtures_created", user_id=ctx.user.id, metadata=metadata, db=db
+    )
 
     # Commit everything, including the audit row.
     db.commit()
 
-    logger.info("Demo fixtures generated", extra={"user_id": str(ctx.user.id), "car_id": str(car.id)})
+    logger.info(
+        "Demo fixtures generated",
+        extra={"user_id": str(ctx.user.id), "car_id": str(car.id)},
+    )
 
     return {
         "detail": "Demo fixtures generated.",
@@ -214,7 +226,9 @@ def generate_demo_fixtures(
 
 
 @router.post("/dev/fixtures/reset")
-def reset_demo_fixtures(ctx: UserContext = Depends(get_current_user), db: Session = Depends(get_db)):
+def reset_demo_fixtures(
+    ctx: UserContext = Depends(get_current_user), db: Session = Depends(get_db)
+) -> dict[str, int | str]:
     """Delete demo-generated fixtures for the current authenticated user."""
     _ensure_dev_enabled()
 

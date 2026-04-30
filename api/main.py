@@ -1,5 +1,7 @@
 import uuid
 from collections.abc import Awaitable, Callable
+from importlib import import_module
+from types import ModuleType
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
@@ -13,10 +15,6 @@ from starlette.responses import Response
 
 from api.config import settings
 from api.routers import auth, cars, health, invitations, rides
-try:
-    from api.routers import dev_fixtures
-except Exception:
-    dev_fixtures = None
 from api.utils.limiter import limiter
 from api.utils.logging_config import (
     get_logger,
@@ -26,6 +24,12 @@ from api.utils.logging_config import (
     setup_logging,
     start_operation_timer,
 )
+
+dev_fixtures: ModuleType | None
+try:
+    dev_fixtures = import_module("api.routers.dev_fixtures")
+except ModuleNotFoundError:
+    dev_fixtures = None
 
 load_dotenv()
 
