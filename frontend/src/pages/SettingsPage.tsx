@@ -166,7 +166,7 @@ export default function SettingsPage() {
       toast.success('Demo data byla vygenerována.')
       // Refresh dashboard to show new data
       await Promise.all([refreshSocialDashboard(), refreshUser()])
-    } catch (err) {
+    } catch {
       toast.error('Generování demo dat se nezdařilo.')
     } finally {
       setDemoBusy(false)
@@ -180,7 +180,7 @@ export default function SettingsPage() {
       await instance.post('/auth/dev/fixtures/reset')
       toast.success('Demo data byla smazána.')
       await Promise.all([refreshSocialDashboard(), refreshUser()])
-    } catch (err) {
+    } catch {
       toast.error('Reset demo dat se nezdařil.')
     } finally {
       setDemoBusy(false)
