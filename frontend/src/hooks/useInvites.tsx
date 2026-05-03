@@ -147,12 +147,10 @@ export function useInvites(rideId?: string): UseInvitesReturn {
       const endpoint = accept
         ? `/invitations/${token}/accept`
         : `/invitations/${token}/reject`;
-      // Backend accept endpoint expects an optional body model.
       await instance.post(endpoint, {});
       setInvites((prev) => prev.filter((i) => i.token !== token));
       notifyInvitesChanged(rideId);
     } catch (err) {
-      // Rollback
       setInvites((prev) =>
         prev.map((i) =>
           i.token === token ? { ...i, status: "Pending" } : i
