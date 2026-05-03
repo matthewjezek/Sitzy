@@ -27,6 +27,32 @@ router = APIRouter()
 logger = get_logger(__name__)
 
 
+def _swap_driver_and_passenger_seats(
+    db: Session,
+    ride_id: UUID,
+    old_driver_id: UUID,
+    new_driver_passenger: Passenger,
+) -> None:
+    """
+    Helper to swap seats between the current driver and a passenger.
+    The new driver vacates their passenger seat (moving to the implicit driver seat 1),
+    and the old driver is assigned to the vacated passenger seat.
+    """
+    vacated_seat = new_driver_passenger.seat_position
+
+    # Remove the new driver from the passengers list
+    db.delete(new_driver_passenger)
+
+    # Create a new passenger record for the old driver in the vacated seat
+    old_driver_as_passenger = Passenger(
+        user_id=old_driver_id,
+        ride_id=ride_id,
+        seat_position=vacated_seat,
+    )
+    db.add(old_driver_as_passenger)
+    db.flush()
+
+
 def _has_pending_invitation_access(
     db: Session,
     *,
@@ -413,8 +439,14 @@ def transfer_driver(
     _assert_ride_not_past(ride)
 
     is_owner_target = transfer_in.new_driver_id == ride.car.owner_id
-    is_passenger = any(p.user_id == transfer_in.new_driver_id for p in ride.passengers)
-    if not is_owner_target and not is_passenger:
+    
+    new_driver_passenger = (
+        db.query(Passenger)
+        .filter_by(user_id=transfer_in.new_driver_id, ride_id=ride_id)
+        .first()
+    )
+
+    if not is_owner_target and not new_driver_passenger:
         raise HTTPException(
             status_code=400,
             detail="New driver must be a passenger on this ride.",
@@ -423,10 +455,44 @@ def transfer_driver(
     if ride.car_driver.driver_id == transfer_in.new_driver_id:
         raise HTTPException(
             status_code=400,
-            detail="This passenger is already the driver.",
+            detail="This user is already the driver.",
         )
 
     current_driver = ride.car_driver
+    old_driver_id = current_driver.driver_id
+
+    if new_driver_passenger:
+        _swap_driver_and_passenger_seats(
+            db=db,
+            ride_id=ride_id,
+            old_driver_id=old_driver_id,
+            new_driver_passenger=new_driver_passenger,
+        )
+    else:
+        # Fallback: Owner reclaims driver role but wasn't a passenger.
+        # Find the first available seat for the displaced driver.
+        occupied = {p.seat_position for p in ride.passengers}
+        occupied.add(1)  # Driver seat
+        seat_positions = [s.position for s in ride.car.seats]
+        if not seat_positions:
+            seat_positions = get_layout_seat_positions(ride.car.layout)
+            
+        available = [pos for pos in seat_positions if pos not in occupied]
+        
+        if not available:
+            raise HTTPException(
+                status_code=400, 
+                detail="No available seats to safely move the current driver to."
+            )
+            
+        old_driver_as_passenger = Passenger(
+            user_id=old_driver_id,
+            ride_id=ride_id,
+            seat_position=available[0],
+        )
+        db.add(old_driver_as_passenger)
+        db.flush()
+
     if current_driver.driver_id != ride.car.owner_id:
         current_driver.is_active = False
         current_driver.revoked_at = datetime.now(timezone.utc)
@@ -453,6 +519,7 @@ def transfer_driver(
 
     ride.car_driver_id = new_car_driver.id
     ride.car_driver = new_car_driver
+    
     db.commit()
     db.refresh(ride)
 
