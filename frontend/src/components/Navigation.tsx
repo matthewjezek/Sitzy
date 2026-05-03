@@ -62,7 +62,7 @@ function BellDropdown({ open, interactive, onClose, invites, loading, onRespond,
       {!loading && invites.map(inv => (
         <div key={inv.token} className="flex flex-col gap-2 p-3 rounded-lg list-item-bg">
           <p className="text-sm font-medium">Pozvánka na jízdu</p>
-          <p className="text-xs text-gray-500">{formatLocalDateTime(inv.created_at)}</p>
+          <p className="text-xs text-timestamp">{formatLocalDateTime(inv.created_at)}</p>
           <div className="flex gap-2 mt-1">
             <button
               type="button"
