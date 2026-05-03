@@ -39,15 +39,6 @@
     --border-subtle-dark: rgba(198, 190, 251, 0.28);
     --surface-muted-light: #f8f6ff;
     --surface-muted-dark: #1b2436;
-    /*
-      WCAG 2.1 AA Recommendations:
-      - Maintain contrast ratio ≥ 4.5:1 for normal text, ≥ 3:1 for large text/icons.
-      - Use text-shadow or outline for text on colored backgrounds if needed.
-      - Avoid using color as the only means of conveying information.
-      - Ensure focus indicators are visible and high-contrast.
-      - Test color choices in both light and dark modes.
-      - Use sufficient padding and spacing for touch targets.
-    */
   }
 }
 
@@ -908,30 +899,21 @@
     gap: 0.75rem;
   }
 
-  .list-item {
-    background-color: white;
-    border-radius: 1rem;
-    padding: 1rem;
-    border: 1px solid var(--primary-border);
-    transition: all 200ms ease;
-    cursor: pointer;
+  .list-item-bg {
+    background-color: #f3f4f6;
+    transition: background-color 200ms ease;
   }
 
-  .list-item:hover {
-    border-color: #b5a1ff;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  }
-
-  .dark .list-item {
+  .dark .list-item-bg {
     background-color: #1f2937;
-    border-color: rgba(115, 80, 242, 0.2);
-    color: #f3f4f6;
   }
 
-  .dark .list-item:hover {
-    border-color: rgba(115, 80, 242, 0.4);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  .list-item-bg:hover {
+  background-color: #e5e7eb;
+  }
+
+  .dark .list-item-bg:hover {
+    background-color: #374151;
   }
 
   /* ========================================
@@ -1130,15 +1112,8 @@
   }
 
   /* ========================================
-   * LIST/CONTAINER BACKGROUNDS
+   * CONTAINER BACKGROUNDS
    * ======================================== */
-  .list-item-bg {
-    background-color: #f9fafb;
-  }
-
-  .dark .list-item-bg {
-    background-color: #1f2937;
-  }
 
   .container-light-bg {
     background-color: #ffffff;
@@ -1160,7 +1135,7 @@
   }
 
   .text-muted {
-    color: #6b7280;
+    color: #4a5565;
   }
 
   .dark .text-muted {
@@ -1220,6 +1195,14 @@
     color: #ffffff;
   }
 
+  .text-timestamp {
+    color: #4a5565;
+  }
+
+  .dark .text-timestamp {
+    color: #9ca3af;
+  }
+
   /* ========================================
    * BORDERS
    * ======================================== */
@@ -1277,23 +1260,11 @@
     cursor: pointer;
   }
 
-  .hover-list-bg {
-    transition: background-color 200ms ease;
-  }
-
-  .hover-list-bg:hover {
-    background-color: #f3f4f6;
-  }
-
-  .dark .hover-list-bg:hover {
-    background-color: #374151;
-  }
-
   /* ========================================
    * COMPONENT-SPECIFIC
    * ======================================== */
   .button-secondary {
-    background-color: #e5e7eb;
+    background-color: #ffffff;
     color: #374151;
     font-weight: 600;
     transition: all 200ms ease;
@@ -1304,18 +1275,18 @@
   }
 
   .dark .button-secondary {
-    background-color: #374151;
-    color: #e5e7eb;
-    border-color: rgba(115, 80, 242, 0.2);
+    background-color: #4b5563;
+    color: #f9fafb;
+    border-color: rgba(115, 80, 242, 0.3);
   }
 
   .button-secondary:hover {
-    background-color: #d1d5db;
+    background-color: #f3f4f6;
     cursor: pointer;
   }
 
   .dark .button-secondary:hover {
-    background-color: #4b5563;
+    background-color: #6b7280;
   }
 
   .button-secondary:disabled {
