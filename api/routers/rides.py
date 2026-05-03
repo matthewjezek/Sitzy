@@ -439,7 +439,7 @@ def transfer_driver(
     _assert_ride_not_past(ride)
 
     is_owner_target = transfer_in.new_driver_id == ride.car.owner_id
-    
+
     new_driver_passenger = (
         db.query(Passenger)
         .filter_by(user_id=transfer_in.new_driver_id, ride_id=ride_id)
@@ -476,15 +476,15 @@ def transfer_driver(
         seat_positions = [s.position for s in ride.car.seats]
         if not seat_positions:
             seat_positions = get_layout_seat_positions(ride.car.layout)
-            
+
         available = [pos for pos in seat_positions if pos not in occupied]
-        
+
         if not available:
             raise HTTPException(
-                status_code=400, 
-                detail="No available seats to safely move the current driver to."
+                status_code=400,
+                detail="No available seats to safely move the current driver to.",
             )
-            
+
         old_driver_as_passenger = Passenger(
             user_id=old_driver_id,
             ride_id=ride_id,
@@ -519,7 +519,7 @@ def transfer_driver(
 
     ride.car_driver_id = new_car_driver.id
     ride.car_driver = new_car_driver
-    
+
     db.commit()
     db.refresh(ride)
 

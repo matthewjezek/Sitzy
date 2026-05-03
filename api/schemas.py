@@ -43,7 +43,7 @@ class UserOut(BaseModelWithLabels["UserOut"], UserBase):
         if isinstance(v, str) and v.endswith(".invalid"):
             return None
         return v
-    
+
 
 class UserBasicOut(BaseModel):
     id: UUID
@@ -203,7 +203,7 @@ class RideOut(BaseModel):
     created_at: datetime
     passengers: list[PassengerOut] = []
     car: CarOut | None = None
-    driver: UserBasicOut | None = None  
+    driver: UserBasicOut | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -223,8 +223,9 @@ class RideOut(BaseModel):
             passengers=[PassengerOut.from_passenger(p) for p in r.passengers],
             car=CarOut.from_orm_with_labels(r.car) if r.car else None,
             driver=(
-                UserBasicOut.model_validate(r.car_driver.driver) 
-                if r.car_driver and r.car_driver.driver else None
+                UserBasicOut.model_validate(r.car_driver.driver)
+                if r.car_driver and r.car_driver.driver
+                else None
             ),
         )
 
