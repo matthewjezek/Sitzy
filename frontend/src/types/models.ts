@@ -79,6 +79,7 @@ export interface RideOut {
   created_at: string;
   passengers: PassengerOut[];
   car: Car | null;
+  driver?: UserBasicOut | null;
 }
 
 export interface RideCreate {
@@ -98,4 +99,11 @@ export interface Invitation {
   created_at: string;
   token: string;
   ride_id: string;
+}
+
+// Add the new basic user profile type
+export interface UserBasicOut {
+  id: string;
+  full_name: string | null;
+  avatar_url: string | null;
 }
