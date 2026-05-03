@@ -161,6 +161,8 @@ interface PassengersSectionProps {
   ownerId: string | undefined
   ownerName: string | undefined
   currentDriverId: string
+  currentDriverName?: string   // Added so we know the driver's name
+  currentDriverAvatar?: string // Added for the driver's avatar
   canManagePassengers: boolean
   transferringUserId: string | null
   removingUserId: string | null
@@ -173,122 +175,104 @@ function PassengersSection({
   ownerId,
   ownerName,
   currentDriverId,
+  currentDriverName,
+  currentDriverAvatar,
   canManagePassengers,
   transferringUserId,
   removingUserId,
   onTransferDriver,
   onRemovePassenger,
 }: PassengersSectionProps) {
-  const showOwnerTakeover = Boolean(ownerId && ownerId !== currentDriverId)
+  const isOwnerDriver = ownerId === currentDriverId
+  // Fallback to ownerName if the owner is driving, else use provided driver name
+  const driverLabel = currentDriverName || (isOwnerDriver ? ownerName : 'Neznámý řidič')
+  const sortedPassengers = [...passengers].sort((left, right) => {
+    const leftSeat = left.seat_position ?? Number.POSITIVE_INFINITY
+    const rightSeat = right.seat_position ?? Number.POSITIVE_INFINITY
 
-  const ownerLabel = ownerName ?? 'Majitel auta'
-
-  if (passengers.length === 0) return (
-    <div className="card p-4 flex flex-col gap-2">
-      <h2 className="font-semibold">Pasažéři</h2>
-      <p className="text-sm text-muted text-center py-2">Zatím žádní pasažéři.</p>
-      {showOwnerTakeover && (
-        <div className="mt-2 p-3 rounded-lg list-item-bg flex flex-col md:flex-row md:items-center gap-3">
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium truncate">{ownerLabel}</p>
-            <p className="text-xs text-secondary">Majitel (aktuálně není řidič)</p>
-          </div>
-          {canManagePassengers && ownerId && (
-            <button
-              type="button"
-              onClick={() => onTransferDriver(ownerId, ownerLabel)}
-              disabled={transferringUserId === ownerId}
-              className="button-secondary text-xs flex items-center justify-center gap-1 w-full md:w-auto h-10"
-            >
-              <FiRepeat size={12} />
-              {transferringUserId === ownerId ? 'Předávám...' : 'Předat řízení'}
-            </button>
-          )}
-        </div>
-      )}
-    </div>
-  )
+    if (leftSeat !== rightSeat) return leftSeat - rightSeat
+    return left.full_name?.localeCompare(right.full_name ?? '', 'cs') ?? 0
+  })
 
   return (
     <div className="card p-4 flex flex-col gap-3">
       <h2 className="font-semibold">Pasažéři</h2>
 
-      {showOwnerTakeover && (
-        <div className="p-2 rounded-lg list-item-bg flex flex-col md:flex-row md:items-center gap-3">
+      <div className="p-2 rounded-lg list-item-bg flex flex-col md:flex-row md:items-center gap-3">
+        {currentDriverAvatar ? (
+          <img src={currentDriverAvatar} alt={driverLabel} className="w-8 h-8 rounded-full object-cover shrink-0" />
+        ) : (
           <div className="w-8 h-8 rounded-full initials-avatar flex items-center justify-center text-sm font-bold shrink-0">
-            {ownerLabel[0]?.toUpperCase() ?? 'M'}
+            {driverLabel?.[0]?.toUpperCase() ?? 'Ř'}
           </div>
-          <div className="flex flex-col min-w-0 flex-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <p className="text-sm font-medium truncate">{ownerLabel}</p>
-              <span className="text-[10px] px-2 py-0.5 rounded-full status-pending">Majitel</span>
-            </div>
-            <p className="text-xs text-secondary">Aktuálně není řidič</p>
+        )}
+        <div className="flex flex-col min-w-0 flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="text-sm font-medium truncate">{driverLabel}</p>
+            <span className="text-[10px] px-2 py-0.5 rounded-full status-success">Řidič</span>
+            {isOwnerDriver && (
+              <span className="text-[10px] px-2 py-0.5 rounded-full status-info">Majitel</span>
+            )}
           </div>
-          {canManagePassengers && ownerId && (
-            <button
-              type="button"
-              onClick={() => onTransferDriver(ownerId, ownerLabel)}
-              disabled={transferringUserId === ownerId}
-              className="button-secondary text-xs flex items-center justify-center gap-1 shrink-0 w-full md:w-auto h-10"
-            >
-              <FiRepeat size={12} />
-              {transferringUserId === ownerId ? 'Předávám...' : 'Předat řízení'}
-            </button>
-          )}
+          <p className="text-xs text-secondary">Aktivní řidič (Sedadlo 1)</p>
         </div>
+      </div>
+
+      {passengers.length === 0 ? (
+        <p className="text-sm text-muted text-center py-2">Zatím žádní další pasažéři.</p>
+      ) : (
+        <ul className="flex flex-col gap-2 mt-1">
+          {sortedPassengers.map(p => {
+            const isThisOwner = p.user_id === ownerId
+
+            return (
+              <li key={p.user_id} className="flex flex-col md:flex-row md:items-center gap-3 p-2 rounded-lg list-item-bg">
+                {p.avatar_url ? (
+                  <img src={p.avatar_url} alt={p.full_name ?? ''} className="w-8 h-8 rounded-full object-cover shrink-0" />
+                ) : (
+                  <div className="w-8 h-8 rounded-full initials-avatar flex items-center justify-center text-sm font-bold shrink-0">
+                    {p.full_name?.[0]?.toUpperCase() ?? '?'}
+                  </div>
+                )}
+                <div className="flex flex-col min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-sm font-medium truncate">{p.full_name ?? 'Neznámý'}</p>
+                    {isThisOwner && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full status-info">Majitel</span>
+                    )}
+                  </div>
+                  {p.seat_position != null && (
+                    <p className="text-xs text-secondary">Sedadlo {p.seat_position}</p>
+                  )}
+                </div>
+
+                {canManagePassengers && (
+                  <div className="flex items-center gap-2 w-full md:w-auto md:shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => onTransferDriver(p.user_id, p.full_name ?? 'Neznámý')}
+                      disabled={transferringUserId === p.user_id}
+                      className="button-secondary text-xs flex items-center justify-center gap-1 flex-1 sm:flex-none h-10"
+                    >
+                      <FiRepeat size={12} />
+                      {transferringUserId === p.user_id ? 'Předávám...' : 'Předat řízení'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onRemovePassenger(p.user_id, p.full_name ?? 'Neznámý')}
+                      disabled={removingUserId === p.user_id}
+                      className="button-danger text-xs flex items-center justify-center gap-1 flex-1 sm:flex-none h-10"
+                    >
+                      <FiUserX size={12} />
+                      {removingUserId === p.user_id ? 'Odebírám...' : 'Vyhodit'}
+                    </button>
+                  </div>
+                )}
+              </li>
+            )
+          })}
+        </ul>
       )}
-
-      <ul className="flex flex-col gap-2">
-        {passengers.map(p => (
-          <li key={p.user_id} className="flex flex-col md:flex-row md:items-center gap-3 p-2 rounded-lg list-item-bg">
-            {p.avatar_url ? (
-              <img src={p.avatar_url} alt={p.full_name ?? ''} className="w-8 h-8 rounded-full object-cover shrink-0" />
-            ) : (
-              <div className="w-8 h-8 rounded-full initials-avatar flex items-center justify-center text-sm font-bold shrink-0">
-                {p.full_name?.[0]?.toUpperCase() ?? '?'}
-              </div>
-            )}
-            <div className="flex flex-col min-w-0 flex-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <p className="text-sm font-medium truncate">{p.full_name ?? 'Neznámý'}</p>
-                {p.user_id === currentDriverId && (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full status-info">Řidič</span>
-                )}
-              </div>
-              {p.seat_position != null && (
-                <p className="text-xs text-secondary">Sedadlo {p.seat_position}</p>
-              )}
-            </div>
-
-            {canManagePassengers && (
-              <div className="flex items-center gap-2 w-full md:w-auto md:shrink-0">
-                {p.user_id !== currentDriverId && (
-                  <button
-                    type="button"
-                    onClick={() => onTransferDriver(p.user_id, p.full_name ?? 'Neznámý')}
-                    disabled={transferringUserId === p.user_id}
-                    className="button-secondary text-xs flex items-center justify-center gap-1 flex-1 sm:flex-none h-10"
-                  >
-                    <FiRepeat size={12} />
-                    {transferringUserId === p.user_id ? 'Předávám...' : 'Předat řízení'}
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => onRemovePassenger(p.user_id, p.full_name ?? 'Neznámý')}
-                  disabled={removingUserId === p.user_id || p.user_id === currentDriverId}
-                  className="button-danger text-xs flex items-center justify-center gap-1 flex-1 sm:flex-none h-10"
-                  title={p.user_id === currentDriverId ? 'Nejdříve předejte řízení.' : undefined}
-                >
-                  <FiUserX size={12} />
-                  {removingUserId === p.user_id ? 'Odebírám...' : 'Vyhodit'}
-                </button>
-              </div>
-            )}
-          </li>
-        ))}
-      </ul>
     </div>
   )
 }
@@ -558,6 +542,8 @@ export default function RideDetailPage() {
           ownerId={ride.car?.owner_id}
           ownerName={ride.car?.owner_name ?? undefined}
           currentDriverId={ride.driver_user_id}
+          currentDriverName={ride.driver?.full_name ?? undefined}   // <-- ADD THIS
+          currentDriverAvatar={ride.driver?.avatar_url ?? undefined} // <-- ADD THIS
           canManagePassengers={Boolean(isOwner && !isPastRide)}
           transferringUserId={transferringUserId}
           removingUserId={removingUserId}
