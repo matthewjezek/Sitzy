@@ -64,7 +64,7 @@ export const mockRide: RideOut = {
   car_id: mockCar.id,
   car_driver_id: 'driver-1',
   driver_user_id: mockUser.id,
-  departure_time: '2026-05-01T08:30:00.000Z',
+  departure_time: '2027-05-15T08:30:00.000Z',
   destination: 'Brno',
   created_at: '2026-04-01T08:30:00.000Z',
   passengers: [
