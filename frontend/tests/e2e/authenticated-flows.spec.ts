@@ -23,7 +23,7 @@ test('rides page shows upcoming ride and opens detail', async ({ page }) => {
   await expect(page).toHaveURL(/\/rides\/ride-1$/)
   await expect(page.getByRole('heading', { name: 'Brno' })).toBeVisible()
   await expect(page.getByText('Rodinný vůz (Minivan)')).toBeVisible()
-  await expect(page.getByText('Jan Novák')).toBeVisible()
+  await expect(page.getByText('Jan Novák', { exact: true }).first()).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Pozvánky' })).toBeVisible()
 })
 
