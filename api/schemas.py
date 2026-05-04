@@ -223,8 +223,9 @@ class RideOut(BaseModel):
             passengers=[PassengerOut.from_passenger(p) for p in r.passengers],
             car=CarOut.from_orm_with_labels(r.car) if r.car else None,
             driver=(
-                UserBasicOut.model_validate(r.car_driver.driver)
-                if r.car_driver and r.car_driver.driver
+                UserBasicOut.model_validate(getattr(r.car_driver, "driver", None))
+                if getattr(r, "car_driver", None)
+                and getattr(r.car_driver, "driver", None)
                 else None
             ),
         )
