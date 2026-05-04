@@ -25,7 +25,6 @@
   }
 
   :root {
-    /* WCAG 2.1 AA compliant primary palette */
     --primary: #7350f2;           /* Main (text on: #fff) */
     --primary-hover: #5c3dd8;     /* Hover (text on: #fff) */
     --primary-light: #c6befb;     /* Light (text on: #000) */
@@ -899,21 +898,30 @@
     gap: 0.75rem;
   }
 
-  .list-item-bg {
-    background-color: #f3f4f6;
-    transition: background-color 200ms ease;
+  .list-item {
+    background-color: white;
+    border-radius: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--primary-border);
+    transition: all 200ms ease;
+    cursor: pointer;
   }
 
-  .dark .list-item-bg {
+  .list-item:hover {
+    border-color: #b5a1ff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+
+  .dark .list-item {
     background-color: #1f2937;
+    border-color: rgba(115, 80, 242, 0.2);
+    color: #f3f4f6;
   }
 
-  .list-item-bg:hover {
-  background-color: #e5e7eb;
-  }
-
-  .dark .list-item-bg:hover {
-    background-color: #374151;
+  .dark .list-item:hover {
+    border-color: rgba(115, 80, 242, 0.4);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
   }
 
   /* ========================================
@@ -1112,8 +1120,15 @@
   }
 
   /* ========================================
-   * CONTAINER BACKGROUNDS
+   * LIST/CONTAINER BACKGROUNDS
    * ======================================== */
+  .list-item-bg {
+    background-color: #f9fafb;
+  }
+
+  .dark .list-item-bg {
+    background-color: #1f2937;
+  }
 
   .container-light-bg {
     background-color: #ffffff;
@@ -1258,6 +1273,18 @@
   .hover-text-gray-600:hover {
     color: #4b5563;
     cursor: pointer;
+  }
+
+  .hover-list-bg {
+    transition: background-color 200ms ease;
+  }
+
+  .hover-list-bg:hover {
+    background-color: #f3f4f6;
+  }
+
+  .dark .hover-list-bg:hover {
+    background-color: #374151;
   }
 
   /* ========================================
