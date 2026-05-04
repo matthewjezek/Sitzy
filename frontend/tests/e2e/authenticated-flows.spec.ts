@@ -27,6 +27,24 @@ test('rides page shows upcoming ride and opens detail', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Pozvánky' })).toBeVisible()
 })
 
+test('dashboard quick actions navigate to rides and cars', async ({ page }) => {
+  await seedAuthenticated(page)
+  await mockAuthenticatedApi(page)
+
+  await page.goto('/')
+
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Ahoj,')
+
+  await page.getByRole('button', { name: 'Nová jízda Naplánovat cestu' }).click()
+  await expect(page).toHaveURL(/\/rides\/new$/)
+  await expect(page.getByRole('heading', { name: 'Nová jízda' })).toBeVisible()
+
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Moje auta Správa flotily' }).click()
+  await expect(page).toHaveURL(/\/cars$/)
+  await expect(page.getByRole('heading', { name: 'Moje auta' })).toBeVisible()
+})
+
 test('cars page shows car and opens detail', async ({ page }) => {
   await seedAuthenticated(page)
   await mockAuthenticatedApi(page)
@@ -42,6 +60,20 @@ test('cars page shows car and opens detail', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Rodinný vůz' })).toBeVisible()
   await expect(page.getByText('Majitel: Jan Novák')).toBeVisible()
   await expect(page.getByRole('button', { name: 'Nová jízda s tímto autem' })).toBeVisible()
+})
+
+test('car detail preselects the car when creating a ride', async ({ page }) => {
+  await seedAuthenticated(page)
+  await mockAuthenticatedApi(page)
+
+  await page.goto('/cars')
+  await page.getByRole('button', { name: /Zobrazit auto Rodinný vůz, typ Minivan/ }).click()
+
+  await expect(page).toHaveURL(/\/cars\/car-1$/)
+  await page.getByRole('button', { name: 'Nová jízda s tímto autem' }).click()
+
+  await expect(page).toHaveURL(/\/rides\/new\?car_id=car-1$/)
+  await expect(page.getByRole('combobox', { name: 'Auto' })).toHaveValue('car-1')
 })
 
 test('settings theme persists and logout returns to login', async ({ page }) => {
@@ -62,6 +94,23 @@ test('settings theme persists and logout returns to login', async ({ page }) => 
   await expect(page).toHaveURL(/\/login\?logged_out=1$/)
   const accessToken = await page.evaluate(() => localStorage.getItem('access_token'))
   expect(accessToken).toBeNull()
+})
+
+test('settings page exposes theme, document, and demo controls', async ({ page }) => {
+  await seedAuthenticated(page)
+  await mockAuthenticatedApi(page)
+
+  await page.goto('/settings')
+
+  await expect(page.getByRole('heading', { name: 'Nastavení' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Světlý' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Tmavý' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Podle systému' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Zásady ochrany osobních údajů' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Podmínky použití' })).toBeVisible()
+
+  await page.getByRole('button', { name: 'Tmavý' }).click()
+  await expect(page.locator('html')).toHaveClass(/dark/)
 })
 
 test('logged out users stay on login when opening protected pages', async ({ page }) => {
