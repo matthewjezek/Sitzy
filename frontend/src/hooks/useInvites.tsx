@@ -30,7 +30,6 @@ export function useInvites(rideId?: string): UseInvitesReturn {
   const [invites, setInvites] = useState<Invitation[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const isGlobalInbox = rideId === undefined;
 
   const handleError = (err: unknown, fallback: string) => {
     setError(
@@ -73,31 +72,6 @@ export function useInvites(rideId?: string): UseInvitesReturn {
     window.addEventListener(INVITES_CHANGED_EVENT, handleInvitesChanged);
     return () => window.removeEventListener(INVITES_CHANGED_EVENT, handleInvitesChanged);
   }, [fetchInvites, rideId]);
-
-  useEffect(() => {
-    if (!isGlobalInbox) return;
-
-    const handleRefresh = () => {
-      void fetchInvites();
-    };
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        void fetchInvites();
-      }
-    };
-
-    const intervalId = window.setInterval(handleRefresh, 30000);
-
-    window.addEventListener('focus', handleRefresh);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      window.clearInterval(intervalId);
-      window.removeEventListener('focus', handleRefresh);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [fetchInvites, isGlobalInbox]);
 
   // POST /rides/:rideId/invite
   const createInvite = useCallback(async (email: string) => {
