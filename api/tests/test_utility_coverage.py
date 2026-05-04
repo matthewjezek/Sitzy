@@ -19,7 +19,7 @@ from api.deps import UserContext, get_current_user
 from api.models import SocialSession, User
 from api.schemas import CarFullOut, SeatOut, UserOut
 from api.services import oauth_service
-from api.utils import logging_config, logging_patterns, security, seats
+from api.utils import logging_config, logging_patterns, seats, security
 from api.utils.base_models import BaseModelWithLabels
 from api.utils.enums import CarLayout
 
@@ -28,7 +28,9 @@ class _FakeLogger:
     def __init__(self) -> None:
         self.calls: list[tuple[int, str, dict[str, object] | None]] = []
 
-    def log(self, level: int, message: str, extra: dict[str, object] | None = None) -> None:
+    def log(
+        self, level: int, message: str, extra: dict[str, object] | None = None
+    ) -> None:
         self.calls.append((level, message, extra))
 
     def info(self, message: str, extra: dict[str, object] | None = None) -> None:
@@ -107,16 +109,22 @@ def test_security_token_helpers(monkeypatch: pytest.MonkeyPatch) -> None:
         encoded_payloads.append(payload)
         return f"token-{len(encoded_payloads)}"
 
-    def fake_decode(token: str, secret_key: str, algorithms: list[str]) -> dict[str, object]:
+    def fake_decode(
+        token: str, secret_key: str, algorithms: list[str]
+    ) -> dict[str, object]:
         if token == "refresh-token":
             return {"type": "refresh", "sub": "user-id", "session_id": "session-id"}
         return {"type": "wrong"}
 
     monkeypatch.setattr(security.jwt, "encode", fake_encode)
     monkeypatch.setattr(security.jwt, "decode", fake_decode)
-    monkeypatch.setattr(security.secrets, "token_urlsafe", lambda length: f"generated-{length}")
+    monkeypatch.setattr(
+        security.secrets, "token_urlsafe", lambda length: f"generated-{length}"
+    )
 
-    access_token = security.create_access_token({"sub": "user-id"}, timedelta(minutes=5))
+    access_token = security.create_access_token(
+        {"sub": "user-id"}, timedelta(minutes=5)
+    )
     refresh_token = security.create_refresh_token(uuid4(), uuid4())
 
     assert access_token == "token-1"
@@ -141,7 +149,9 @@ def test_settings_validators_reject_invalid_values() -> None:
     with pytest.raises(ValueError, match="must be different"):
         Settings.keys_must_differ(
             "a" * 32,
-            SimpleNamespace(data={"secret_key": "a" * 32}, field_name="refresh_secret_key"),
+            SimpleNamespace(
+                data={"secret_key": "a" * 32}, field_name="refresh_secret_key"
+            ),
         )
 
 
@@ -178,7 +188,10 @@ def test_schema_helpers_cover_custom_label_and_masking_paths() -> None:
 
 
 def test_database_helpers_and_session_cleanup(monkeypatch: pytest.MonkeyPatch) -> None:
-    assert normalize_database_url("postgres://example.com/db") == "postgresql://example.com/db"
+    assert (
+        normalize_database_url("postgres://example.com/db")
+        == "postgresql://example.com/db"
+    )
     assert normalize_database_url("sqlite:///tmp.db") == "sqlite:///tmp.db"
 
     fake_session = _FakeSession()
@@ -193,7 +206,9 @@ def test_database_helpers_and_session_cleanup(monkeypatch: pytest.MonkeyPatch) -
     assert fake_session.closed
 
 
-def test_database_module_raises_without_database_url(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_database_module_raises_without_database_url(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.delenv("DATABASE_URL", raising=False)
     monkeypatch.setattr("dotenv.load_dotenv", lambda *args, **kwargs: None)
     sys.modules.pop("api.database", None)
@@ -202,16 +217,26 @@ def test_database_module_raises_without_database_url(monkeypatch: pytest.MonkeyP
         importlib.import_module("api.database")
 
 
-def test_get_current_user_validates_token_and_session(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_get_current_user_validates_token_and_session(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     user = SimpleNamespace(id=uuid4())
-    session = SimpleNamespace(id=uuid4(), revoked_at=None, expires_at=datetime.now(timezone.utc) + timedelta(minutes=5))
+    session = SimpleNamespace(
+        id=uuid4(),
+        revoked_at=None,
+        expires_at=datetime.now(timezone.utc) + timedelta(minutes=5),
+    )
     token = {"sub": str(user.id), "session_id": str(session.id), "type": "access"}
 
     monkeypatch.setattr(logging_config.settings, "secret_key", "a" * 32)
     monkeypatch.setattr(logging_config.settings, "algorithm", "HS256")
     monkeypatch.setattr("api.deps.jwt.decode", lambda *args, **kwargs: token)
 
-    current_user = get_current_user.__wrapped__ if hasattr(get_current_user, "__wrapped__") else get_current_user
+    current_user = (
+        get_current_user.__wrapped__
+        if hasattr(get_current_user, "__wrapped__")
+        else get_current_user
+    )
     context = current_user(
         token="access-token",
         db=_FakeDbForDeps(user=user, session=session),
@@ -226,8 +251,14 @@ def test_get_current_user_validates_token_and_session(monkeypatch: pytest.Monkey
     "decode_result, expected_message",
     [
         (ValueError("bad token"), "Could not validate credentials"),
-        ({"sub": 123, "session_id": "abc", "type": "access"}, "Could not validate credentials"),
-        ({"sub": str(uuid4()), "session_id": str(uuid4()), "type": "refresh"}, "Could not validate credentials"),
+        (
+            {"sub": 123, "session_id": "abc", "type": "access"},
+            "Could not validate credentials",
+        ),
+        (
+            {"sub": str(uuid4()), "session_id": str(uuid4()), "type": "refresh"},
+            "Could not validate credentials",
+        ),
     ],
 )
 def test_get_current_user_rejects_invalid_tokens(
@@ -239,18 +270,32 @@ def test_get_current_user_rejects_invalid_tokens(
     monkeypatch.setattr(logging_config.settings, "algorithm", "HS256")
 
     if isinstance(decode_result, Exception):
-        monkeypatch.setattr("api.deps.jwt.decode", lambda *args, **kwargs: (_ for _ in ()).throw(decode_result))
+        monkeypatch.setattr(
+            "api.deps.jwt.decode",
+            lambda *args, **kwargs: (_ for _ in ()).throw(decode_result),
+        )
     else:
-        monkeypatch.setattr("api.deps.jwt.decode", lambda *args, **kwargs: decode_result)
+        monkeypatch.setattr(
+            "api.deps.jwt.decode", lambda *args, **kwargs: decode_result
+        )
 
     with pytest.raises(Exception, match=expected_message):
-        get_current_user(token="access-token", db=_FakeDbForDeps(user=None, session=None))
+        get_current_user(
+            token="access-token", db=_FakeDbForDeps(user=None, session=None)
+        )
 
 
 @pytest.mark.parametrize(
     "user, session",
     [
-        (None, SimpleNamespace(id=uuid4(), revoked_at=None, expires_at=datetime.now(timezone.utc) + timedelta(minutes=5))),
+        (
+            None,
+            SimpleNamespace(
+                id=uuid4(),
+                revoked_at=None,
+                expires_at=datetime.now(timezone.utc) + timedelta(minutes=5),
+            ),
+        ),
         (SimpleNamespace(id=uuid4()), None),
     ],
 )
@@ -265,10 +310,14 @@ def test_get_current_user_rejects_missing_user_or_session(
     monkeypatch.setattr("api.deps.jwt.decode", lambda *args, **kwargs: token)
 
     with pytest.raises(Exception, match="Could not validate credentials"):
-        get_current_user(token="access-token", db=_FakeDbForDeps(user=user, session=session))
+        get_current_user(
+            token="access-token", db=_FakeDbForDeps(user=user, session=session)
+        )
 
 
-def test_oauth_service_import_and_state_generation_branches(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_oauth_service_import_and_state_generation_branches(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     captured: dict[str, object] = {}
 
     def fake_from_url(url: str, **kwargs: object) -> object:
@@ -276,7 +325,9 @@ def test_oauth_service_import_and_state_generation_branches(monkeypatch: pytest.
         captured["kwargs"] = kwargs
         return SimpleNamespace()
 
-    monkeypatch.setattr(oauth_service.settings, "redis_url", "rediss://localhost:6379/0")
+    monkeypatch.setattr(
+        oauth_service.settings, "redis_url", "rediss://localhost:6379/0"
+    )
     monkeypatch.setattr(oauth_service.redis_lib, "from_url", fake_from_url)
     reloaded = importlib.reload(oauth_service)
 
@@ -286,7 +337,10 @@ def test_oauth_service_import_and_state_generation_branches(monkeypatch: pytest.
     assert captured["url"] == "rediss://localhost:6379/0"
     assert captured["kwargs"]["ssl_cert_reqs"] == oauth_service.ssl.CERT_NONE
     assert len(state) == 64
-    assert reloaded.normalize_avatar_url("http://example.com/avatar.png") == "https://example.com/avatar.png"
+    assert (
+        reloaded.normalize_avatar_url("http://example.com/avatar.png")
+        == "https://example.com/avatar.png"
+    )
 
 
 def test_oauth_service_updates_existing_user_by_email() -> None:
@@ -350,7 +404,9 @@ def test_oauth_service_generate_pkce(monkeypatch: pytest.MonkeyPatch) -> None:
     assert challenge == "challenge-verifier-xyz"
 
 
-def test_x_oauth_exchange_code_success_and_failure(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_x_oauth_exchange_code_success_and_failure(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     class _SuccessResponse:
         def raise_for_status(self) -> None:
             return None
@@ -368,7 +424,9 @@ def test_x_oauth_exchange_code_success_and_failure(monkeypatch: pytest.MonkeyPat
         def __exit__(self, exc_type, exc, tb) -> None:
             return None
 
-        def post(self, url: str, data: dict[str, object], auth: tuple[str, str]) -> _SuccessResponse:
+        def post(
+            self, url: str, data: dict[str, object], auth: tuple[str, str]
+        ) -> _SuccessResponse:
             self.calls.append((url, data, auth))
             return _SuccessResponse()
 
@@ -377,7 +435,9 @@ def test_x_oauth_exchange_code_success_and_failure(monkeypatch: pytest.MonkeyPat
             raise httpx.HTTPError("boom")
 
     class _FailureClient(_SuccessClient):
-        def post(self, url: str, data: dict[str, object], auth: tuple[str, str]) -> _FailureResponse:
+        def post(
+            self, url: str, data: dict[str, object], auth: tuple[str, str]
+        ) -> _FailureResponse:
             self.calls.append((url, data, auth))
             return _FailureResponse()
 
@@ -391,7 +451,13 @@ def test_x_oauth_exchange_code_success_and_failure(monkeypatch: pytest.MonkeyPat
 
 
 def test_x_oauth_get_user_info_success(monkeypatch: pytest.MonkeyPatch) -> None:
-    payload = {"data": {"id": "x-1", "name": "X User", "profile_image_url": "http://example.com/x.png"}}
+    payload = {
+        "data": {
+            "id": "x-1",
+            "name": "X User",
+            "profile_image_url": "http://example.com/x.png",
+        }
+    }
 
     class _FakeResponse:
         def raise_for_status(self) -> None:
@@ -420,7 +486,9 @@ def test_x_oauth_get_user_info_success(monkeypatch: pytest.MonkeyPatch) -> None:
     assert result["avatar_url"] == "https://example.com/x.png"
 
 
-def test_facebook_oauth_exchange_code_success_and_failure(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_facebook_oauth_exchange_code_success_and_failure(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     class _SuccessResponse:
         def raise_for_status(self) -> None:
             return None
@@ -476,9 +544,13 @@ def test_get_layout_seat_positions_falls_back_for_unknown_value() -> None:
     assert seats.get_layout_seat_positions(SimpleNamespace()) == [1, 2, 3, 4]
 
 
-def test_logging_formatter_covers_dev_and_production_modes(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_logging_formatter_covers_dev_and_production_modes(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     formatter = logging_config.JSONFormatter()
-    record = logging.LogRecord("api.test", logging.INFO, __file__, 42, "Hello %s", ("world",), None)
+    record = logging.LogRecord(
+        "api.test", logging.INFO, __file__, 42, "Hello %s", ("world",), None
+    )
     record.extra_fields = {"request_id": "abc123", "action": "demo"}
 
     monkeypatch.setattr(logging_config.settings, "environment", "development")
@@ -515,7 +587,9 @@ def test_logging_helpers_emit_expected_context(monkeypatch: pytest.MonkeyPatch) 
 
     logging_config.log_entry(fake_logger, "hello")
     logging_config.log_entry(fake_logger, "world", user_id="123")
-    logging_config.log_action(fake_logger, "create_ride", status="started", car_id="car-1")
+    logging_config.log_action(
+        fake_logger, "create_ride", status="started", car_id="car-1"
+    )
     logging_config.log_action_timing(fake_logger, "create_ride", 12.5, car_id="car-1")
     logging_config.log_error_action(fake_logger, "create_ride", "boom", car_id="car-1")
     logging_config.log_with_context(fake_logger, logging.INFO, "legacy", user_id="123")
@@ -564,13 +638,19 @@ def test_logging_patterns_cover_sync_async_and_example_paths() -> None:
     logging_patterns.bad_example_4()
 
 
-def test_logging_reference_imports_safe_after_monkeypatch(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_logging_reference_imports_safe_after_monkeypatch(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setattr(logging_config, "get_logger", lambda name: _FakeLogger())
     monkeypatch.setattr(logging_config, "get_operation_duration", lambda: 12.3)
     monkeypatch.setattr(logging_config, "log_action", lambda *args, **kwargs: None)
-    monkeypatch.setattr(logging_config, "log_action_timing", lambda *args, **kwargs: None)
+    monkeypatch.setattr(
+        logging_config, "log_action_timing", lambda *args, **kwargs: None
+    )
     monkeypatch.setattr(logging_config, "log_entry", lambda *args, **kwargs: None)
-    monkeypatch.setattr(logging_config, "log_error_action", lambda *args, **kwargs: None)
+    monkeypatch.setattr(
+        logging_config, "log_error_action", lambda *args, **kwargs: None
+    )
     monkeypatch.setattr(logging_config, "start_operation_timer", lambda: None)
 
     sys.modules.pop("api.utils.logging_reference", None)
@@ -579,7 +659,9 @@ def test_logging_reference_imports_safe_after_monkeypatch(monkeypatch: pytest.Mo
     assert module.logger is not None
 
 
-def test_main_module_missing_dev_fixtures_branch(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_main_module_missing_dev_fixtures_branch(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     original_import_module = importlib.import_module
 
     def fake_import_module(name: str, package: str | None = None):
@@ -594,7 +676,9 @@ def test_main_module_missing_dev_fixtures_branch(monkeypatch: pytest.MonkeyPatch
     assert module.dev_fixtures is None
 
 
-def test_main_validation_handler_and_middleware_error_branch(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_main_validation_handler_and_middleware_error_branch(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     sys.modules.pop("api.main", None)
     module = importlib.import_module("api.main")
     fake_logger = _FakeLogger()
@@ -636,7 +720,9 @@ def test_main_validation_handler_and_middleware_error_branch(monkeypatch: pytest
             }
         ]
     )
-    response = asyncio.run(module.validation_exception_handler(request, validation_error))
+    response = asyncio.run(
+        module.validation_exception_handler(request, validation_error)
+    )
 
     assert response.status_code == 422
     assert fake_logger.calls[-1][0] == logging.WARNING
