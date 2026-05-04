@@ -161,8 +161,8 @@ interface PassengersSectionProps {
   ownerId: string | undefined
   ownerName: string | undefined
   currentDriverId: string
-  currentDriverName?: string   // Added so we know the driver's name
-  currentDriverAvatar?: string // Added for the driver's avatar
+  currentDriverName?: string
+  currentDriverAvatar?: string
   canManagePassengers: boolean
   transferringUserId: string | null
   removingUserId: string | null
@@ -186,6 +186,7 @@ function PassengersSection({
   const isOwnerDriver = ownerId === currentDriverId
   // Fallback to ownerName if the owner is driving, else use provided driver name
   const driverLabel = currentDriverName || (isOwnerDriver ? ownerName : 'Neznámý řidič')
+  
   const sortedPassengers = [...passengers].sort((left, right) => {
     const leftSeat = left.seat_position ?? Number.POSITIVE_INFINITY
     const rightSeat = right.seat_position ?? Number.POSITIVE_INFINITY
@@ -198,30 +199,39 @@ function PassengersSection({
     <div className="card p-4 flex flex-col gap-3">
       <h2 className="font-semibold">Pasažéři</h2>
 
-      <div className="p-2 rounded-lg list-item-bg flex flex-col md:flex-row md:items-center gap-3">
+      <div className="p-3 rounded-xl bg-muted border theme-border flex flex-col md:flex-row md:items-center gap-3 shadow-sm">
         {currentDriverAvatar ? (
-          <img src={currentDriverAvatar} alt={driverLabel} className="w-8 h-8 rounded-full object-cover shrink-0" />
+          <img src={currentDriverAvatar} alt={driverLabel} className="w-10 h-10 rounded-full object-cover shrink-0 ring-2 ring-indigo-500/20" />
         ) : (
-          <div className="w-8 h-8 rounded-full initials-avatar flex items-center justify-center text-sm font-bold shrink-0">
+          <div className="w-10 h-10 rounded-full initials-avatar flex items-center justify-center text-sm font-bold shrink-0 ring-2 ring-indigo-500/20">
             {driverLabel?.[0]?.toUpperCase() ?? 'Ř'}
           </div>
         )}
+        
         <div className="flex flex-col min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-sm font-medium truncate">{driverLabel}</p>
+            <p className="text-base font-semibold truncate">{driverLabel}</p>
             <span className="text-[10px] px-2 py-0.5 rounded-full status-success">Řidič</span>
             {isOwnerDriver && (
               <span className="text-[10px] px-2 py-0.5 rounded-full status-info">Majitel</span>
             )}
           </div>
-          <p className="text-xs text-secondary">Aktivní řidič (Sedadlo 1)</p>
+          <p className="text-xs text-secondary mt-0.5">Aktivní řidič (Sedadlo 1)</p>
+        </div>
+
+        <div className="hidden md:flex shrink-0 items-center justify-center px-4 text-indigo-500/30 dark:text-indigo-400/20">
+          <BiCar size={28} />
         </div>
       </div>
+
+      {passengers.length > 0 && (
+        <hr className="theme-divider border-t my-1 mx-2 opacity-50" />
+      )}
 
       {passengers.length === 0 ? (
         <p className="text-sm text-muted text-center py-2">Zatím žádní další pasažéři.</p>
       ) : (
-        <ul className="flex flex-col gap-2 mt-1">
+        <ul className="flex flex-col gap-2">
           {sortedPassengers.map(p => {
             const isThisOwner = p.user_id === ownerId
 
@@ -230,10 +240,11 @@ function PassengersSection({
                 {p.avatar_url ? (
                   <img src={p.avatar_url} alt={p.full_name ?? ''} className="w-8 h-8 rounded-full object-cover shrink-0" />
                 ) : (
-                  <div className="w-8 h-8 rounded-full initials-avatar flex items-center justify-center text-sm font-bold shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-indigo-500/30 dark:bg-indigo-400/20 initials-avatar flex items-center justify-center text-sm font-bold shrink-0">
                     {p.full_name?.[0]?.toUpperCase() ?? '?'}
                   </div>
                 )}
+                
                 <div className="flex flex-col min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="text-sm font-medium truncate">{p.full_name ?? 'Neznámý'}</p>
@@ -263,8 +274,8 @@ function PassengersSection({
                       disabled={removingUserId === p.user_id}
                       className="button-danger text-xs flex items-center justify-center gap-1 flex-1 sm:flex-none h-10"
                     >
-                      <FiUserX size={12} />
-                      {removingUserId === p.user_id ? 'Odebírám...' : 'Vyhodit'}
+                      <FiUserX size={16} />
+                      {removingUserId === p.user_id ? 'Odebírám...' : ''}
                     </button>
                   </div>
                 )}
@@ -542,8 +553,8 @@ export default function RideDetailPage() {
           ownerId={ride.car?.owner_id}
           ownerName={ride.car?.owner_name ?? undefined}
           currentDriverId={ride.driver_user_id}
-          currentDriverName={ride.driver?.full_name ?? undefined}   // <-- ADD THIS
-          currentDriverAvatar={ride.driver?.avatar_url ?? undefined} // <-- ADD THIS
+          currentDriverName={ride.driver?.full_name ?? undefined}
+          currentDriverAvatar={ride.driver?.avatar_url ?? undefined}
           canManagePassengers={Boolean(isOwner && !isPastRide)}
           transferringUserId={transferringUserId}
           removingUserId={removingUserId}
