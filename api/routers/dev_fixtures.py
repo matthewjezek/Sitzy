@@ -172,11 +172,19 @@ def generate_demo_fixtures(
     db.add(visitor_ride)
     db.flush()
 
+    # Add a mock passenger to the visitor ride
+    visitor_passenger = User(
+        email=_valid_demo_email("demo-visitor-passenger"),
+        full_name=_demo_user_name("Visitor Passenger", 1),
+    )
+    db.add(visitor_passenger)
+    db.flush()
+
     db.add(
         Passenger(
-            user_id=visitor_owner.id,
+            user_id=visitor_passenger.id,
             ride_id=visitor_ride.id,
-            seat_position=1,
+            seat_position=2,
         )
     )
 
