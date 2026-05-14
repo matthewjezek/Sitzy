@@ -113,10 +113,10 @@ def generate_demo_fixtures(
     db.add(ride)
     db.flush()
 
-    # Create two mock passengers on the user's ride.
+    # Create four mock passengers on the user's ride.
     created_passengers = []
     seat_iter = iter([p for p in positions if p != 1])
-    for i in range(3):
+    for i in range(4):
         demo_user = User(
             email=_valid_demo_email(f"demo-passenger-{i + 1}"),
             full_name=_demo_user_name("Passenger", i + 1),
@@ -217,7 +217,6 @@ def generate_demo_fixtures(
         event="demo_fixtures_created", user_id=ctx.user.id, metadata=metadata, db=db
     )
 
-    # Commit everything, including the audit row.
     db.commit()
 
     logger.info(
