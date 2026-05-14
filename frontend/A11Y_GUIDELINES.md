@@ -24,7 +24,7 @@
 
 | Situace | Řešení | Příklad |
 | ------- | ------ | ------- |
-| Klikací `div`/`span` | VŽDY nahradit za `<button>` | ❌ `<div onClick={...}>` → ✅ `<button onClick={...}>` |
+| Klikací `div`/`span` | VŽDY nahradit za `<button>` | `<div onClick={...}>` → `<button onClick={...}>` |
 | Custom widget (seats) | Dynamické `aria-label` podle stavu | `aria-label={isDriver ? 'Řidič - nedostupné' : 'Sedadlo 3: Volné'}` |
 | Toggle button | `aria-pressed={isActive}` | `<button aria-pressed={theme === 'dark'}>Tmavý</button>` |
 | Dropdown/menu trigger | `aria-expanded={isOpen}` + `aria-controls="menu-id"` | `<button aria-expanded={open} aria-controls="dropdown">Menu</button>` |

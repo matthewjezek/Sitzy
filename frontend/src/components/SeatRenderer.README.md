@@ -7,7 +7,7 @@ přímo na obrázku vozidla.
 
 ## Vlastnosti
 
-### ✨ Hlavní funkce
+### Hlavní funkce
 
 - **Realistická SVG sedadla** - používá detailní SVG obrázky místo abstraktních tvarů
 - **CSS filtry pro stavy** - barevné rozlišení stavů pomocí CSS filtrů
@@ -20,7 +20,7 @@ bez ztráty detailů
 - **Responzivní design** - přizpůsobí se různým velikostem obrazovky
 - **Přístupnost** - klávesnice, tooltips, ARIA podpory
 
-### 🚗 Podporované typy vozidel
+### Podporované typy vozidel
 
 - **Sedan (4 místa)** - layout: `SEDAQ` nebo `Sedan (4 seats)`
 - **Kupé (2 místa)** - layout: `TRAPAQ` nebo `Coupé (2 seats)`  
@@ -46,13 +46,13 @@ interface SeatRendererProps {
 
 | Prop | Typ | Požadováno | Výchozí | Popis |
 |------|-----|-----------|---------|-------|
-| `layout` | `string` | ✅ | - | Typ vozidla (SEDAQ/TRAPAQ/PRAQ) |
-| `seats` | `SeatData[]` | ✅ | - | Array s daty o sedadlech |
-| `selectedSeat` | `number \| null` | ❌ | `null` | Aktuálně vybrané sedadlo |
-| `onSeatSelect` | `function` | ❌ | - | Callback při kliknutí na sedadlo |
-| `ownerName` | `string` | ❌ | `'Řidič'` | Jméno majitele vozidla |
-| `mode` | `'interactive' \| 'display'` | ✅ | - | Režim komponenty |
-| `className` | `string` | ❌ | `''` | Dodatečné CSS třídy |
+| `layout` | `string` | | - | Typ vozidla (SEDAQ/TRAPAQ/PRAQ) |
+| `seats` | `SeatData[]` | | - | Array s daty o sedadlech |
+| `selectedSeat` | `number \| null` | | `null` | Aktuálně vybrané sedadlo |
+| `onSeatSelect` | `function` | | - | Callback při kliknutí na sedadlo |
+| `ownerName` | `string` | | `'Řidič'` | Jméno majitele vozidla |
+| `mode` | `'interactive' \| 'display'` | | - | Režim komponenty |
+| `className` | `string` | | `''` | Dodatečné CSS třídy |
 
 ### Datové typy
 
@@ -205,7 +205,7 @@ const BookingSeatSelection = ({ carId }: { carId: string }) => {
       
       {selectedSeat && (
         <div style={{ marginTop: '1rem', padding: '1rem', background: '#e7f5e7' }}>
-          ✅ Vybrali jste sedadlo #{selectedSeat}
+          Vybrali jste sedadlo #{selectedSeat}
           <button 
             onClick={() => handleSeatSelection(null)}
             style={{ marginLeft: '1rem' }}

@@ -29,7 +29,7 @@ export default function Dashboard() {
         
         <header>
           <h1 className="page-title">
-            Ahoj, {user?.full_name?.split(' ')[0] || 'řidiči'}! 👋
+            Ahoj, {user?.full_name?.split(' ')[0] || 'řidiči'}!
           </h1>
           <p className="text-secondary mt-2">Vítej zpět. Co máš dnes v plánu?</p>
         </header>

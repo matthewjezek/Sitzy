@@ -93,7 +93,7 @@ def log_oauth_operation(
 
 
 # PATTERN 1: Simple Info Log
-# ✓ Good: Concise message with context
+# Good: Concise message with context
 def example_simple_log() -> None:
     """Simple information log."""
     user_id = "usr-123"
@@ -101,7 +101,7 @@ def example_simple_log() -> None:
 
 
 # PATTERN 2: Action Log (started/completed)
-# ✓ Good: Clear action name with status
+# Good: Clear action name with status
 def example_action_log() -> None:
     """Action logging with status tracking."""
     car_id = "car-456"
@@ -112,7 +112,7 @@ def example_action_log() -> None:
 
 
 # PATTERN 3: Error Logging
-# ✓ Good: Error action with context
+# Good: Error action with context
 def example_error_log() -> None:
     """Error logging with context."""
     try:
@@ -129,7 +129,7 @@ def example_error_log() -> None:
 
 
 # PATTERN 4: Multi-step Operation
-# ✓ Good: Track progress through steps
+# Good: Track progress through steps
 def example_multi_step_log() -> None:
     """Multi-step operation logging."""
     user_id = "usr-123"
@@ -150,7 +150,7 @@ def example_multi_step_log() -> None:
 
 
 # PATTERN 5: Resource Operations
-# ✓ Good: Consistent pattern for CRUD
+# Good: Consistent pattern for CRUD
 def example_crud_log() -> None:
     """CRUD operation logging."""
     car_id = "car-456"
@@ -180,7 +180,7 @@ def example_crud_log() -> None:
 # ============================================================================
 
 
-# ✗ BAD: Using f-strings for logging (losing structure)
+# BAD: Using f-strings for logging (losing structure)
 def bad_example_1() -> None:
     """Don't do this: unstructured f-string messages."""
     user_id = "usr-123"
@@ -188,7 +188,7 @@ def bad_example_1() -> None:
     # Problem: Can't easily search/filter by user_id in logs
 
 
-# ✗ BAD: Inconsistent context format
+# BAD: Inconsistent context format
 def bad_example_2() -> None:
     """Don't do this: inconsistent extra field format."""
     logger.info("Action completed", extra={"user": "usr-123"})
@@ -196,7 +196,7 @@ def bad_example_2() -> None:
     # Problem: Can't reliably search for user context
 
 
-# ✗ BAD: Logging raw objects
+# BAD: Logging raw objects
 def bad_example_3() -> None:
     """Don't do this: logging complex objects."""
     user = {"id": "usr-123", "email": "user@example.com", "password": "secret"}
@@ -204,7 +204,7 @@ def bad_example_3() -> None:
     # Problem: Accidentally logging sensitive data
 
 
-# ✗ BAD: No context for errors
+# BAD: No context for errors
 def bad_example_4() -> None:
     """Don't do this: error logging without context."""
     try:
