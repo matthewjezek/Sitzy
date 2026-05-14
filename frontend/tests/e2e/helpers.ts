@@ -252,6 +252,17 @@ export async function mockAuthenticatedApi(page: Page, overrides?: {
         await route.fulfill({ status: 403, json: { detail: 'You are not part of this ride.' } })
         return
       }
+      
+      // Check if user is owner, driver, or passenger
+      const isOwner = ride.car?.owner_id === mockUser.id
+      const isDriver = ride.driver_user_id === mockUser.id
+      const isPassenger = ride.passengers.some(p => p.user_id === mockUser.id)
+      
+      if (!isOwner && !isDriver && !isPassenger && !inviteToken) {
+        await route.fulfill({ status: 403, json: { detail: 'You are not part of this ride.' } })
+        return
+      }
+      
       await route.fulfill({ json: ride })
       return
     }

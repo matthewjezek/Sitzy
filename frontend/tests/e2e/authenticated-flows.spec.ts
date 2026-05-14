@@ -21,7 +21,7 @@ test('rides page shows upcoming ride and opens detail', async ({ page }) => {
   await page.getByRole('button', { name: /Zobrazit jízdu: Brno/ }).click()
 
   await expect(page).toHaveURL(/\/rides\/ride-1$/)
-  await expect(page.getByRole('heading', { name: 'Brno' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Brno', level: 1 })).toBeVisible()
   await expect(page.getByText('Rodinný vůz (Minivan)')).toBeVisible()
   await expect(page.getByText('Jan Novák', { exact: true }).first()).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Pozvánky' })).toBeVisible()
@@ -274,7 +274,8 @@ test('accept-then-seat flow allows manual seat confirmation with seat_position p
   await page.getByRole('button', { name: 'Přijmout' }).click()
 
   await expect(page).toHaveURL(/\/rides\/ride-1\?invite=invite-seat-manual$/)
-  await page.getByRole('button', { name: /pozice 2/i }).click()
+  const seatButton = page.locator('button').filter({ hasText: '2' }).first()
+  await seatButton.click()
   await expect(page.getByRole('button', { name: 'Potvrdit vybrané sedadlo' })).toBeEnabled()
   await page.getByRole('button', { name: 'Potvrdit vybrané sedadlo' }).click()
 
@@ -575,4 +576,188 @@ test('role matrix shows owner, driver and passenger action visibility correctly'
   await page.goto('/rides/ride-1')
   await expect(page.getByRole('button', { name: 'Opustit jízdu' })).toBeEnabled()
   await expect(page.getByRole('heading', { name: 'Pozvánky' })).toHaveCount(0)
+})
+
+test.describe('invitation edge cases', () => {
+  test('valid pending invitation allows ride access with seat selection flow', async ({ page }) => {
+    await seedAuthenticated(page)
+
+    const validToken = 'invite-valid-edge'
+    await mockAuthenticatedApi(page, {
+      invites: [
+        {
+          invited_email: 'jan@example.com',
+          status: 'Pending',
+          created_at: '2026-04-10T12:00:00.000Z',
+          token: validToken,
+          ride_id: mockRide.id,
+        },
+      ],
+      ride: {
+        ...mockRide,
+        passengers: [],
+        driver_user_id: 'driver-2',
+        car: {
+          ...mockCar,
+          owner_id: 'owner-2',
+          owner_name: 'Alena Majitelová',
+        },
+      },
+    })
+
+    await page.goto(`/rides/ride-1?invite=${encodeURIComponent(validToken)}`)
+
+    await expect(page.getByText('Vyberte sedadlo pro dokončení přijetí pozvánky.')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Brno', level: 1 })).toBeVisible()
+  })
+
+  test('expired invitation returns 410 and shows clear error message', async ({ page }) => {
+    await seedAuthenticated(page)
+
+    await mockAuthenticatedApi(page, {
+      invites: [],
+      inviteTokenErrors: {
+        'invite-expired-edge': {
+          status: 410,
+          detail: 'Invitation has expired.',
+        },
+      },
+      ride: {
+        ...mockRide,
+        passengers: [],
+        driver_user_id: 'driver-2',
+        car: {
+          ...mockCar,
+          owner_id: 'owner-2',
+          owner_name: 'Alena Majitelová',
+        },
+      },
+    })
+
+    await page.goto('/rides/ride-1?invite=invite-expired-edge')
+
+    await expect(page.getByText('Invitation has expired.')).toBeVisible()
+    await expect(page.getByText('Jízda nebyla nalezena.')).not.toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Brno', level: 1 })).not.toBeVisible()
+  })
+
+  test('wrong invite token for ride returns 403 not-part-of-ride', async ({ page }) => {
+    await seedAuthenticated(page)
+
+    await mockAuthenticatedApi(page, {
+      invites: [],
+      ride: {
+        ...mockRide,
+        passengers: [],
+        driver_user_id: 'driver-2',
+        car: {
+          ...mockCar,
+          owner_id: 'owner-2',
+          owner_name: 'Alena Majitelová',
+        },
+      },
+    })
+
+    await page.goto('/rides/ride-1?invite=wrong-token')
+
+    await expect(page.getByText('You are not part of this ride.')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Brno', level: 1 })).not.toBeVisible()
+  })
+
+  test('invite token without query param is denied for non-participants', async ({ page }) => {
+    await seedAuthenticated(page)
+
+    await mockAuthenticatedApi(page, {
+      invites: [],
+      ride: {
+        ...mockRide,
+        passengers: [],
+        driver_user_id: 'driver-2',
+        car: {
+          ...mockCar,
+          owner_id: 'owner-2',
+          owner_name: 'Alena Majitelová',
+        },
+      },
+    })
+
+    await page.goto('/rides/ride-1')
+
+    await expect(page.getByText('You are not part of this ride.')).toBeVisible()
+  })
+
+  test('invite link from notification correctly encodes token in URL', async ({ page }) => {
+    await seedAuthenticated(page)
+
+    const tokenWithSpecialChars = 'invite-abc+def/ghi='
+    await mockAuthenticatedApi(page, {
+      invites: [
+        {
+          invited_email: 'jan@example.com',
+          status: 'Pending',
+          created_at: '2026-04-10T12:00:00.000Z',
+          token: tokenWithSpecialChars,
+          ride_id: mockRide.id,
+        },
+      ],
+      ride: {
+        ...mockRide,
+        passengers: [],
+        driver_user_id: 'driver-2',
+        car: {
+          ...mockCar,
+          owner_id: 'owner-2',
+          owner_name: 'Alena Majitelová',
+        },
+      },
+    })
+
+    await page.goto('/rides')
+    await page.getByRole('button', { name: 'Otevřít notifikace' }).click()
+    await page.getByRole('button', { name: 'Přijmout' }).click()
+
+    await expect(page).toHaveURL(/\/rides\/ride-1\?invite=/)
+    const url = page.url()
+    expect(url).toContain(encodeURIComponent(tokenWithSpecialChars))
+  })
+
+  test('multiple invitations for same ride work independently', async ({ page }) => {
+    await seedAuthenticated(page)
+
+    const token1 = 'invite-multi-1'
+    const token2 = 'invite-multi-2'
+    await mockAuthenticatedApi(page, {
+      invites: [
+        {
+          invited_email: 'jan@example.com',
+          status: 'Pending',
+          created_at: '2026-04-10T12:00:00.000Z',
+          token: token1,
+          ride_id: mockRide.id,
+        },
+        {
+          invited_email: 'another@example.com',
+          status: 'Pending',
+          created_at: '2026-04-11T12:00:00.000Z',
+          token: token2,
+          ride_id: mockRide.id,
+        },
+      ],
+      ride: {
+        ...mockRide,
+        passengers: [],
+        driver_user_id: 'driver-2',
+        car: {
+          ...mockCar,
+          owner_id: 'owner-2',
+          owner_name: 'Alena Majitelová',
+        },
+      },
+    })
+
+    await page.goto(`/rides/ride-1?invite=${encodeURIComponent(token1)}`)
+
+    await expect(page.getByText('Vyberte sedadlo pro dokončení přijetí pozvánky.')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Brno', level: 1 })).toBeVisible()
+  })
 })
