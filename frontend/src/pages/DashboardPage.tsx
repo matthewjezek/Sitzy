@@ -5,6 +5,7 @@ import { useRide } from '../hooks/useRide';
 import { useAuth } from '../hooks/useAuth';
 import { formatLocalDateTime } from '../utils/datetime';
 import { CarIcon } from '../assets/icons';
+import { getCzechVocative } from '../utils/nameUtils';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -22,6 +23,9 @@ export default function Dashboard() {
     .filter(r => new Date(r.departure_time) > now)
     .sort((a, b) => new Date(a.departure_time).getTime() - new Date(b.departure_time).getTime())[0] || null;
 
+  const firstName = user?.full_name?.split(' ')[0];
+  const greetingName = firstName ? getCzechVocative(firstName) : 'řidiči';
+
   return (
     <div className="page-container flex-col pt-24 pb-10">
       <div className="page-content max-w-2xl mx-auto flex flex-col gap-8">
@@ -29,7 +33,7 @@ export default function Dashboard() {
         
         <header>
           <h1 className="page-title">
-            Ahoj, {user?.full_name?.split(' ')[0] || 'řidiči'}!
+            Ahoj, {greetingName}!
           </h1>
           <p className="text-secondary mt-2">Vítej zpět. Co máš dnes v plánu?</p>
         </header>
