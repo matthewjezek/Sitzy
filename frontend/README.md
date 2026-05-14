@@ -27,7 +27,7 @@ ne bezpečnost běhu aplikace. Uživatelé a nasazené aplikace nejsou ohroženy
 
 **Možná řešení:**
 
-1. ✅ **Současný přístup:** Přijmout zranitelnost v buildě, zatímco PWA zůstává důležitá
+1. **Současný přístup:** Přijmout zranitelnost v buildě, zatímco PWA zůstává důležitá
 2. Downgradovat na starší PWA plugin (nedoporučeno — zavádí více bezpečnostních
 problémů)
 3. Odstranit PWA funkčnost úplně (nežádoucí)
