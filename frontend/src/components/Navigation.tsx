@@ -162,7 +162,6 @@ export default function Navigation() {
       if (accept) {
         setBellOpen(false)
         navigate(`/rides/${rideId}?invite=${encodeURIComponent(token)}`)
-        toast.info('Dokončete přijetí pozvánky výběrem sedadla.')
       } else {
         await respondInvite(token, false)
         toast.info('Pozvánka odmítnuta.')
