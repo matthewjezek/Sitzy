@@ -1,98 +1,246 @@
-# 🇨🇿 Sitzy
+# Sitzy
 
-**Sitzy** je webová aplikace pro správu pasažérů a rozložení sedaček v autě.
-Umožňuje snadno naplánovat, kdo kde sedí, a sdílet schéma auta s ostatními
-účastníky jízdy.
+Sitzy je projekt bakalářské práce zaměřený na správu pasažérů a plánování
+rozložení sedaček v autě pro skupiny přátel. Aplikace umožňuje snadno
+koordinovat, kdo kde během společných cest sedí, a sdílet vizuální schéma auta s
+ostatními účastníky jízdy.
 
-## 🚗 Hlavní funkce
+## Verze v češtině
 
-- Interaktivní rozložení sedaček podle typu vozidla (sedan, kupé, minivan)
-- Vytváření událostí (jednorázové jízdy)
-- Přidávání a správa pasažérů včetně přehledu, kdo kde sedí
-- Sdílení přístupu pomocí uživatelského ID (např. e-mail)
-- Možnost připojení k více autům jako host
+### Klíčové vlastnosti
 
-## 🧪 Prototypové vlastnosti (v plánu)
+- **Interaktivní rozložení sedaček**: Podpora pro různé typy vozidel včetně
+  variant Sedan, Coupé a Minivan.
+- **Správa jízd**: Vytváření a správa konkrétních jízd s určením cíle a času
+  odjezdu.
+- **Koordinace přátel**: Zvaní pasažérů přes e-mail a interaktivní výběr sedadla.
+- **Podpora více aut**: Možnost vlastnit více vozidel a účastnit se různých jízd
+  jako řidič nebo pasažér.
+- **Vizuální přehled**: Reálný náhled na obsazenost auta pro každou naplánovanou
+  jízdu.
 
-- Přátelský seznam pro snadnější pozvání známých
-- Volitelná identifikace řidiče
-- Easter egg režim „Sedaq“ pro vývojáře 😉
+### Technologický stack (CZ)
 
-## 🧰 Použité technologie (předběžné)
+#### Backend (CZ)
 
-- [React](https://reactjs.org/) + [Tailwind CSS](https://tailwindcss.com/)
-- [TypeScript](https://www.typescriptlang.org/)
-- [Vite](https://vitejs.dev/)
-- (volitelné) Firebase / Supabase pro správu dat
+- **Framework**: FastAPI (Python 3.11+)
+- **Databáze**: PostgreSQL s SQLAlchemy 2.0 (ORM)
+- **Migrace**: Alembic
+- **Cache/Session**: Redis (stav OAuth a správa relací)
+- **Zabezpečení**: JWT (Access/Refresh tokeny), PKCE pro OAuth přes X (Twitter)
 
-## ▶️ Lokální spuštění (zatím návrh)
+#### Frontend (CZ)
+
+- **Framework**: React 19 + TypeScript
+- **Styling**: Tailwind CSS v4
+- **Sestavení**: Vite
+- **Správa stavu**: Vlastní hooky s Axios pro komunikaci s API
+- **Validace**: Zod + React Hook Form
+
+#### DevOps a nástroje (CZ)
+
+- **Kontejnerizace**: Docker & Docker Compose
+- **Testování**: Playwright (E2E), Pytest (Backend)
+- **Linting**: Flake8 (Backend), ESLint (Frontend)
+
+### Lokální nastavení
+
+#### Požadavky
+
+- Docker a Docker Compose
+- Node.js 20+
+- Python 3.11+
+
+#### Infrastruktura
+
+Spusťte potřebné služby (PostgreSQL, Redis):
 
 ```bash
-git clone https://github.com/uzivatel/sitzy.git
-cd sitzy
-npm install
-npm run dev
+docker-compose up -d db redis
 ```
 
-## OAuth Setup
+#### Nastavení Backendů (CZ)
 
-### Lokální spuštění s Redisem
+1. Přejděte do adresáře `api` (nebo kořenového adresáře projektu podle vašeho
+   nastavení venv).
+2. Nainstalujte závislosti:
 
-```bash
-docker-compose up redis
-```
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-### Facebook App registrace
+3. Spusťte databázové migrace:
 
-1. Jdi na [developers.facebook.com](https://developers.facebook.com)
-2. Vytvoř novou aplikaci → use case **Authenticate and request data
-from users with Facebook Login**
-3. Zvol **"I don't want to connect a business portfolio yet."**
-4. Jdi do **App Settings → Basic**
-5. Zkopíruj `App ID` → `FACEBOOK_CLIENT_ID`
-6. Zkopíruj `App Secret` → `FACEBOOK_CLIENT_SECRET`
-7. **Přidej povinné URL pro App Review:**
-   - **Privacy Policy URL**: `https://your-domain.com/privacy` (po deployi)
-   - **Terms of Service URL**: `https://your-domain.com/terms` (po deployi)
-   - **User Data Deletion**: `https://your-domain.com/api/auth/facebook/deletion`
-8. **Kategorie aplikace**: `Utility & productivity`
+   ```bash
+   alembic upgrade head
+   ```
 
-> **Poznámka:** V development módu jsou `http://localhost` redirect URI
-> povoleny automaticky – není potřeba je přidávat ručně.
->
-> **Business verification + App Review** jsou vyžadovány pouze pro produkční
-přístup k datům cizích uživatelů.
-Pro vývoj a testování (vlastní účet + max 25 testerů) není potřeba.
+4. Spusťte FastAPI server:
 
-### X (Twitter) App registrace
+   ```bash
+   uvicorn api.main:app --reload
+   ```
 
-1. Jdi na [developer.twitter.com](https://developer.twitter.com)
-2. Vytvoř nový **Project** + **App**
-3. V nastavení aplikace najdi **User authentication settings** → **Set up**
-4. Vyplň:
-   - **App permissions**: Read
-   - **Type of App**: Web App, Automated App or Bot
-   - **Callback URI**: `http://localhost:5173/auth/callback`
-   - **Website URL**: `http://localhost:5173`
-5. Ulož nastavení
-6. Jdi do **Keys and Tokens** → sekce **OAuth 2.0 Client ID and Client Secret**
-7. Zkopíruj `Client ID` → `X_CLIENT_ID`
-8. Zkopíruj `Client Secret` → `X_CLIENT_SECRET`
-9. **Pro žádost o email přístup (request email from users):**
-   - **Privacy Policy URL**: `https://your-domain.com/privacy`
-   - **Terms of Service URL**: `https://your-domain.com/terms`
+#### Nastavení Frontendu (CZ)
 
-> **Poznámka:** Na rozdíl od Facebooku X nevyžaduje localhost automaticky –
-> Callback URI musíš přidat ručně.
->
-> **Pozor:** X vygeneruje oba klíče nadepsané jako "Client Secret".
-> `Client ID` je kratší řetězec (cca 20–30 znaků),
-> `Client Secret` je delší.
+1. Přejděte do adresáře `frontend`.
+2. Nainstalujte závislosti:
 
-### Generování SECRET_KEY
+   ```bash
+   npm install
+   ```
+
+3. Spusťte vývojový server:
+
+   ```bash
+   npm run dev
+   ```
+
+### Konfigurace OAuth (CZ)
+
+#### Registrace aplikace na Facebooku (CZ)
+
+1. Navštivte [developers.facebook.com](https://developers.facebook.com).
+2. Vytvořte novou aplikaci s využitím "Authenticate and request data from users
+   with Facebook Login".
+3. V sekci **App Settings -> Basic** získejte své `App ID` a `App Secret`.
+
+#### Registrace aplikace na X (Twitteru) (CZ)
+
+1. Navštivte [developer.twitter.com](https://developer.twitter.com).
+2. Vytvořte nový Project a App.
+3. Povolte **User authentication settings** s OAuth 2.0.
+4. Nastavte **Callback URI** na `http://localhost:5173/auth/callback`.
+
+#### Bezpečnostní klíče (CZ)
+
+Vygenerujte silné tajné klíče pro JWT:
 
 ```bash
 python -c "import secrets; print(secrets.token_hex(32))"
 ```
 
-Spusť dvakrát – jednou pro `SECRET_KEY`, jednou pro `REFRESH_SECRET_KEY`.
+Spusťte dvakrát pro vygenerování `SECRET_KEY` a `REFRESH_SECRET_KEY` do vašeho
+souboru `.env`.
+
+### Struktura projektu (CZ)
+
+- `/api`: Zdrojový kód backendu (FastAPI).
+- `/frontend`: Zdrojový kód frontendu (React).
+- `/alembic`: Skripty pro databázové migrace.
+- `/diagrams`: Diagramy architektury systému a datového modelu (Mermaid).
+- `/docs`: Další dokumentace.
+
+---
+
+## English Version
+
+Sitzy is a thesis project focused on car seat management and passenger
+coordination for friend groups. The application allows users to easily plan who
+sits where during shared trips and share the visual car scheme with other ride
+participants.
+
+### Key Features
+
+- **Interactive Seat Layouts**: Support for multiple vehicle types including
+  Sedan, Coupé, and Minivan.
+- **Ride Management**: Create and manage concrete ride events with specific
+  destinations and departure times.
+- **Friend Coordination**: Invite passengers via email and manage their seat
+  assignments interactively.
+- **Multi-Car Support**: Users can own multiple vehicles and participate in
+  various rides as either a driver or a passenger.
+- **Visual Overview**: Real-time car occupancy view for every scheduled ride.
+
+### Technical Stack (EN)
+
+#### Backend (EN)
+
+- **Framework**: FastAPI (Python 3.11+)
+- **Database**: PostgreSQL with SQLAlchemy 2.0 (ORM)
+- **Migrations**: Alembic
+- **Caching/Session**: Redis (OAuth state and session management)
+- **Security**: JWT (Access/Refresh tokens), PKCE for X/Twitter OAuth
+
+#### Frontend (EN)
+
+- **Framework**: React 19 + TypeScript
+- **Styling**: Tailwind CSS v4
+- **Build Tool**: Vite
+- **State Management**: Custom hooks with Axios for API communication
+- **Validation**: Zod + React Hook Form
+
+### Local Development Setup
+
+#### Prerequisites
+
+- Docker and Docker Compose
+- Node.js 20+
+- Python 3.11+
+
+#### Infrastructure (EN)
+
+Start the required services (PostgreSQL, Redis):
+
+```bash
+docker-compose up -d db redis
+```
+
+#### Backend Setup (EN)
+
+1. Navigate to the `api` directory (or project root).
+2. Install dependencies:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. Run database migrations:
+
+   ```bash
+   alembic upgrade head
+   ```
+
+4. Start the FastAPI server:
+
+   ```bash
+   uvicorn api.main:app --reload
+   ```
+
+#### Frontend Setup (EN)
+
+1. Navigate to the `frontend` directory.
+2. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+3. Start the development server:
+
+   ```bash
+   npm run dev
+   ```
+
+### OAuth Configuration (EN)
+
+#### Facebook App Registration (EN)
+
+1. Visit [developers.facebook.com](https://developers.facebook.com).
+2. Create a new app with "Facebook Login".
+3. Retrieve your `App ID` and `App Secret` from settings.
+
+#### X (Twitter) App Registration (EN)
+
+1. Visit [developer.twitter.com](https://developer.twitter.com).
+2. Create a new Project and App.
+3. Enable OAuth 2.0 and set **Callback URI** to
+   `http://localhost:5173/auth/callback`.
+
+### Project Structure (EN)
+
+- `/api`: FastAPI backend source code.
+- `/frontend`: React frontend source code.
+- `/alembic`: Database migration scripts.
+- `/diagrams`: Architecture and data model diagrams.
+- `/docs`: Additional documentation.
