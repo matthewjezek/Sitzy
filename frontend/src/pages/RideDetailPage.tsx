@@ -1,10 +1,24 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { FiTrash, FiUserPlus, FiClock, FiRepeat, FiUserX, FiLogOut, FiXCircle } from 'react-icons/fi'
-import { BiCar } from "react-icons/bi";
+import {
+  FiTrash,
+  FiUserPlus,
+  FiClock,
+  FiRepeat,
+  FiUserX,
+  FiLogOut,
+  FiXCircle,
+  FiDownload,
+  FiCopy,
+  FiFileText,
+  FiEye,
+  FiEyeOff,
+} from 'react-icons/fi'
+import { BiCar } from 'react-icons/bi'
 import { toast } from 'react-toastify'
+import * as htmlToImage from 'html-to-image'
 import { formatLocalDateTime } from '../utils/datetime'
 import instance from '../api/axios'
 import { useRide } from '../hooks/useRide'
@@ -308,6 +322,11 @@ export default function RideDetailPage() {
   const [removingUserId, setRemovingUserId] = useState<string | null>(null)
   const [selectedSeat, setSelectedSeat] = useState<number | null>(null)
   const [finishingInvite, setFinishingInvite] = useState(false)
+  const [storyAnonymized, setStoryAnonymized] = useState(true)
+  const [exportingImage, setExportingImage] = useState(false)
+  const [exportingJson, setExportingJson] = useState(false)
+  const [copyingLink, setCopyingLink] = useState(false)
+  const storyCardRef = useRef<HTMLDivElement | null>(null)
 
   const inviteToken = searchParams.get('invite')
 
@@ -380,6 +399,13 @@ export default function RideDetailPage() {
     return 'SEDAQ'
   }
 
+  const getSeatCapacity = (layout: string | undefined): number => {
+    const normalized = layout?.toLowerCase() ?? ''
+    if (normalized.includes('coupe') || normalized.includes('kup') || normalized.includes('trapaq')) return 2
+    if (normalized.includes('minivan') || normalized.includes('praq')) return 7
+    return 4
+  }
+
   const clearInviteQueryParam = () => {
     const next = new URLSearchParams(searchParams)
     next.delete('invite')
@@ -409,6 +435,56 @@ export default function RideDetailPage() {
     }
   }
   
+  const seatCapacity = getSeatCapacity(ride?.car?.layout)
+  const occupiedCount = Math.min(seatCapacity, (ride?.passengers?.length ?? 0) + 1)
+  const storyDriverName = ride?.driver?.full_name ?? ride?.car?.owner_name ?? 'Řidič'
+  const storyPassengers = useMemo(() => {
+    return [...(ride?.passengers ?? [])]
+      .sort((left, right) => {
+        const leftSeat = left.seat_position ?? Number.POSITIVE_INFINITY
+        const rightSeat = right.seat_position ?? Number.POSITIVE_INFINITY
+        if (leftSeat !== rightSeat) return leftSeat - rightSeat
+        return left.full_name?.localeCompare(right.full_name ?? '', 'cs') ?? 0
+      })
+      .map((passenger, index) => ({
+        id: passenger.user_id,
+        seat: passenger.seat_position,
+        name: storyAnonymized ? `Pasažér ${index + 1}` : passenger.full_name ?? 'Neznámý',
+        avatar: storyAnonymized ? null : passenger.avatar_url,
+        isDriver: false,
+      }))
+  }, [ride?.passengers, storyAnonymized])
+
+  const storySeatData = useMemo(() => {
+    return (ride?.passengers ?? []).map((passenger) => ({
+      position: passenger.seat_position,
+      user_name: storyAnonymized ? undefined : passenger.full_name ?? undefined,
+      avatar_url: storyAnonymized ? undefined : (passenger.avatar_url ?? undefined),
+      occupied: true,
+    }))
+  }, [ride?.passengers, storyAnonymized])
+
+  const storyPeople = useMemo(() => {
+    const driver = {
+      id: 'driver',
+      seat: 1,
+      name: storyAnonymized ? 'Řidič' : storyDriverName,
+      avatar: storyAnonymized ? null : (ride?.driver?.avatar_url ?? null),
+      isDriver: true,
+    }
+    return [driver, ...storyPassengers]
+  }, [ride?.driver?.avatar_url, storyDriverName, storyAnonymized, storyPassengers])
+
+  const [isWide, setIsWide] = useState(typeof window !== 'undefined' ? window.innerWidth >= 1024 : false)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const mql = window.matchMedia('(min-width: 1024px)')
+    const handler = (e: MediaQueryListEvent) => setIsWide(e.matches)
+    mql.addEventListener('change', handler)
+    return () => mql.removeEventListener('change', handler)
+  }, [])
+
   if (loading) return <RideDetailSkeleton />
 
   if (error) return (
@@ -441,8 +517,124 @@ export default function RideDetailPage() {
   const seatRendererSeats: SeatData[] = (ride.passengers ?? []).map((p) => ({
     position: p.seat_position,
     user_name: p.full_name ?? undefined,
+    avatar_url: p.avatar_url ?? undefined,
     occupied: true,
   }))
+
+  const buildStoryExport = () => ({
+    context: 'Sitzy Ride Summary',
+    generated_at: new Date().toISOString(),
+    anonymized: storyAnonymized,
+    ride: {
+      destination: ride.destination,
+      departure_time: ride.departure_time,
+      car: {
+        name: ride.car?.name ?? null,
+        layout: ride.car?.layout ?? null,
+      },
+      seats: {
+        capacity: seatCapacity,
+        occupied: occupiedCount,
+      },
+      driver: {
+        name: storyAnonymized ? 'Řidič' : storyDriverName,
+        seat: 1,
+      },
+      passengers: storyPassengers.map(passenger => ({
+        name: passenger.name,
+        seat: passenger.seat,
+      })),
+    },
+  })
+
+  const handleDownloadStoryImage = async () => {
+    if (!storyCardRef.current) return
+
+    setExportingImage(true)
+    try {
+      const card = storyCardRef.current
+      
+      // Wait for fonts
+      if (document.fonts?.ready) {
+        await document.fonts.ready
+      }
+
+      // Small extra delay to ensure everything is rendered
+      await new Promise(resolve => setTimeout(resolve, 100))
+
+      // html-to-image captures the element more accurately by using SVG foreignObject.
+      // We use a pixelRatio of 2 for high quality without excessive memory.
+      // toPng is often more stable across browsers than toBlob.
+      const dataUrl = await htmlToImage.toPng(card, {
+        pixelRatio: 2, 
+        backgroundColor: 'transparent',
+        cacheBust: false,
+        style: {
+          transform: 'none',
+        }
+      })
+
+      if (!dataUrl) {
+        toast.error('Nepodařilo se připravit PNG export.')
+        return
+      }
+
+      const link = document.createElement('a')
+      link.href = dataUrl
+      link.download = `sitzy-jizda-${ride.id}.png`
+      link.click()
+      toast.success('PNG karta byla stažena.')
+    } catch (err) {
+      console.error('PNG export failed:', err)
+      toast.error('Nepodařilo se vytvořit PNG kartu.')
+    } finally {
+      setExportingImage(false)
+    }
+  }
+
+  const handleExportStoryJson = () => {
+    setExportingJson(true)
+    try {
+      const payload = buildStoryExport()
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `sitzy-jizda-${ride.id}.json`
+      link.click()
+      URL.revokeObjectURL(url)
+      toast.success('JSON export byl stažen.')
+    } catch {
+      toast.error('Nepodařilo se vytvořit JSON export.')
+    } finally {
+      setExportingJson(false)
+    }
+  }
+
+  const handleCopyStoryLink = async () => {
+    setCopyingLink(true)
+    try {
+      const link = `${window.location.origin}/rides/${ride.id}`
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(link)
+      } else {
+        const textarea = document.createElement('textarea')
+        textarea.value = link
+        textarea.setAttribute('readonly', 'true')
+        textarea.style.position = 'absolute'
+        textarea.style.left = '-9999px'
+        document.body.appendChild(textarea)
+        textarea.select()
+        document.execCommand('copy')
+        document.body.removeChild(textarea)
+      }
+      toast.success('Odkaz byl zkopírován.')
+    } catch {
+      toast.error('Nepodařilo se zkopírovat odkaz.')
+    } finally {
+      setCopyingLink(false)
+    }
+  }
 
   const canLeaveRide = Boolean(user && !isOwner && !isCurrentDriver)
   const roleBadge = isOwner ? 'Majitel auta' : isCurrentDriver ? 'Aktuální řidič' : 'Pasažér'
@@ -454,7 +646,7 @@ export default function RideDetailPage() {
 
   return (
     <div className="page-container flex-col pt-24 pb-10">
-      <div className="page-content max-w-md md:max-w-2xl lg:max-w-4xl mx-auto p-4 md:p-6 flex flex-col gap-6">
+      <div className="page-content max-w-md md:max-w-2xl lg:max-w-6xl mx-auto p-4 md:p-6 flex flex-col gap-6">
 
         <div className="card p-4 md:p-6 flex flex-col gap-4 relative overflow-hidden">
           <div className="absolute -top-10 -right-10 w-36 h-36 rounded-full bg-accent/10 blur-2xl pointer-events-none" aria-hidden="true" />
@@ -524,6 +716,7 @@ export default function RideDetailPage() {
             mode={requiresSeatSelection ? 'interactive' : 'display'}
             selectedSeat={requiresSeatSelection ? selectedSeat : undefined}
             onSeatSelect={requiresSeatSelection ? setSelectedSeat : undefined}
+            orientation={isWide ? 'landscape' : 'portrait'}
           />
 
           {requiresSeatSelection && (
@@ -546,6 +739,137 @@ export default function RideDetailPage() {
               </button>
             </div>
           )}
+        </div>
+
+        <div className="card p-4 md:p-6 flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <h2 className="font-semibold">Sdílená karta jízdy</h2>
+              <p className="text-sm text-secondary mt-1">
+                Mobilní náhled vhodný pro story export. Anonymizace je zapnutá ve výchozím stavu.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setStoryAnonymized((prev) => !prev)}
+              className="button-secondary flex items-center gap-2 h-10"
+              aria-pressed={storyAnonymized}
+            >
+              {storyAnonymized ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+              {storyAnonymized ? 'Anonymizováno' : 'Plné údaje'}
+            </button>
+          </div>
+
+          <div className="story-card-wrapper">
+            <div ref={storyCardRef} className="story-card" aria-label="Náhled sdílené karty">
+              <div className="story-card-top">
+                <div className="story-card-brand">
+                  <span className="story-card-brand-dot" aria-hidden="true" />
+                  Sitzy
+                </div>
+                <span className="story-card-chip">
+                  {storyAnonymized ? 'Anonymizováno' : 'Sdílení s údaji'}
+                </span>
+              </div>
+
+              <div className="story-card-heading">
+                <p className="story-card-label">Cíl jízdy</p>
+                <h3 className="story-card-title">{ride.destination}</h3>
+              </div>
+
+              <div className="story-card-meta">
+                <div className="story-meta-item">
+                  <FiClock size={12} aria-hidden="true" />
+                  <span>{formatLocalDateTime(ride.departure_time)}</span>
+                </div>
+                <div className="story-meta-item">
+                  <BiCar size={12} aria-hidden="true" />
+                  <span>{ride.car?.name ?? 'Auto'} • {ride.car?.layout ?? 'Layout'}</span>
+                </div>
+                <div className="story-meta-item">
+                  <span>{occupiedCount}/{seatCapacity} obsazeno</span>
+                </div>
+              </div>
+
+              <div className="story-seat-stage">
+                <SeatRenderer
+                  layout={seatRendererLayout}
+                  seats={storySeatData}
+                  ownerName={storyAnonymized ? 'Řidič' : storyDriverName}
+                  mode="display"
+                  orientation="landscape"
+                  showHeader={false}
+                  showLegend={false}
+                  compact={true}
+                  className="story-seat-renderer"
+                />
+              </div>
+
+              <div className="story-people">
+                {storyPeople.slice(0, storyPeople.length > 4 ? 3 : 4).map((person) => (
+                  <div key={person.id} className={`story-person ${person.isDriver ? 'story-person-driver' : ''}`}>
+                    <div className="story-person-avatar" aria-hidden="true">
+                      {person.avatar ? (
+                        <img src={person.avatar} alt="" crossOrigin="anonymous" />
+                      ) : (
+                        <span>{person.name.slice(0, 1).toUpperCase()}</span>
+                      )}
+                    </div>
+                    <div className="story-person-info">
+                      <span className="story-person-name">{person.name}</span>
+                      <span className="story-person-seat">Sedadlo {person.seat}</span>
+                    </div>
+                  </div>
+                ))}
+                {storyPeople.length > 4 && (
+                  <div className="story-person">
+                    <div className="story-person-avatar" aria-hidden="true">
+                      <span>+{storyPeople.length - 3}</span>
+                    </div>
+                    <div className="story-person-info">
+                      <span className="story-person-name">Další</span>
+                      <span className="story-person-seat">pasažéři</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="story-card-footer">
+                <span>Vygenerováno {formatLocalDateTime(new Date().toISOString())}</span>
+                <span className="story-card-watermark">Sitzy Demo</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <button
+              type="button"
+              onClick={() => void handleDownloadStoryImage()}
+              disabled={exportingImage}
+              className="button-primary flex items-center justify-center gap-2 h-10"
+            >
+              <FiDownload size={16} />
+              {exportingImage ? 'Připravuji...' : 'Stáhnout PNG'}
+            </button>
+            <button
+              type="button"
+              onClick={handleExportStoryJson}
+              disabled={exportingJson}
+              className="button-secondary flex items-center justify-center gap-2 h-10"
+            >
+              <FiFileText size={16} />
+              {exportingJson ? 'Exportuji...' : 'Exportovat JSON'}
+            </button>
+            <button
+              type="button"
+              onClick={() => void handleCopyStoryLink()}
+              disabled={copyingLink}
+              className="button-secondary flex items-center justify-center gap-2 h-10"
+            >
+              <FiCopy size={16} />
+              {copyingLink ? 'Kopíruji...' : 'Kopírovat odkaz'}
+            </button>
+          </div>
         </div>
 
         <PassengersSection
