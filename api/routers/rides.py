@@ -83,6 +83,41 @@ def _has_pending_invitation_access(
     return invitation.invited_email.lower() == user_email.lower()
 
 
+def _check_invitation_expiration(
+    db: Session,
+    *,
+    ride_id: UUID,
+    invite_token: str,
+    user_email: str | None,
+) -> None:
+    """Check if invitation exists but is expired. Raises 410 if expired.
+
+    Returns silently if no invitation found (will be caught by access check).
+    """
+    if not user_email:
+        return
+
+    invitation = (
+        db.query(Invitation)
+        .filter(
+            Invitation.token == invite_token,
+            Invitation.ride_id == ride_id,
+            Invitation.status == InvitationStatus.PENDING,
+        )
+        .first()
+    )
+    if invitation and invitation.expires_at < datetime.now(timezone.utc):
+        logger.info(
+            "Ride access denied - invitation expired",
+            extra={
+                "token": invite_token,
+                "ride_id": str(ride_id),
+                "expires_at": invitation.expires_at.isoformat(),
+            },
+        )
+        raise HTTPException(status_code=410, detail="Invitation has expired.")
+
+
 def _get_ride_or_404(ride_id: UUID, db: Session) -> Ride:
     """Helper to get a ride by ID or raise 404 if not found."""
     ride = db.query(Ride).filter(Ride.id == ride_id).first()
@@ -126,6 +161,14 @@ def _assert_ride_access(
     else:
         if is_owner or is_current_driver or is_passenger:
             return
+
+        if db and invite_token:
+            _check_invitation_expiration(
+                db,
+                ride_id=ride.id,
+                invite_token=invite_token,
+                user_email=user_email,
+            )
 
         if (
             db
