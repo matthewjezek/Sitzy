@@ -19,6 +19,8 @@ import {
 import { BiCar } from 'react-icons/bi'
 import { toast } from 'react-toastify'
 import * as htmlToImage from 'html-to-image'
+import logoLight from '../assets/sitzy_logo_full.svg'
+import logoDark from '../assets/sitzy_logo_full_dark.svg'
 import { formatLocalDateTime } from '../utils/datetime'
 import instance from '../api/axios'
 import { useRide } from '../hooks/useRide'
@@ -763,10 +765,10 @@ export default function RideDetailPage() {
           <div className="story-card-wrapper">
             <div ref={storyCardRef} className="story-card" aria-label="Náhled sdílené karty">
               <div className="story-card-top">
-                <div className="story-card-brand">
-                  <span className="story-card-brand-dot" aria-hidden="true" />
-                  Sitzy
-                </div>
+                  <div className="story-card-brand">
+                    <img src={logoLight} alt="Sitzy" className="logo logo-light story-card-brand-logo h-4" />
+                    <img src={logoDark} alt="Sitzy" className="logo logo-dark story-card-brand-logo h-4" />
+                  </div>
                 <span className="story-card-chip">
                   {storyAnonymized ? 'Anonymizováno' : 'Sdílení s údaji'}
                 </span>
