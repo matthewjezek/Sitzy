@@ -193,7 +193,7 @@ export default function Navigation() {
           </button>
         </div>
 
-        <Link to="/rides" className="flex items-center gap-2 flex-shrink-0">
+        <Link to="/" className="flex items-center gap-2 flex-shrink-0">
           <img src={logoLight} alt="Sitzy logo" className="logo logo-light h-10" />
           <img src={logoDark} alt="Sitzy logo" className="logo logo-dark h-10" />
         </Link>
@@ -252,7 +252,7 @@ export default function Navigation() {
           </div>
 
           <Link 
-            to="/rides" 
+            to="/" 
             className="flex justify-center items-center space-x-3 h-10"
           >
             <img src={logoLight} alt="Sitzy logo" className="logo logo-light h-10" />
