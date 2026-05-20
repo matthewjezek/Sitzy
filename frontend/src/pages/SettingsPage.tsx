@@ -10,6 +10,7 @@ import {
 } from '../utils/theme';
 import { DeleteDialog } from '../components/Dialog';
 import { useAuth } from '../hooks/useAuth';
+import { usePWAUpdate } from '../hooks/usePWAUpdate';
 import type { SocialDashboard, SocialSessionInfo } from '../types/models';
 
 function SettingsSkeleton() {
@@ -43,6 +44,13 @@ export default function SettingsPage() {
   const [isCompactMobile, setIsCompactMobile] = useState(false)
   const [socialExpanded, setSocialExpanded] = useState(true)
   const deleteDialogRef = useRef<HTMLDialogElement>(null)
+  const {
+    isUpdateAvailable,
+    isChecking,
+    error,
+    checkForUpdates,
+    applyUpdate
+  } = usePWAUpdate();
 
   useEffect(() => {
     document.title = 'Sitzy - Nastavení'
@@ -446,6 +454,54 @@ export default function SettingsPage() {
             </Link>
           </div>
         </div>
+
+        {import.meta.env.MODE === 'production' && (
+          <div className="settings-section p-4 sm:p-6">
+            <div className="settings-section-header">
+              <h2 className="settings-section-title">Aktualizace aplikace</h2>
+              <p className="text-sm text-secondary mt-1">
+                Aplikace se automaticky aktualizuje na pozadí. Můžete také ručně zkontrolovat dostupnost aktualizací.
+              </p>
+            </div>
+
+            {isChecking && (
+              <div className="text-sm text-secondary">
+                Kontroluji aktualizace...
+              </div>
+            )}
+
+            {!isChecking && error && (
+              <div className="text-sm text-error">
+                {error}
+              </div>
+            )}
+
+            {!isChecking && isUpdateAvailable && (
+              <div className="mt-4">
+                <button
+                  onClick={applyUpdate}
+                  className="button-primary w-full"
+                >
+                  Použít aktualizaci a restartovat aplikaci
+                </button>
+              </div>
+            )}
+
+            {!isChecking && !isUpdateAvailable && (
+              <div className="mt-4">
+                <button
+                  onClick={checkForUpdates}
+                  className="button-secondary w-full"
+                >
+                  Zkontrolovat aktualizace
+                </button>
+                <p className="text-xs text-secondary mt-1">
+                  Žádné aktualizace
+                </p>
+              </div>
+            )}
+          </div>
+        )}
 
         {import.meta.env.MODE === 'development' && (
           <div className="settings-section p-4 sm:p-6 border-dashed border-2 border-accent">
