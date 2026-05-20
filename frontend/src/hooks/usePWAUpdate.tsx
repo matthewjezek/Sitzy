@@ -1,98 +1,42 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useRegisterSW } from 'virtual:pwa-register/react';
+
+function isStandalonePWA() {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  return window.matchMedia('(display-mode: standalone)').matches ||
+    Boolean((navigator as Navigator & { standalone?: boolean }).standalone);
+}
 
 export function usePWAUpdate() {
-  const [isUpdateAvailable, setIsUpdateAvailable] = useState(false);
-  const [isChecking, setIsChecking] = useState(false);
+  const [isPWAInstalled, setIsPWAInstalled] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const {
+    needRefresh: [needRefresh, setNeedRefresh],
+    updateServiceWorker,
+  } = useRegisterSW({
+    immediate: true,
+    onNeedRefresh() {
+      setNeedRefresh(true);
+    },
+    onRegisterError(err) {
+      console.error('Error registering PWA service worker:', err);
+      setError('Failed to register PWA updates');
+    },
+  });
 
-  // Check for updates on mount
   useEffect(() => {
-    // Only check for updates if PWA is installed (running as standalone)
-    const isPWA = window.matchMedia('(display-mode: standalone)').matches ||
-                  (navigator as Navigator & { standalone?: boolean }).standalone;
-
-    if (!isPWA || !('serviceWorker' in navigator)) {
-      return;
-    }
-
-    const handleControllerChange = () => {
-      setIsUpdateAvailable(false);
-    };
-
-    navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
-    checkForUpdates();
-
-    return () => {
-      navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
-    };
+    setIsPWAInstalled(isStandalonePWA());
   }, []);
 
-  const checkForUpdates = async () => {
-    // Only check for updates if PWA is installed (running as standalone)
-    const isPWA = window.matchMedia('(display-mode: standalone)').matches ||
-                  (navigator as Navigator & { standalone?: boolean }).standalone;
-
-    if (!isPWA || !('serviceWorker' in navigator)) return;
-
-    setIsChecking(true);
-    setError(null);
-
-    try {
-      const registrations = await navigator.serviceWorker.getRegistrations();
-      let registration = registrations[0];
-
-      if (!registration) {
-        // Fallback registration (though VitePwa should have done this)
-        const swUrl = '/sw.js';
-        registration = await navigator.serviceWorker.register(swUrl, {
-          scope: '/'
-        });
-      }
-
-      // Update the service worker
-      await registration.update();
-
-      // Check if there's a waiting service worker (update available)
-      if (registration.waiting) {
-        setIsUpdateAvailable(true);
-      } else {
-        setIsUpdateAvailable(false);
-      }
-    } catch (err) {
-      console.error('Error checking for PWA updates:', err);
-      setError('Failed to check for updates');
-    } finally {
-      setIsChecking(false);
-    }
-  };
-
   const applyUpdate = async () => {
-    // Only apply updates if PWA is installed (running as standalone)
-    const isPWA = window.matchMedia('(display-mode: standalone)').matches ||
-                  (navigator as Navigator & { standalone?: boolean }).standalone;
-
-    if (!isPWA || !('serviceWorker' in navigator)) return;
+    if (!isPWAInstalled) return;
 
     try {
-      const registrations = await navigator.serviceWorker.getRegistrations();
-      const registration = registrations[0];
-
-      if (registration.waiting) {
-        // Send message to skip waiting
-        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-
-        // Wait for the waiting SW to become active
-        return new Promise<void>((resolve) => {
-          const handleControllerChange = () => {
-            navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
-            // Reload to apply the update
-            window.location.reload();
-            resolve();
-          };
-
-          navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
-        });
-      }
+      await updateServiceWorker(true);
+      setNeedRefresh(false);
     } catch (err) {
       console.error('Error applying PWA update:', err);
       setError('Failed to apply update');
@@ -101,10 +45,9 @@ export function usePWAUpdate() {
   };
 
   return {
-    isUpdateAvailable,
-    isChecking,
+    isPWAInstalled,
+    isUpdateAvailable: isPWAInstalled && needRefresh,
     error,
-    checkForUpdates,
     applyUpdate
   };
 }
