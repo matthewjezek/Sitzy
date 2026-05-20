@@ -20,9 +20,11 @@ interface BellDropdownProps {
 
 function Overlay({ onClick }: { onClick: () => void }) {
   return (
-    <div 
-      className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
+    <button 
+      className="fixed inset-0 z-40 w-full h-full bg-black/50 backdrop-blur-sm cursor-default lg:hidden"
       onClick={onClick}
+      aria-label="Zavřít menu"
+      type="button"
     />
   );
 }
