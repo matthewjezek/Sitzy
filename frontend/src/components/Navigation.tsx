@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, type ReactNode } from 'react';
 import { FiBell, FiX } from 'react-icons/fi';
 import { useNavigate, Link, useLocation } from 'react-router';
 import { useInvites } from '../hooks/useInvites';
@@ -18,15 +18,96 @@ interface BellDropdownProps {
   responding: string | null
 }
 
-function Overlay({ onClick }: { onClick: () => void }) {
+interface MobileDialogPanelProps {
+  id: string
+  open: boolean
+  title: string
+  labelledBy: string
+  onClose: () => void
+  children: ReactNode
+  className?: string
+}
+
+/* eslint-disable jsx-a11y/click-events-have-key-events -- dialog backdrop close pattern */
+function MobileDialogPanel({ id, open, title, labelledBy, onClose, children, className = '' }: MobileDialogPanelProps) {
+  const dialogRef = useRef<HTMLDialogElement>(null)
+  const prevActiveRef = useRef<HTMLElement | null>(null)
+
+  useEffect(() => {
+    const dialog = dialogRef.current
+    const main = document.querySelector('main') as HTMLElement | null
+    if (!dialog) return
+
+    if (open && !dialog.open) {
+      // save previous focus
+      prevActiveRef.current = document.activeElement as HTMLElement | null
+      // hide and inert background main content for screen readers
+      if (main) {
+        main.setAttribute('aria-hidden', 'true')
+        // If the browser supports the inert property, use it to make content inert
+        if (typeof HTMLElement !== 'undefined' && Object.prototype.hasOwnProperty.call(HTMLElement.prototype, 'inert')) {
+          ;(main as unknown as { inert: boolean }).inert = true
+        }
+      }
+
+      dialog.showModal()
+      // ensure focus moves into dialog (to element with autoFocus if present)
+      setTimeout(() => {
+        const auto = dialog.querySelector('[autoFocus]') as HTMLElement | null
+        if (auto) auto.focus()
+        else dialog.focus()
+      }, 0)
+      return
+    }
+
+    if (!open && dialog.open) {
+      dialog.close()
+      // restore background accessibility and focus
+      if (main) {
+        main.removeAttribute('aria-hidden')
+        if (typeof HTMLElement !== 'undefined' && Object.prototype.hasOwnProperty.call(HTMLElement.prototype, 'inert')) {
+          ;(main as unknown as { inert: boolean }).inert = false
+        }
+      }
+      setTimeout(() => prevActiveRef.current?.focus(), 0)
+    }
+  }, [open])
+
   return (
-    <button 
-      className="fixed inset-0 z-40 w-full h-full bg-black/50 backdrop-blur-sm cursor-default lg:hidden"
-      onClick={onClick}
-      aria-label="Zavřít menu"
-      type="button"
-    />
-  );
+    <dialog
+      ref={dialogRef}
+      id={id}
+      className={`dialog-card dialog-card-mobile !text-left overflow-y-auto ${className}`}
+      aria-labelledby={labelledBy}
+      role="dialog"
+      aria-modal="true"
+      onClose={onClose}
+      onClick={(e) => {
+        if (e.currentTarget === e.target) {
+          onClose()
+        }
+      }}
+    >
+      <div className="dialog-header">
+        <div className="flex flex-row-reverse justify-between gap-3 m-0">
+          <button
+            type="button"
+            className="w-auto m-0 dialog-close-button"
+            onClick={onClose}
+            aria-label={`Zavřít ${title.toLowerCase()}`}
+            autoFocus
+          >
+            <FiX className="text-2xl md:text-lg" aria-hidden="true" />
+          </button>
+          <div className="dialog-title text-xl">
+            <h1 id={labelledBy}>{title}</h1>
+          </div>
+        </div>
+
+        <div className="dialog-content text-left">{children}</div>
+      </div>
+    </dialog>
+  )
 }
 
 function BellDropdown({ open, interactive, onClose, invites, loading, onRespond, responding }: BellDropdownProps) {
@@ -120,7 +201,6 @@ export default function Navigation() {
   const [bellOpen, setBellOpen] = useState(false)
   const [responding, setResponding] = useState<string | null>(null)
   const [isDesktop, setIsDesktop] = useState(() => window.matchMedia('(min-width: 1024px)').matches)
-  const isOverlayVisible = menuOpen || bellOpen
   const {
     invites,
     loading: invitesLoading,
@@ -128,6 +208,21 @@ export default function Navigation() {
     respondInvite,
     fetchInvites,
   } = useInvites()
+
+  const closePanels = () => {
+    setMenuOpen(false)
+    setBellOpen(false)
+  }
+
+  const toggleBell = () => {
+    setMenuOpen(false)
+    setBellOpen(open => !open)
+  }
+
+  const toggleMenu = () => {
+    setBellOpen(false)
+    setMenuOpen(open => !open)
+  }
 
   const isActive = (path: string) => {
     if (path === '/') {
@@ -163,6 +258,10 @@ export default function Navigation() {
     toast.error(invitesError)
   }, [invitesError])
 
+  useEffect(() => {
+    closePanels()
+  }, [location.pathname])
+
   const handleLogout = () => {
     localStorage.removeItem('access_token')
     navigate('/login?logged_out=1')
@@ -172,7 +271,7 @@ export default function Navigation() {
     setResponding(token)
     try {
       if (accept) {
-        setBellOpen(false)
+        closePanels()
         navigate(`/rides/${rideId}?invite=${encodeURIComponent(token)}`)
       } else {
         await respondInvite(token, false)
@@ -187,13 +286,6 @@ export default function Navigation() {
 
   return (
     <>
-      {isOverlayVisible && (
-        <Overlay onClick={() => {
-          setMenuOpen(false);
-          setBellOpen(false);
-        }} />
-      )}
-
       {/* ── Desktop ── */}
       <div className="navigation hidden lg:flex items-center">
         <div className="flex items-center gap-2 flex-1">
@@ -220,7 +312,7 @@ export default function Navigation() {
         <div className="flex items-center gap-2 flex-1 justify-end">
           <div className="relative">
             <button
-              onClick={() => setBellOpen(o => !o)}
+              onClick={toggleBell}
               className="nav-button p-0 glass rounded-full w-9 h-9 flex items-center justify-center relative"
               aria-label="Otevřít notifikace"
             >
@@ -230,7 +322,7 @@ export default function Navigation() {
             <BellDropdown
               open={bellOpen}
               interactive={isDesktop}
-              onClose={() => setBellOpen(false)}
+              onClose={closePanels}
               invites={invites}
               loading={invitesLoading}
               onRespond={handleRespond}
@@ -280,34 +372,26 @@ export default function Navigation() {
 
           <div className="flex justify-end gap-2">
             
-            <div className="relative">
-              <button
-                className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-muted rounded-lg hover-list-bg relative"
-                onClick={() => setBellOpen(o => !o)}
-                aria-label="Otevřít notifikace"
-              >
-                <FiBell className="nav-icon-bell" size={20} aria-hidden="true" />
-                <UnreadBadge count={unreadCount} />
-              </button>
-              
-              <BellDropdown
-                open={bellOpen}
-                interactive={!isDesktop}
-                onClose={() => setBellOpen(false)}
-                invites={invites}
-                loading={invitesLoading}
-                onRespond={handleRespond}
-                responding={responding}
-              />
-            </div>
+            <button
+              type="button"
+              className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-muted rounded-lg hover-list-bg relative"
+              onClick={toggleBell}
+              aria-expanded={bellOpen}
+              aria-controls="mobile-notifications-dialog"
+              aria-label="Otevřít notifikace"
+            >
+              <FiBell className="nav-icon-bell" size={20} aria-hidden="true" />
+              <UnreadBadge count={unreadCount} />
+            </button>
 
             <button
               type="button"
               className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-muted rounded-lg hover-list-bg focus:outline-none"
-              aria-controls="mobile-menu"
+              aria-controls="mobile-menu-dialog"
               aria-expanded={menuOpen}
+              aria-haspopup="dialog"
               aria-label="Otevřít hlavní menu"
-              onClick={() => setMenuOpen(o => !o)}
+              onClick={toggleMenu}
             >
               <span className="sr-only">Otevřít hlavní menu</span>
               <svg className="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" strokeWidth={1.5} fill="none" viewBox="0 0 17 14">
@@ -317,24 +401,87 @@ export default function Navigation() {
           </div>
         </div>
 
-        {menuOpen && (
-          <div className="absolute top-16 left-0 w-full px-4" id="mobile-menu">
-            <ul className="font-medium flex flex-col gap-2 p-4 rounded-xl card shadow-xl">
-              <li><Link to="/" className="inline-flex items-center gap-3 py-2 px-3 rounded-md w-full" onClick={() => setMenuOpen(false)}><RocketIcon />Start</Link></li>
-              <hr className="border-light" />
-              <li><Link to="/rides" className="inline-flex items-center gap-3 py-2 px-3 rounded-md w-full" onClick={() => setMenuOpen(false)}><SeatIcon />Jízdy</Link></li>
-              <hr className="border-light" />
-              <li><Link to="/cars" className="inline-flex items-center gap-3 py-2 px-3 rounded-md w-full" onClick={() => setMenuOpen(false)}><CarIcon />Moje auta</Link></li>
-              <hr className="border-light" />
-              <li><Link to="/settings" className="inline-flex items-center gap-3 py-2 px-3 rounded-md w-full" onClick={() => setMenuOpen(false)}><SettingsIcon />Nastavení</Link></li>
-              <hr className="border-light" />
-              <li>
-                <button onClick={handleLogout} className="inline-flex items-center gap-3 py-2 px-3 rounded-md w-full text-left">
-                  <LogoutIcon />Odhlásit se
-                </button>
-              </li>
-            </ul>
-          </div>
+        {!isDesktop && (
+          <MobileDialogPanel
+            id="mobile-menu-dialog"
+            open={menuOpen}
+            title="Hlavní menu"
+            labelledBy="mobile-menu-title"
+            onClose={closePanels}
+            className="dialog-card-mobile--menu"
+          >
+            <nav aria-label="Hlavní menu">
+              <ul className="font-medium flex flex-col gap-2 pt-3">
+                <li><Link to="/" className="inline-flex items-center gap-3 py-2 px-3 rounded-md w-full" onClick={closePanels}><RocketIcon />Start</Link></li>
+                <hr className="border-light" />
+                <li><Link to="/rides" className="inline-flex items-center gap-3 py-2 px-3 rounded-md w-full" onClick={closePanels}><SeatIcon />Jízdy</Link></li>
+                <hr className="border-light" />
+                <li><Link to="/cars" className="inline-flex items-center gap-3 py-2 px-3 rounded-md w-full" onClick={closePanels}><CarIcon />Moje auta</Link></li>
+                <hr className="border-light" />
+                <li><Link to="/settings" className="inline-flex items-center gap-3 py-2 px-3 rounded-md w-full" onClick={closePanels}><SettingsIcon />Nastavení</Link></li>
+                <hr className="border-light" />
+                <li>
+                  <button onClick={handleLogout} className="inline-flex items-center gap-3 py-2 px-3 rounded-md w-full text-left">
+                    <LogoutIcon />Odhlásit se
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          </MobileDialogPanel>
+        )}
+
+        {!isDesktop && (
+          <MobileDialogPanel
+            id="mobile-notifications-dialog"
+            open={bellOpen}
+            title="Pozvánky"
+            labelledBy="mobile-notifications-title"
+            onClose={closePanels}
+            className="dialog-card-mobile--notifications"
+          >
+            {invitesLoading && (
+              <div className="flex flex-col gap-2">
+                {[1, 2].map(i => (
+                  <div key={i} className="animate-pulse h-16 rounded-lg skeleton-dark" />
+                ))}
+              </div>
+            )}
+
+            {!invitesLoading && invites.length === 0 && (
+              <p className="text-sm text-secondary text-center py-4">Žádné nové pozvánky</p>
+            )}
+
+            {!invitesLoading && invites.map(inv => (
+              <div key={inv.token} className="flex flex-col gap-2 p-3 rounded-lg list-item-bg">
+                <p className="text-sm font-medium">Pozvánka na jízdu</p>
+                <p className="text-xs text-timestamp">{formatLocalDateTime(inv.created_at)}</p>
+                <div className="flex gap-2 mt-1">
+                  <button
+                    type="button"
+                    disabled={responding === inv.token}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      void handleRespond(inv.token, true, inv.ride_id)
+                    }}
+                    className="flex-1 text-sm py-1 px-3 rounded-lg button-primary"
+                  >
+                    {responding === inv.token ? 'Zpracovávám...' : 'Přijmout'}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={responding === inv.token}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      void handleRespond(inv.token, false, inv.ride_id)
+                    }}
+                    className="flex-1 text-sm py-1 px-3 rounded-lg button-secondary"
+                  >
+                    Odmítnout
+                  </button>
+                </div>
+              </div>
+            ))}
+          </MobileDialogPanel>
         )}
       </div>
     </>

@@ -363,31 +363,77 @@
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    background-color: #f5f5f5;
+    background-color: rgba(255, 255, 255, 0.98);
+    color: #111827;
     text-align: center;
-    border-radius: 0.5rem;
-    width: 90%;
+    border-radius: 1rem;
+    width: min(90vw, 28rem);
     max-width: 450px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
-                0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    max-height: calc(100dvh - 2rem);
+    border: 1px solid rgba(68, 42, 190, 0.14);
+    box-shadow: 0 30px 60px -12px rgba(15, 23, 42, 0.35),
+                0 12px 20px -12px rgba(15, 23, 42, 0.22);
   }
 
   .dialog-card::backdrop {
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(15, 23, 42, 0.68);
   }
 
   .dark .dialog-card {
-    background-color: #1f2937;
-    border: 1px solid #374151;
+    background-color: rgba(15, 23, 42, 0.98);
+    color: #f8fafc;
+    border-color: rgba(198, 190, 251, 0.2);
+  }
+
+  .dark .dialog-card::backdrop {
+    background-color: rgba(2, 6, 23, 0.8);
+  }
+
+  /* Optional subtle backdrop blur for capable devices; respects reduced-motion */
+  @media (prefers-reduced-motion: no-preference) {
+    .dialog-card.blurred::backdrop {
+      backdrop-filter: blur(4px);
+    }
+  }
+
+  .dialog-card-mobile {
+    left: 0.75rem;
+    right: 0.75rem;
+    top: calc(4rem + env(safe-area-inset-top) + 0.75rem);
+    transform: none;
+    width: auto;
+    max-width: none;
+    max-height: calc(100dvh - (4rem + env(safe-area-inset-top) + 1.5rem));
+    border-radius: 1.25rem;
+  }
+
+  .dialog-card-mobile .dialog-header {
+    padding: 1rem;
+    text-align: left;
+  }
+
+  .dialog-card-mobile .dialog-content {
+    margin-top: 0.875rem;
+    text-align: left;
+  }
+
+  .dialog-card-mobile .dialog-title {
+    margin-bottom: 0;
+  }
+
+  .dialog-card-mobile .dialog-text,
+  .dialog-card-mobile .dialog-message,
+  .dialog-card-mobile .dialog-title {
+    color: inherit;
   }
 
   .dialog-header {
     padding: 1.15rem;
-    background-color: #f5f5f5;
+    background-color: inherit;
   }
 
   .dark .dialog-header {
-    background-color: #1f2937;
+    background-color: inherit;
   }
 
   .dialog-danger-image {
@@ -477,38 +523,34 @@
   }
 
   .dialog-title {
-    color: #1f2937;
+    color: inherit;
     font-size: 1.125rem;
     font-weight: 600;
     line-height: 1.75rem;
     margin-bottom: 0.75rem;
   }
 
-  .dark .dialog-title {
-    color: #f3f4f6;
-  }
-
   .dialog-message {
     margin-top: 0.5rem;
-    color: #6b7280;
+    color: rgba(75, 85, 99, 0.95);
     font-size: 0.875rem;
     line-height: 1.25rem;
   }
 
   .dark .dialog-message {
-    color: #9ca3af;
+    color: rgba(203, 213, 225, 0.95);
   }
 
   .dialog-text {
     margin-top: 0.5rem;
-    color: #4b5563;
+    color: rgba(55, 65, 81, 0.98);
     font-size: 0.875rem;
     line-height: 1.5rem;
     text-align: left;
   }
 
   .dark .dialog-text {
-    color: #d1d5db;
+    color: rgba(226, 232, 240, 0.98);
   }
 
   .dialog-actions {
