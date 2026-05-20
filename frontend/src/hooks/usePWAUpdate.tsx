@@ -7,22 +7,32 @@ export function usePWAUpdate() {
 
   // Check for updates on mount
   useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      const handleControllerChange = () => {
-        setIsUpdateAvailable(false);
-      };
+    // Only check for updates if PWA is installed (running as standalone)
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches ||
+                  (navigator as Navigator & { standalone?: boolean }).standalone;
 
-      navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
-      checkForUpdates();
-
-      return () => {
-        navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
-      };
+    if (!isPWA || !('serviceWorker' in navigator)) {
+      return;
     }
+
+    const handleControllerChange = () => {
+      setIsUpdateAvailable(false);
+    };
+
+    navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
+    checkForUpdates();
+
+    return () => {
+      navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
+    };
   }, []);
 
   const checkForUpdates = async () => {
-    if (!('serviceWorker' in navigator)) return;
+    // Only check for updates if PWA is installed (running as standalone)
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches ||
+                  (navigator as Navigator & { standalone?: boolean }).standalone;
+
+    if (!isPWA || !('serviceWorker' in navigator)) return;
 
     setIsChecking(true);
     setError(null);
@@ -32,7 +42,7 @@ export function usePWAUpdate() {
       let registration = registrations[0];
 
       if (!registration) {
-        // Fallback registration (though VitePWA should have done this)
+        // Fallback registration (though VitePwa should have done this)
         const swUrl = '/sw.js';
         registration = await navigator.serviceWorker.register(swUrl, {
           scope: '/'
@@ -57,7 +67,11 @@ export function usePWAUpdate() {
   };
 
   const applyUpdate = async () => {
-    if (!('serviceWorker' in navigator)) return;
+    // Only apply updates if PWA is installed (running as standalone)
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches ||
+                  (navigator as Navigator & { standalone?: boolean }).standalone;
+
+    if (!isPWA || !('serviceWorker' in navigator)) return;
 
     try {
       const registrations = await navigator.serviceWorker.getRegistrations();

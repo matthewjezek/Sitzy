@@ -464,41 +464,47 @@ export default function SettingsPage() {
               </p>
             </div>
 
-            {isChecking && (
-              <div className="text-sm text-secondary">
-                Kontroluji aktualizace...
-              </div>
-            )}
+            {/* Only show update UI when PWA is installed */}
+            {(window.matchMedia('(display-mode: standalone)').matches ||
+              (navigator as Navigator & { standalone?: boolean }).standalone) && (
+              <>
+                {isChecking && (
+                  <div className="text-sm text-secondary">
+                    Kontroluji aktualizace...
+                  </div>
+                )}
 
-            {!isChecking && error && (
-              <div className="text-sm text-error">
-                {error}
-              </div>
-            )}
+                {!isChecking && error && (
+                  <div className="text-sm text-error">
+                    {error}
+                  </div>
+                )}
 
-            {!isChecking && isUpdateAvailable && (
-              <div className="mt-4">
-                <button
-                  onClick={applyUpdate}
-                  className="button-primary w-full"
-                >
-                  Použít aktualizaci a restartovat aplikaci
-                </button>
-              </div>
-            )}
+                {!isChecking && isUpdateAvailable && (
+                  <div className="mt-4">
+                    <button
+                      onClick={applyUpdate}
+                      className="button-primary w-full"
+                    >
+                      Použít aktualizaci a restartovat aplikaci
+                    </button>
+                  </div>
+                )}
 
-            {!isChecking && !isUpdateAvailable && (
-              <div className="mt-4">
-                <button
-                  onClick={checkForUpdates}
-                  className="button-secondary w-full"
-                >
-                  Zkontrolovat aktualizace
-                </button>
-                <p className="text-xs text-secondary mt-1">
-                  Žádné aktualizace
-                </p>
-              </div>
+                {!isChecking && !isUpdateAvailable && (
+                  <div className="mt-4">
+                    <button
+                      onClick={checkForUpdates}
+                      className="button-secondary w-full"
+                    >
+                      Zkontrolovat aktualizace
+                    </button>
+                    <p className="text-xs text-secondary mt-1">
+                      Žádné aktualizace
+                    </p>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
