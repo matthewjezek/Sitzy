@@ -61,7 +61,7 @@ export function usePWAUpdate() {
 
     try {
       const registrations = await navigator.serviceWorker.getRegistrations();
-      let registration = registrations[0];
+      const registration = registrations[0];
 
       if (registration.waiting) {
         // Send message to skip waiting
