@@ -18,6 +18,15 @@ interface BellDropdownProps {
   responding: string | null
 }
 
+function Overlay({ onClick }: { onClick: () => void }) {
+  return (
+    <div 
+      className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
+      onClick={onClick}
+    />
+  );
+}
+
 function BellDropdown({ open, interactive, onClose, invites, loading, onRespond, responding }: BellDropdownProps) {
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -109,13 +118,14 @@ export default function Navigation() {
   const [bellOpen, setBellOpen] = useState(false)
   const [responding, setResponding] = useState<string | null>(null)
   const [isDesktop, setIsDesktop] = useState(() => window.matchMedia('(min-width: 1024px)').matches)
+  const isOverlayVisible = menuOpen || bellOpen
   const {
     invites,
     loading: invitesLoading,
     error: invitesError,
     respondInvite,
     fetchInvites,
-  } = useInvites()  // single instance
+  } = useInvites()
 
   const isActive = (path: string) => {
     if (path === '/') {
@@ -175,6 +185,13 @@ export default function Navigation() {
 
   return (
     <>
+      {isOverlayVisible && (
+        <Overlay onClick={() => {
+          setMenuOpen(false);
+          setBellopen(false);
+        }} />
+      )}
+
       {/* ── Desktop ── */}
       <div className="navigation hidden lg:flex items-center">
         <div className="flex items-center gap-2 flex-1">
