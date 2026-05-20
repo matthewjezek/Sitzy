@@ -190,7 +190,7 @@ export default function Navigation() {
       {isOverlayVisible && (
         <Overlay onClick={() => {
           setMenuOpen(false);
-          setBellopen(false);
+          setBellOpen(false);
         }} />
       )}
 
