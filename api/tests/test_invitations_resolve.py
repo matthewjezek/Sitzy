@@ -2,8 +2,9 @@ from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
 from uuid import uuid4
 
+from api.models import IntegrationAuditLog
+from api.models import Invitation as InvitationModel
 from api.routers import invitations
-from api.models import Invitation as InvitationModel, IntegrationAuditLog
 from api.utils.enums import InvitationStatus
 
 from .conftest import FakeDB, FakeQuery, create_client
@@ -31,8 +32,12 @@ def test_resolve_invitation_valid_token_emits_event():
         ride=ride,
     )
 
-    fake_db = FakeDB(query_results={InvitationModel: FakeQuery(first_result=invitation)})
-    client = create_client(router=invitations.router, prefix="/invitations", fake_db=fake_db)
+    fake_db = FakeDB(
+        query_results={InvitationModel: FakeQuery(first_result=invitation)}
+    )
+    client = create_client(
+        router=invitations.router, prefix="/invitations", fake_db=fake_db
+    )
 
     response = client.get(f"/invitations/{invitation.token}/resolve")
 
@@ -47,7 +52,9 @@ def test_resolve_invitation_valid_token_emits_event():
 
 def test_resolve_invitation_not_found():
     fake_db = FakeDB(query_results={InvitationModel: FakeQuery(first_result=None)})
-    client = create_client(router=invitations.router, prefix="/invitations", fake_db=fake_db)
+    client = create_client(
+        router=invitations.router, prefix="/invitations", fake_db=fake_db
+    )
 
     response = client.get("/invitations/missing-token/resolve")
 
@@ -67,8 +74,12 @@ def test_resolve_invitation_expired():
         ride=ride,
     )
 
-    fake_db = FakeDB(query_results={InvitationModel: FakeQuery(first_result=invitation)})
-    client = create_client(router=invitations.router, prefix="/invitations", fake_db=fake_db)
+    fake_db = FakeDB(
+        query_results={InvitationModel: FakeQuery(first_result=invitation)}
+    )
+    client = create_client(
+        router=invitations.router, prefix="/invitations", fake_db=fake_db
+    )
 
     response = client.get(f"/invitations/{invitation.token}/resolve")
 

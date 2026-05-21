@@ -13,8 +13,8 @@ from api.schemas import (
     PassengerSeatInOptional,
     RideOut,
 )
-from api.utils.integration_audit import emit_integration_event
 from api.utils.enums import InvitationStatus
+from api.utils.integration_audit import emit_integration_event
 from api.utils.logging_config import get_logger
 from api.utils.seats import get_layout_seat_positions
 
@@ -131,10 +131,7 @@ def resolve_invitation_token(
 ) -> InvitationResolveOut:
     """Resolve invitation token into safe ride context for invite ingress route."""
     invitation = (
-        db.query(Invitation)
-        .join(Ride)
-        .filter(Invitation.token == token)
-        .first()
+        db.query(Invitation).join(Ride).filter(Invitation.token == token).first()
     )
     if not invitation:
         raise HTTPException(status_code=404, detail="Invitation not found.")
