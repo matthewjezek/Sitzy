@@ -19,6 +19,7 @@ import CreateRidePage from './pages/CreateRidePage'
 import CarsPage from './pages/CarsPage'
 import CarDetailPage from './pages/CarDetailPage'
 import CreateCarPage from './pages/CreateCarPage'
+import InviteEntryPage from './pages/InviteEntryPage'
 import {
   applyThemePreference,
   getThemePreference,
@@ -83,6 +84,7 @@ function AppRoutes() {
       {/* Public routes (accessible to everyone) */}
       <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/terms" element={<TermsPage />} />
+      <Route path="/i/:inviteToken" element={<InviteEntryPage />} />
 
       <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
         {/* Dashboard */}

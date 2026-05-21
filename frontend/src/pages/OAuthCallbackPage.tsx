@@ -33,6 +33,12 @@ export default function OAuthCallbackPage() {
         const data = response.data
         localStorage.setItem('access_token', data.access_token)
         toast.success('Přihlášení úspěšné!')
+        const redirectPath = localStorage.getItem('post_login_redirect')
+        if (redirectPath) {
+          localStorage.removeItem('post_login_redirect')
+          setTargetPath(redirectPath)
+          return
+        }
         setTargetPath('/')
       })
       .catch(error => {

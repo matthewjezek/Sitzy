@@ -10,9 +10,6 @@ import {
   FiUserX,
   FiLogOut,
   FiXCircle,
-  FiDownload,
-  FiCopy,
-  FiFileText,
   FiEye,
   FiEyeOff,
 } from 'react-icons/fi'
@@ -29,6 +26,7 @@ import { useAuth } from '../hooks/useAuth'
 import type { PassengerOut } from '../types/models'
 import { inviteSchema, type InviteFormValues } from '../utils/validation'
 import SeatRenderer from '../components/SeatRenderer'
+import ShareSheet from '../components/ShareSheet'
 import type { SeatData } from '../components/SeatRenderer'
 
 function RideDetailSkeleton() {
@@ -328,6 +326,8 @@ export default function RideDetailPage() {
   const [exportingImage, setExportingImage] = useState(false)
   const [exportingJson, setExportingJson] = useState(false)
   const [copyingLink, setCopyingLink] = useState(false)
+  const [sharingStory, setSharingStory] = useState(false)
+  const [copyingText, setCopyingText] = useState(false)
   const storyCardRef = useRef<HTMLDivElement | null>(null)
 
   const inviteToken = searchParams.get('invite')
@@ -638,6 +638,80 @@ export default function RideDetailPage() {
     }
   }
 
+  const buildSharePayload = () => {
+    const link = `${window.location.origin}/rides/${ride.id}`
+    return {
+      link,
+      text: `Jízda do ${ride.destination} (${formatLocalDateTime(ride.departure_time)}). Přidej se v Sitzy: ${link}`,
+    }
+  }
+
+  const isNativeShareSupported = () => {
+    if (typeof navigator === 'undefined' || typeof navigator.share !== 'function') {
+      return false
+    }
+
+    const payload = buildSharePayload()
+    if (typeof navigator.canShare === 'function') {
+      try {
+        return navigator.canShare({
+          title: `Sitzy: ${ride.destination}`,
+          text: payload.text,
+          url: payload.link,
+        })
+      } catch {
+        return false
+      }
+    }
+
+    return true
+  }
+
+  const handleCopyShareText = async () => {
+    const payload = buildSharePayload()
+    setCopyingText(true)
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(payload.text)
+      } else {
+        const textarea = document.createElement('textarea')
+        textarea.value = payload.text
+        textarea.setAttribute('readonly', 'true')
+        textarea.style.position = 'absolute'
+        textarea.style.left = '-9999px'
+        document.body.appendChild(textarea)
+        textarea.select()
+        document.execCommand('copy')
+        document.body.removeChild(textarea)
+      }
+      toast.success('Text pro sdílení byl zkopírován.')
+    } catch {
+      toast.error('Nepodařilo se zkopírovat text pro sdílení.')
+    } finally {
+      setCopyingText(false)
+    }
+  }
+
+  const handleNativeShare = async () => {
+    const payload = buildSharePayload()
+    setSharingStory(true)
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `Sitzy: ${ride.destination}`,
+          text: payload.text,
+          url: payload.link,
+        })
+        toast.success('Sdílení dokončeno.')
+        return
+      }
+    } catch {
+      // User cancellation should not show an error.
+    } finally {
+      setSharingStory(false)
+    }
+  }
+
   const canLeaveRide = Boolean(user && !isOwner && !isCurrentDriver)
   const roleBadge = isOwner ? 'Majitel auta' : isCurrentDriver ? 'Aktuální řidič' : 'Pasažér'
   const roleBadgeClass = isOwner
@@ -843,34 +917,20 @@ export default function RideDetailPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            <button
-              type="button"
-              onClick={() => void handleDownloadStoryImage()}
-              disabled={exportingImage}
-              className="button-primary flex items-center justify-center gap-2 h-10"
-            >
-              <FiDownload size={16} />
-              {exportingImage ? 'Připravuji...' : 'Stáhnout PNG'}
-            </button>
-            <button
-              type="button"
-              onClick={handleExportStoryJson}
-              disabled={exportingJson}
-              className="button-secondary flex items-center justify-center gap-2 h-10"
-            >
-              <FiFileText size={16} />
-              {exportingJson ? 'Exportuji...' : 'Exportovat JSON'}
-            </button>
-            <button
-              type="button"
-              onClick={() => void handleCopyStoryLink()}
-              disabled={copyingLink}
-              className="button-secondary flex items-center justify-center gap-2 h-10"
-            >
-              <FiCopy size={16} />
-              {copyingLink ? 'Kopíruji...' : 'Kopírovat odkaz'}
-            </button>
+          <div className="flex flex-wrap justify-end gap-2">
+            <ShareSheet
+              nativeShareSupported={isNativeShareSupported()}
+              sharing={sharingStory}
+              copyingText={copyingText}
+              copyingLink={copyingLink}
+              exportingImage={exportingImage}
+              exportingJson={exportingJson}
+              onShare={handleNativeShare}
+              onCopyText={handleCopyShareText}
+              onCopyLink={handleCopyStoryLink}
+              onDownloadPng={handleDownloadStoryImage}
+              onExportJson={handleExportStoryJson}
+            />
           </div>
         </div>
 

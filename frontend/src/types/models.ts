@@ -101,6 +101,14 @@ export interface Invitation {
   ride_id: string;
 }
 
+export interface InvitationResolve {
+  ride_id: string;
+  status: "Pending" | "Accepted" | "Rejected";
+  expires_at: string;
+  destination: string | null;
+  departure_time: string | null;
+}
+
 // Add the new basic user profile type
 export interface UserBasicOut {
   id: string;
