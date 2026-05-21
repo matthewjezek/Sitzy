@@ -7,7 +7,13 @@ from sqlalchemy.orm import Session
 from api.database import get_db
 from api.deps import UserContext, get_current_user
 from api.models import Car, Invitation, Passenger, Ride
-from api.schemas import InvitationOut, PassengerSeatInOptional, RideOut
+from api.schemas import (
+    InvitationOut,
+    InvitationResolveOut,
+    PassengerSeatInOptional,
+    RideOut,
+)
+from api.utils.integration_audit import emit_integration_event
 from api.utils.enums import InvitationStatus
 from api.utils.logging_config import get_logger
 from api.utils.seats import get_layout_seat_positions
@@ -115,6 +121,44 @@ def get_invitation(
     if invitation.expires_at < datetime.now(timezone.utc):
         raise HTTPException(status_code=410, detail="Invitation has expired.")
     return InvitationOut.from_orm_with_labels(invitation)
+
+
+@router.get("/{token}/resolve", response_model=InvitationResolveOut)
+def resolve_invitation_token(
+    token: str,
+    request: Request,
+    db: Session = Depends(get_db),
+) -> InvitationResolveOut:
+    """Resolve invitation token into safe ride context for invite ingress route."""
+    invitation = (
+        db.query(Invitation)
+        .join(Ride)
+        .filter(Invitation.token == token)
+        .first()
+    )
+    if not invitation:
+        raise HTTPException(status_code=404, detail="Invitation not found.")
+    if invitation.expires_at < datetime.now(timezone.utc):
+        raise HTTPException(status_code=410, detail="Invitation has expired.")
+
+    emit_integration_event(
+        event="invite_link_resolved",
+        metadata={
+            "token_prefix": token[:8],
+            "ride_id": str(invitation.ride_id),
+            "status": invitation.status.value,
+        },
+        db=db,
+    )
+    db.commit()
+
+    return InvitationResolveOut(
+        ride_id=invitation.ride_id,
+        status=invitation.status,
+        expires_at=invitation.expires_at,
+        destination=invitation.ride.destination if invitation.ride else None,
+        departure_time=invitation.ride.departure_time if invitation.ride else None,
+    )
 
 
 @router.post("/{token}/accept", response_model=RideOut)

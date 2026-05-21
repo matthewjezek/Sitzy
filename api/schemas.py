@@ -286,3 +286,11 @@ class InvitationOut(BaseModelWithLabels["InvitationOut"]):
             expires_at=inv.expires_at,
             ride=RideOut.from_ride(inv.ride) if inv.ride else None,
         )
+
+
+class InvitationResolveOut(BaseModel):
+    ride_id: UUID
+    status: InvitationStatus
+    expires_at: datetime
+    destination: str | None = None
+    departure_time: datetime | None = None
