@@ -841,6 +841,65 @@
   }
 
   /* ========================================
+   * ERROR VIEW CARD
+   * ======================================== */
+  .error-card {
+    border: 1px solid rgba(239, 68, 68, 0.22);
+    background-color: rgba(254, 242, 242, 0.4);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 20px 25px -5px rgba(239, 68, 68, 0.05),
+                0 0 0 1px rgba(239, 68, 68, 0.02);
+  }
+
+  .dark .error-card {
+    border-color: rgba(239, 68, 68, 0.2);
+    background-color: rgba(31, 41, 55, 0.45);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(239, 68, 68, 0.02);
+  }
+
+  .error-card-icon-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #fee2e2;
+    width: 3.25rem;
+    height: 3.25rem;
+    border-radius: 9999px;
+    box-shadow: 0 0 0 8px #fef2f2;
+    color: #ef4444;
+  }
+
+  .dark .error-card-icon-wrapper {
+    background-color: rgba(239, 68, 68, 0.15);
+    box-shadow: 0 0 0 8px rgba(239, 68, 68, 0.05);
+    color: #f87171;
+  }
+
+  .error-card-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 0.25rem;
+    letter-spacing: -0.01em;
+  }
+
+  .dark .error-card-title {
+    color: #f8fafc;
+  }
+
+  .error-card-message {
+    font-size: 0.925rem;
+    color: #4b5563;
+    line-height: 1.45;
+  }
+
+  .dark .error-card-message {
+    color: #9ca3af;
+  }
+
+  /* ========================================
    * MAIN CARD
    * ======================================== */
   .main-card {
