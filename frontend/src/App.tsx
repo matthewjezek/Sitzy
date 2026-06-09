@@ -3,31 +3,32 @@ import { useEffect, useState, lazy, Suspense } from 'react'
 import { useNavigate } from 'react-router'
 import { Slide, ToastContainer } from 'react-toastify'
 import { AUTH_EXPIRED_EVENT } from './api/axios'
-import LoginPage from './pages/LoginPage'
 import Layout from './components/Layout'
 import ProtectedRoute from './utils/ProtectedRoute'
-import PageNotFound from './pages/PageNotFound'
-import SettingsPage from './pages/SettingsPage'
 import AnonymousRoute from './utils/AnonymousRoute'
-import OAuthCallbackPage from './pages/OAuthCallbackPage'
-import DeletionStatusPage from './pages/DeletionStatusPage'
-import PrivacyPage from './pages/PrivacyPage'
-import TermsPage from './pages/TermsPage'
-import RidesPage from './pages/RidesPage'
-import RideDetailPage from './pages/RideDetailPage'
-import CreateRidePage from './pages/CreateRidePage'
-import CarsPage from './pages/CarsPage'
-import CarDetailPage from './pages/CarDetailPage'
-import CreateCarPage from './pages/CreateCarPage'
-import InviteEntryPage from './pages/InviteEntryPage'
 import {
   applyThemePreference,
   getThemePreference,
   resolveThemePreference,
   THEME_CHANGED_EVENT,
 } from './utils/theme'
-import DashboardPage from './pages/DashboardPage'
 import { PWAProvider } from './context/PWAProvider'
+
+const LoginPage = lazy(() => import('./pages/LoginPage'))
+const PageNotFound = lazy(() => import('./pages/PageNotFound'))
+const SettingsPage = lazy(() => import('./pages/SettingsPage'))
+const OAuthCallbackPage = lazy(() => import('./pages/OAuthCallbackPage'))
+const DeletionStatusPage = lazy(() => import('./pages/DeletionStatusPage'))
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage'))
+const TermsPage = lazy(() => import('./pages/TermsPage'))
+const RidesPage = lazy(() => import('./pages/RidesPage'))
+const RideDetailPage = lazy(() => import('./pages/RideDetailPage'))
+const CreateRidePage = lazy(() => import('./pages/CreateRidePage'))
+const CarsPage = lazy(() => import('./pages/CarsPage'))
+const CarDetailPage = lazy(() => import('./pages/CarDetailPage'))
+const CreateCarPage = lazy(() => import('./pages/CreateCarPage'))
+const InviteEntryPage = lazy(() => import('./pages/InviteEntryPage'))
+const DashboardPage = lazy(() => import('./pages/DashboardPage'))
 
 const isDev = import.meta.env.MODE === 'development'
 
@@ -73,44 +74,50 @@ function AppRoutes() {
   }, [navigate])
 
   return (
-    <Routes>
-      <Route path="*" element={<PageNotFound />} />
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+      </div>
+    }>
+      <Routes>
+        <Route path="*" element={<PageNotFound />} />
 
-      <Route element={<AnonymousRoute />}>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/auth/callback" element={<OAuthCallbackPage />} />
-        <Route path="/deletion-status" element={<DeletionStatusPage />} />
-      </Route>
+        <Route element={<AnonymousRoute />}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/auth/callback" element={<OAuthCallbackPage />} />
+          <Route path="/deletion-status" element={<DeletionStatusPage />} />
+        </Route>
 
-      {/* Public routes (accessible to everyone) */}
-      <Route path="/privacy" element={<PrivacyPage />} />
-      <Route path="/terms" element={<TermsPage />} />
-      <Route path="/i/:inviteToken" element={<InviteEntryPage />} />
+        {/* Public routes (accessible to everyone) */}
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/i/:inviteToken" element={<InviteEntryPage />} />
 
-      <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-        {/* Dashboard */}
-        <Route path="/" element={<DashboardPage />} />
+        <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+          {/* Dashboard */}
+          <Route path="/" element={<DashboardPage />} />
 
-        {/* Rides */}
-        <Route path="/rides" element={<RidesPage />} />
-        <Route path="/rides/new" element={<CreateRidePage />} />
-        <Route path="/rides/:id" element={<RideDetailPage />} />
+          {/* Rides */}
+          <Route path="/rides" element={<RidesPage />} />
+          <Route path="/rides/new" element={<CreateRidePage />} />
+          <Route path="/rides/:id" element={<RideDetailPage />} />
 
-        {/* Cars */}
-        <Route path="/cars" element={<CarsPage />} />
-        <Route path="/cars/new" element={<CreateCarPage />} />
-        <Route path="/cars/:id" element={<CarDetailPage />} />
-        <Route path="/cars/:id/edit" element={<CreateCarPage />} />
+          {/* Cars */}
+          <Route path="/cars" element={<CarsPage />} />
+          <Route path="/cars/new" element={<CreateCarPage />} />
+          <Route path="/cars/:id" element={<CarDetailPage />} />
+          <Route path="/cars/:id/edit" element={<CreateCarPage />} />
 
-        {/* Settings */}
-        <Route path="/settings" element={<SettingsPage />} />
+          {/* Settings */}
+          <Route path="/settings" element={<SettingsPage />} />
 
-        {/* Dev only */}
-        {isDev && SeatRendererLabPage && (
-          <Route path="/seat-lab" element={<Suspense fallback={null}><SeatRendererLabPage /></Suspense>} />
-        )}
-      </Route>
-    </Routes>
+          {/* Dev only */}
+          {isDev && SeatRendererLabPage && (
+            <Route path="/seat-lab" element={<Suspense fallback={null}><SeatRendererLabPage /></Suspense>} />
+          )}
+        </Route>
+      </Routes>
+    </Suspense>
   )
 }
 
