@@ -15,7 +15,6 @@ import {
 } from 'react-icons/fi'
 import { BiCar } from 'react-icons/bi'
 import { toast } from 'react-toastify'
-import * as htmlToImage from 'html-to-image'
 import logoLight from '../assets/sitzy_logo_full.svg'
 import logoDark from '../assets/sitzy_logo_full_dark.svg'
 import { formatLocalDateTime } from '../utils/datetime'
@@ -657,6 +656,7 @@ export default function RideDetailPage() {
     // Small extra delay to ensure everything is rendered
     await new Promise(resolve => setTimeout(resolve, 100))
 
+    const htmlToImage = await import('html-to-image')
     const dataUrl = await htmlToImage.toPng(storyCardRef.current, {
       pixelRatio: 2, 
       backgroundColor: 'transparent',
