@@ -793,7 +793,7 @@ export default function RideDetailPage() {
           <SeatRenderer
             layout={seatRendererLayout}
             seats={seatRendererSeats}
-            ownerName={ride.car?.owner_name ?? 'Řidič'}
+            ownerName={ride.driver?.full_name ?? ride.car?.owner_name ?? 'Řidič'}
             mode={requiresSeatSelection ? 'interactive' : 'display'}
             selectedSeat={requiresSeatSelection ? selectedSeat : undefined}
             onSeatSelect={requiresSeatSelection ? setSelectedSeat : undefined}

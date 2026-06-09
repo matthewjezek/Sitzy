@@ -15,7 +15,7 @@ test('rides page shows upcoming ride and opens detail', async ({ page }) => {
 
   await page.goto('/rides')
 
-  await expect(page.getByRole('heading', { name: 'Jízdy' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Jízdy', exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: /Zobrazit jízdu: Brno/ })).toBeVisible()
 
   await page.getByRole('button', { name: /Zobrazit jízdu: Brno/ }).click()
