@@ -39,4 +39,6 @@ jobs:
         run: mypy api/
 
       - name: Run pytest (regression suite)
+        env:
+          DEMO_FIXTURES_ENABLED: 'true'
         run: pytest api/tests -q
