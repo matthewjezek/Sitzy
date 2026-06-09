@@ -4,6 +4,7 @@ import { FiPlus, FiChevronRight, FiClock, FiMapPin, FiList, FiSearch } from 'rea
 import { useRide } from '../hooks/useRide'
 import { useAuth } from '../hooks/useAuth'
 import { formatLocalDateTime } from '../utils/datetime'
+import ErrorView from '../components/ErrorView'
 
 type TimeFilter = 'all_time' | 'upcoming' | 'history'
 type RoleFilter = 'all_roles' | 'organizing' | 'participating'
@@ -89,10 +90,16 @@ export default function RidesPage() {
 
   const displayedRides = processedRides()
 
+  if (error) return (
+    <ErrorView
+      message={error}
+      onRetry={fetchMyRides}
+    />
+  )
+
   // 2. Vykreslení obsahu
   const renderContent = () => {
     if (loading) return <RidesListSkeleton />
-    if (error) return <div className="p-4 rounded-xl status-danger text-sm" role="alert">{error}</div>
 
     if (displayedRides.length === 0) {
       return (

@@ -29,6 +29,8 @@ import SeatRenderer from '../components/SeatRenderer'
 import { SharePreset } from '../components/SharePreset'
 import { generateSharePayload, type SharePresetId } from '../utils/sharePresets'
 import type { SeatData } from '../components/SeatRenderer'
+import ErrorView from '../components/ErrorView'
+import { ConfirmDialog } from '../components/Dialog'
 
 function RideDetailSkeleton() {
   return (
@@ -67,9 +69,35 @@ function RideStatusBadge({ departureTime }: { departureTime: string }) {
 }
 
 function InviteSection({ rideId, canCancelInvites }: { rideId: string; canCancelInvites: boolean }) {
-  const { invites, loading, error, createInvite, cancelInvite } = useInvites(rideId)
+  const { invites, loading, createInvite, cancelInvite } = useInvites(rideId)
   const [cancellingToken, setCancellingToken] = useState<string | null>(null)
   const pendingInvites = invites.filter(inv => inv.status === 'Pending')
+
+  const confirmDialogRef = useRef<HTMLDialogElement>(null)
+  const [confirmConfig, setConfirmConfig] = useState<{
+    title: string;
+    message: string;
+    confirmText?: string;
+    type?: 'danger' | 'warning' | 'info' | 'success';
+    action: () => void | Promise<void>;
+  } | null>(null)
+
+  const showConfirm = (
+    title: string,
+    message: string,
+    action: () => void | Promise<void>,
+    type: 'danger' | 'warning' | 'info' | 'success' = 'info',
+    confirmText?: string
+  ) => {
+    setConfirmConfig({ title, message, action, type, confirmText })
+    setTimeout(() => {
+      confirmDialogRef.current?.showModal()
+    }, 0)
+  }
+
+  const closeConfirm = () => {
+    confirmDialogRef.current?.close()
+  }
 
   const {
     register,
@@ -82,23 +110,31 @@ function InviteSection({ rideId, canCancelInvites }: { rideId: string; canCancel
   })
 
   const onInvite = async (data: InviteFormValues) => {
-    await createInvite(data.email)
-    if (!error) {
+    const success = await createInvite(data.email)
+    if (success) {
       toast.success(`Pozvánka odeslána na ${data.email}.`)
       reset()
     }
   }
 
-  const handleCancelInvite = async (token: string, email: string) => {
-    if (!window.confirm(`Opravdu chcete zrušit pozvánku pro ${email}?`)) return
-
-    setCancellingToken(token)
-    try {
-      await cancelInvite(token)
-      toast.success('Pozvánka byla zrušena.')
-    } finally {
-      setCancellingToken(null)
-    }
+  const handleCancelInvite = (token: string, email: string) => {
+    showConfirm(
+      'Zrušit pozvánku',
+      `Opravdu chcete zrušit pozvánku pro ${email}?`,
+      async () => {
+        setCancellingToken(token)
+        try {
+          const success = await cancelInvite(token)
+          if (success) {
+            toast.success('Pozvánka byla zrušena.')
+          }
+        } finally {
+          setCancellingToken(null)
+        }
+      },
+      'warning',
+      'Zrušit'
+    )
   }
 
   return (
@@ -167,6 +203,17 @@ function InviteSection({ rideId, canCancelInvites }: { rideId: string; canCancel
           )}
         </div>
       ))}
+      {confirmConfig && (
+        <ConfirmDialog
+          ref={confirmDialogRef}
+          title={confirmConfig.title}
+          message={confirmConfig.message}
+          confirmText={confirmConfig.confirmText}
+          type={confirmConfig.type}
+          action={confirmConfig.action}
+          toggle={closeConfirm}
+        />
+      )}
     </div>
   )
 }
@@ -322,6 +369,31 @@ export default function RideDetailPage() {
   const [transferringUserId, setTransferringUserId] = useState<string | null>(null)
   const [removingUserId, setRemovingUserId] = useState<string | null>(null)
   const [selectedSeat, setSelectedSeat] = useState<number | null>(null)
+  const confirmDialogRef = useRef<HTMLDialogElement>(null)
+  const [confirmConfig, setConfirmConfig] = useState<{
+    title: string;
+    message: string;
+    confirmText?: string;
+    type?: 'danger' | 'warning' | 'info' | 'success';
+    action: () => void | Promise<void>;
+  } | null>(null)
+
+  const showConfirm = (
+    title: string,
+    message: string,
+    action: () => void | Promise<void>,
+    type: 'danger' | 'warning' | 'info' | 'success' = 'info',
+    confirmText?: string
+  ) => {
+    setConfirmConfig({ title, message, action, type, confirmText })
+    setTimeout(() => {
+      confirmDialogRef.current?.showModal()
+    }, 0)
+  }
+
+  const closeConfirm = () => {
+    confirmDialogRef.current?.close()
+  }
   const [finishingInvite, setFinishingInvite] = useState(false)
   const [storyAnonymized, setStoryAnonymized] = useState(true)
   const [exportingImage, setExportingImage] = useState(false)
@@ -340,54 +412,80 @@ export default function RideDetailPage() {
     document.title = ride ? `Sitzy - ${ride.destination}` : 'Sitzy - Jízda'
   }, [ride])
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!ride) return
-    if (!window.confirm('Opravdu chcete smazat tuto jízdu?')) return
-    const success = await cancelRide(ride.id)
-    if (success) {
-      toast.success('Jízda byla smazána.')
-      navigate('/rides')
-    }
+    showConfirm(
+      'Smazat jízdu',
+      'Opravdu chcete smazat tuto jízdu?',
+      async () => {
+        const success = await cancelRide(ride.id)
+        if (success) {
+          toast.success('Jízda byla smazána.')
+          navigate('/rides')
+        }
+      },
+      'danger',
+      'Smazat'
+    )
   }
 
-  const handleLeave = async () => {
+  const handleLeave = () => {
     if (!ride || !user) return
-    if (!window.confirm('Opravdu chcete opustit tuto jízdu?')) return
-    const success = await leaveRide(ride.id, user.id)
-    if (success) {
-      toast.success('Jízdu jste opustili.')
-      navigate('/rides')
-    }
+    showConfirm(
+      'Opustit jízdu',
+      'Opravdu chcete opustit tuto jízdu?',
+      async () => {
+        const success = await leaveRide(ride.id, user.id)
+        if (success) {
+          toast.success('Jízdu jste opustili.')
+          navigate('/rides')
+        }
+      },
+      'danger',
+      'Opustit'
+    )
   }
 
   const handleTransferDriver = async (newDriverId: string, displayName: string) => {
     if (!ride) return
-    if (!window.confirm(`Opravdu chcete předat řízení uživateli ${displayName}?`)) return
-
-    setTransferringUserId(newDriverId)
-    try {
-      const updated = await transferDriver(ride.id, newDriverId, ride.driver_user_id)
-      if (updated) {
-        toast.success('Řízení bylo předáno.')
-      }
-    } finally {
-      setTransferringUserId(null)
-    }
+    showConfirm(
+      'Předat řízení',
+      `Opravdu chcete předat řízení uživateli ${displayName}?`,
+      async () => {
+        setTransferringUserId(newDriverId)
+        try {
+          const updated = await transferDriver(ride.id, newDriverId, ride.driver_user_id)
+          if (updated) {
+            toast.success('Řízení bylo předáno.')
+          }
+        } finally {
+          setTransferringUserId(null)
+        }
+      },
+      'warning',
+      'Předat řízení'
+    )
   }
 
   const handleRemovePassenger = async (passengerId: string, displayName: string) => {
     if (!ride) return
-    if (!window.confirm(`Opravdu chcete vyhodit uživatele ${displayName} z jízdy?`)) return
-
-    setRemovingUserId(passengerId)
-    try {
-      const success = await removePassenger(ride.id, passengerId)
-      if (success) {
-        toast.success('Pasažér byl odebrán z jízdy.')
-      }
-    } finally {
-      setRemovingUserId(null)
-    }
+    showConfirm(
+      'Odebrat pasažéra',
+      `Opravdu chcete vyhodit uživatele ${displayName} z jízdy?`,
+      async () => {
+        setRemovingUserId(passengerId)
+        try {
+          const success = await removePassenger(ride.id, passengerId)
+          if (success) {
+            toast.success('Pasažér byl odebrán z jízdy.')
+          }
+        } finally {
+          setRemovingUserId(null)
+        }
+      },
+      'danger',
+      'Odebrat'
+    )
   }
 
   const mapCarLayoutForSeatRenderer = (layout: string | undefined): string => {
@@ -488,9 +586,10 @@ export default function RideDetailPage() {
   if (loading) return <RideDetailSkeleton />
 
   if (error) return (
-    <div className="page-container flex-col pt-24 pb-10">
-      <div className="page-content max-w-md md:max-w-2xl lg:max-w-4xl mx-auto p-4 md:p-6 text-red-500 text-center">{error}</div>
-    </div>
+    <ErrorView
+      message={error}
+      onRetry={() => id && fetchRide(id, inviteToken ?? undefined)}
+    />
   )
 
   if (notFound || !ride) return (
@@ -860,6 +959,17 @@ export default function RideDetailPage() {
         {isOwner && !isPastRide ? <InviteSection rideId={ride.id} canCancelInvites /> : null}
 
       </div>
+      {confirmConfig && (
+        <ConfirmDialog
+          ref={confirmDialogRef}
+          title={confirmConfig.title}
+          message={confirmConfig.message}
+          confirmText={confirmConfig.confirmText}
+          type={confirmConfig.type}
+          action={confirmConfig.action}
+          toggle={closeConfirm}
+        />
+      )}
     </div>
   )
 }

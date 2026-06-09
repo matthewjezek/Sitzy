@@ -1,9 +1,11 @@
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { FiEdit, FiTrash, FiPlus } from 'react-icons/fi'
 import { toast } from 'react-toastify'
 import { useCar } from '../hooks/useCar'
 import { SedanSvg, CoupeSvg, MinivanSvg } from '../assets/icons'
+import ErrorView from '../components/ErrorView'
+import { ConfirmDialog } from '../components/Dialog'
 
 function CarDetailSkeleton() {
   return (
@@ -35,6 +37,31 @@ export default function CarDetailPage() {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
   const { car, loading, error, notFound, fetchCarById, deleteCar } = useCar()
+  const confirmDialogRef = useRef<HTMLDialogElement>(null)
+  const [confirmConfig, setConfirmConfig] = useState<{
+    title: string;
+    message: string;
+    confirmText?: string;
+    type?: 'danger' | 'warning' | 'info' | 'success';
+    action: () => void | Promise<void>;
+  } | null>(null)
+
+  const showConfirm = (
+    title: string,
+    message: string,
+    action: () => void | Promise<void>,
+    type: 'danger' | 'warning' | 'info' | 'success' = 'info',
+    confirmText?: string
+  ) => {
+    setConfirmConfig({ title, message, action, type, confirmText })
+    setTimeout(() => {
+      confirmDialogRef.current?.showModal()
+    }, 0)
+  }
+
+  const closeConfirm = () => {
+    confirmDialogRef.current?.close()
+  }
 
   useEffect(() => {
     if (id) fetchCarById(id)
@@ -44,22 +71,30 @@ export default function CarDetailPage() {
     document.title = car ? `Sitzy - ${car.name}` : 'Sitzy - Auto'
   }, [car])
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!car) return
-    if (!window.confirm('Opravdu chcete smazat toto auto? Tato akce je nevratná.')) return
-    const success = await deleteCar(car.id)
-    if (success) {
-      toast.success('Auto bylo smazáno.')
-      navigate('/cars')
-    }
+    showConfirm(
+      'Smazat auto',
+      'Opravdu chcete smazat toto auto? Tato akce je nevratná.',
+      async () => {
+        const success = await deleteCar(car.id)
+        if (success) {
+          toast.success('Auto bylo smazáno.')
+          navigate('/cars')
+        }
+      },
+      'danger',
+      'Smazat'
+    )
   }
 
   if (loading) return <CarDetailSkeleton />
 
   if (error) return (
-    <div className="page-container flex-col pt-24 pb-10">
-      <div className="page-content max-w-lg mx-auto p-6 text-red-500 text-center">{error}</div>
-    </div>
+    <ErrorView
+      message={error}
+      onRetry={() => id && fetchCarById(id)}
+    />
   )
 
   if (notFound || !car) return (
@@ -119,6 +154,17 @@ export default function CarDetailPage() {
         </div>
 
       </div>
+      {confirmConfig && (
+        <ConfirmDialog
+          ref={confirmDialogRef}
+          title={confirmConfig.title}
+          message={confirmConfig.message}
+          confirmText={confirmConfig.confirmText}
+          type={confirmConfig.type}
+          action={confirmConfig.action}
+          toggle={closeConfirm}
+        />
+      )}
     </div>
   )
 }

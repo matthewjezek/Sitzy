@@ -134,8 +134,8 @@ test('ride detail supports inviting and canceling pending invites', async ({ pag
   await expect(page.getByText('novy.host@example.com', { exact: true })).toBeVisible()
 
   const existingInviteRow = page.locator('div.list-item-bg').filter({ hasText: 'friend@example.com' })
-  page.once('dialog', dialog => dialog.accept())
   await existingInviteRow.getByRole('button', { name: 'Zrušit' }).click()
+  await page.locator('dialog').locator('.button-primary').click()
 
   await expect(page.getByText('friend@example.com', { exact: true })).toHaveCount(0)
   await expect(page.getByText('novy.host@example.com', { exact: true })).toBeVisible()
@@ -161,8 +161,8 @@ test('ride detail keeps invite when cancel confirmation is dismissed', async ({ 
   await page.goto('/rides/ride-1')
 
   const existingInviteRow = page.locator('div.list-item-bg').filter({ hasText: 'friend@example.com' })
-  page.once('dialog', dialog => dialog.dismiss())
   await existingInviteRow.getByRole('button', { name: 'Zrušit' }).click()
+  await page.locator('dialog').locator('.dialog-cancel-button').click()
 
   await expect(page.getByText('friend@example.com', { exact: true })).toBeVisible()
 })

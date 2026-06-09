@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { isAxiosError } from "axios";
+import { toast } from "react-toastify";
 import instance from "../api/axios";
 import type { Car, CarFormData } from '../types/models';
 
@@ -16,6 +17,13 @@ export function useCar() {
         ? (err.response?.data?.detail ?? fallback)
         : "Nastala neočekávaná chyba."
     );
+  };
+
+  const toastError = (err: unknown, fallback: string) => {
+    const msg = isAxiosError(err)
+      ? (err.response?.data?.detail ?? fallback)
+      : "Nastala neočekávaná chyba.";
+    toast.error(msg);
   };
 
   // GET /cars/ – seznam mých aut
@@ -60,13 +68,12 @@ export function useCar() {
   // POST /cars/
   const createCar = useCallback(async (data: CarFormData) => {
     setLoading(true);
-    setError(null);
     try {
       const res = await instance.post<Car>('/cars/', data);
       setCar(res.data);
       return res.data;
     } catch (err) {
-      handleError(err, 'Nepodařilo se vytvořit auto.');
+      toastError(err, 'Nepodařilo se vytvořit auto.');
       return null;
     } finally {
       setLoading(false);
@@ -76,13 +83,12 @@ export function useCar() {
   // PATCH /cars/:id
   const updateCar = useCallback(async (carId: string, data: CarFormData) => {
     setLoading(true);
-    setError(null);
     try {
       const res = await instance.patch<Car>(`/cars/${carId}`, data);
       setCar(res.data);
       return res.data;
     } catch (err) {
-      handleError(err, 'Nepodařilo se aktualizovat auto.');
+      toastError(err, 'Nepodařilo se aktualizovat auto.');
       return null;
     } finally {
       setLoading(false);
@@ -92,13 +98,12 @@ export function useCar() {
   // DELETE /cars/:id
   const deleteCar = useCallback(async (carId: string) => {
     setLoading(true);
-    setError(null);
     try {
       await instance.delete(`/cars/${carId}`);
       setCar(null);
       return true;
     } catch (err) {
-      handleError(err, 'Nepodařilo se smazat auto.');
+      toastError(err, 'Nepodařilo se smazat auto.');
       return false;
     } finally {
       setLoading(false);

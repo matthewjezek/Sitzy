@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { isAxiosError } from "axios";
+import { toast } from "react-toastify";
 import instance from "../api/axios";
 
 import type { Invitation } from '../types/models';
@@ -20,8 +21,8 @@ export interface UseInvitesReturn {
   invites: Invitation[];
   loading: boolean;
   error: string | null;
-  createInvite: (email: string) => Promise<void>;
-  cancelInvite: (token: string) => Promise<void>;
+  createInvite: (email: string) => Promise<boolean>;
+  cancelInvite: (token: string) => Promise<boolean>;
   respondInvite: (token: string, accept: boolean) => Promise<void>;
   fetchInvites: () => Promise<void>;
 }
@@ -37,6 +38,13 @@ export function useInvites(rideId?: string): UseInvitesReturn {
         ? (err.response?.data?.detail ?? fallback)
         : "Nastala neočekávaná chyba."
     );
+  };
+
+  const toastError = (err: unknown, fallback: string) => {
+    const msg = isAxiosError(err)
+      ? (err.response?.data?.detail ?? fallback)
+      : "Nastala neočekávaná chyba.";
+    toast.error(msg);
   };
 
   // GET /invitations/ride/:rideId  nebo  GET /invitations/received
@@ -75,12 +83,11 @@ export function useInvites(rideId?: string): UseInvitesReturn {
 
   // POST /rides/:rideId/invite
   const createInvite = useCallback(async (email: string) => {
-    if (!rideId) return;
-    setError(null);
+    if (!rideId) return false;
 
     if (invites.some((i) => i.invited_email.toLowerCase() === email.toLowerCase())) {
-      setError("Tento e-mail je již pozván.");
-      return;
+      toast.error("Tento e-mail je již pozván.");
+      return false;
     }
 
     try {
@@ -89,26 +96,28 @@ export function useInvites(rideId?: string): UseInvitesReturn {
       });
       setInvites((prev) => [...prev, res.data]);
       notifyInvitesChanged(rideId);
+      return true;
     } catch (err) {
-      handleError(err, "Nepodařilo se vytvořit pozvánku.");
+      toastError(err, "Nepodařilo se vytvořit pozvánku.");
+      return false;
     }
   }, [rideId, invites]);
 
   // DELETE /invitations/:token
   const cancelInvite = useCallback(async (token: string) => {
-    setError(null);
     try {
       await instance.delete(`/invitations/${token}`);
       setInvites((prev) => prev.filter((i) => i.token !== token));
       notifyInvitesChanged(rideId);
+      return true;
     } catch (err) {
-      handleError(err, "Nepodařilo se zrušit pozvánku.");
+      toastError(err, "Nepodařilo se zrušit pozvánku.");
+      return false;
     }
   }, [rideId]);
 
   // POST /invitations/:token/accept|reject
   const respondInvite = useCallback(async (token: string, accept: boolean) => {
-    setError(null);
     // Optimistic update
     setInvites((prev) =>
       prev.map((i) =>
@@ -130,7 +139,7 @@ export function useInvites(rideId?: string): UseInvitesReturn {
           i.token === token ? { ...i, status: "Pending" } : i
         )
       );
-      handleError(err, "Nepodařilo se odpovědět na pozvánku.");
+      toastError(err, "Nepodařilo se odpovědět na pozvánku.");
       throw err;
     }
   }, [rideId]);

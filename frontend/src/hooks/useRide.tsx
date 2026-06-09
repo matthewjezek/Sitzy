@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 import { isAxiosError } from 'axios'
+import { toast } from 'react-toastify'
 import instance from '../api/axios'
 import type { RideOut, RideCreate, RideUpdate } from '../types/models';
 
@@ -16,6 +17,13 @@ export function useRide() {
         ? (err.response?.data?.detail ?? fallback)
         : 'Nastala neočekávaná chyba.'
     )
+  }
+
+  const toastError = (err: unknown, fallback: string) => {
+    const msg = isAxiosError(err)
+      ? (err.response?.data?.detail ?? fallback)
+      : 'Nastala neočekávaná chyba.'
+    toast.error(msg)
   }
 
   // GET /rides/ – seznam všech jízd
@@ -62,13 +70,12 @@ export function useRide() {
   // POST /rides/
   const createRide = useCallback(async (data: RideCreate) => {
     setLoading(true)
-    setError(null)
     try {
       const res = await instance.post<RideOut>('/rides/', data)
       setRide(res.data)
       return res.data
     } catch (err) {
-      handleError(err, 'Nepodařilo se vytvořit jízdu.')
+      toastError(err, 'Nepodařilo se vytvořit jízdu.')
       return null
     } finally {
       setLoading(false)
@@ -78,13 +85,12 @@ export function useRide() {
   // PATCH /rides/:id
   const updateRide = useCallback(async (rideId: string, data: RideUpdate) => {
     setLoading(true)
-    setError(null)
     try {
       const res = await instance.patch<RideOut>(`/rides/${rideId}`, data)
       setRide(res.data)
       return res.data
     } catch (err) {
-      handleError(err, 'Nepodařilo se aktualizovat jízdu.')
+      toastError(err, 'Nepodařilo se aktualizovat jízdu.')
       return null
     } finally {
       setLoading(false)
@@ -94,7 +100,6 @@ export function useRide() {
   // DELETE /rides/:id
   const cancelRide = useCallback(async (rideId: string) => {
     setLoading(true)
-    setError(null)
     // Optimistic update
     setRides(prev => prev.filter(r => r.id !== rideId))
     try {
@@ -104,7 +109,7 @@ export function useRide() {
     } catch (err) {
       // Rollback – refetch
       fetchMyRides()
-      handleError(err, 'Nepodařilo se zrušit jízdu.')
+      toastError(err, 'Nepodařilo se zrušit jízdu.')
       return false
     } finally {
       setLoading(false)
@@ -113,7 +118,6 @@ export function useRide() {
 
   // POST /rides/:id/book – explicitní výběr sedadla
   const bookSeat = useCallback(async (rideId: string, seatPosition: number) => {
-    setError(null)
     // Optimistic update
     setRide(prev =>
       prev
@@ -144,14 +148,13 @@ export function useRide() {
             }
           : prev
       )
-      handleError(err, 'Nepodařilo se rezervovat sedadlo.')
+      toastError(err, 'Nepodařilo se rezervovat sedadlo.')
       return null
     }
   }, [])
 
   // DELETE /rides/:id/book – zrušení rezervace
   const cancelBooking = useCallback(async (rideId: string, seatPosition: number) => {
-    setError(null)
     // Optimistic update
     setRide(prev =>
       prev
@@ -169,7 +172,7 @@ export function useRide() {
     } catch (err) {
       // Rollback – refetch
       await fetchRide(rideId)
-      handleError(err, 'Nepodařilo se zrušit rezervaci.')
+      toastError(err, 'Nepodařilo se zrušit rezervaci.')
       return false
     }
   }, [fetchRide])
@@ -180,7 +183,6 @@ export function useRide() {
     newDriverId: string,
     previousDriverId: string
   ) => {
-    setError(null)
     // Optimistic update
     setRide(prev =>
       prev ? { ...prev, driver_user_id: newDriverId } : prev
@@ -196,14 +198,13 @@ export function useRide() {
       setRide(prev =>
         prev ? { ...prev, driver_user_id: previousDriverId } : prev
       )
-      handleError(err, 'Nepodařilo se předat řízení.')
+      toastError(err, 'Nepodařilo se předat řízení.')
       return null
     }
   }, [])
 
   // DELETE /rides/:id/leave – odchod z jízdy pro pasažéra
   const leaveRide = useCallback(async (rideId: string, userId: string) => {
-    setError(null)
     // Optimistic update
     setRide(prev =>
       prev
@@ -218,14 +219,13 @@ export function useRide() {
       return true
     } catch (err) {
       await fetchRide(rideId)
-      handleError(err, 'Nepodařilo se opustit jízdu.')
+      toastError(err, 'Nepodařilo se opustit jízdu.')
       return false
     }
   }, [fetchRide])
 
   // DELETE /rides/:id/passengers/:userId – odebrání pasažéra majitelem
   const removePassenger = useCallback(async (rideId: string, passengerUserId: string) => {
-    setError(null)
     // Optimistic update
     setRide(prev =>
       prev
@@ -240,7 +240,7 @@ export function useRide() {
       return true
     } catch (err) {
       await fetchRide(rideId)
-      handleError(err, 'Nepodařilo se odebrat pasažéra.')
+      toastError(err, 'Nepodařilo se odebrat pasažéra.')
       return false
     }
   }, [fetchRide])

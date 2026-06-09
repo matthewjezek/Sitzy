@@ -8,7 +8,7 @@ import {
   getThemePreference,
   type ThemePreference,
 } from '../utils/theme';
-import { DeleteDialog } from '../components/Dialog';
+import { DeleteDialog, ConfirmDialog } from '../components/Dialog';
 import { useAuth } from '../hooks/useAuth';
 import { usePWAUpdate } from '../hooks/usePWAUpdate';
 import type { SocialDashboard, SocialSessionInfo } from '../types/models';
@@ -44,6 +44,31 @@ export default function SettingsPage() {
   const [isCompactMobile, setIsCompactMobile] = useState(false)
   const [socialExpanded, setSocialExpanded] = useState(true)
   const deleteDialogRef = useRef<HTMLDialogElement>(null)
+  const confirmDialogRef = useRef<HTMLDialogElement>(null)
+  const [confirmConfig, setConfirmConfig] = useState<{
+    title: string;
+    message: string;
+    confirmText?: string;
+    type?: 'danger' | 'warning' | 'info' | 'success';
+    action: () => void | Promise<void>;
+  } | null>(null)
+
+  const showConfirm = (
+    title: string,
+    message: string,
+    action: () => void | Promise<void>,
+    type: 'danger' | 'warning' | 'info' | 'success' = 'info',
+    confirmText?: string
+  ) => {
+    setConfirmConfig({ title, message, action, type, confirmText })
+    setTimeout(() => {
+      confirmDialogRef.current?.showModal()
+    }, 0)
+  }
+
+  const closeConfirm = () => {
+    confirmDialogRef.current?.close()
+  }
   const {
     isPWAInstalled,
     isUpdateAvailable,
@@ -165,33 +190,46 @@ export default function SettingsPage() {
 
   const [demoBusy, setDemoBusy] = useState(false)
 
-  const handleGenerateDemoData = async () => {
-    if (!confirm('Vygenerovat demo data pro aktuální účet?')) return
-    try {
-      setDemoBusy(true)
-      await instance.post('/auth/dev/fixtures/generate')
-      toast.success('Demo data byla vygenerována.')
-      // Refresh dashboard to show new data
-      await Promise.all([refreshSocialDashboard(), refreshUser()])
-    } catch {
-      toast.error('Generování demo dat se nezdařilo.')
-    } finally {
-      setDemoBusy(false)
-    }
+  const handleGenerateDemoData = () => {
+    showConfirm(
+      'Generovat demo data',
+      'Opravdu chcete vygenerovat demo data pro aktuální účet?',
+      async () => {
+        try {
+          setDemoBusy(true)
+          await instance.post('/auth/dev/fixtures/generate')
+          toast.success('Demo data byla vygenerována.')
+          await Promise.all([refreshSocialDashboard(), refreshUser()])
+        } catch {
+          toast.error('Generování demo dat se nezdařilo.')
+        } finally {
+          setDemoBusy(false)
+        }
+      },
+      'info',
+      'Vygenerovat'
+    )
   }
 
-  const handleResetDemoData = async () => {
-    if (!confirm('Smazat všechna demo data vygenerovaná pro tento účet?')) return
-    try {
-      setDemoBusy(true)
-      await instance.post('/auth/dev/fixtures/reset')
-      toast.success('Demo data byla smazána.')
-      await Promise.all([refreshSocialDashboard(), refreshUser()])
-    } catch {
-      toast.error('Reset demo dat se nezdařil.')
-    } finally {
-      setDemoBusy(false)
-    }
+  const handleResetDemoData = () => {
+    showConfirm(
+      'Resetovat demo data',
+      'Opravdu chcete smazat všechna demo data vygenerovaná pro tento účet?',
+      async () => {
+        try {
+          setDemoBusy(true)
+          await instance.post('/auth/dev/fixtures/reset')
+          toast.success('Demo data byla smazána.')
+          await Promise.all([refreshSocialDashboard(), refreshUser()])
+        } catch {
+          toast.error('Reset demo dat se nezdařil.')
+        } finally {
+          setDemoBusy(false)
+        }
+      },
+      'danger',
+      'Smazat'
+    )
   }
 
   const sessionsToShow = socialDashboard
@@ -528,6 +566,17 @@ export default function SettingsPage() {
           <li>Propojení se sociálními sítěmi</li>
         </ul>
       </DeleteDialog>
+      {confirmConfig && (
+        <ConfirmDialog
+          ref={confirmDialogRef}
+          title={confirmConfig.title}
+          message={confirmConfig.message}
+          confirmText={confirmConfig.confirmText}
+          type={confirmConfig.type}
+          action={confirmConfig.action}
+          toggle={closeConfirm}
+        />
+      )}
       </div>
     </div>
   )
