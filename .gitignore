@@ -231,3 +231,4 @@ Thumbs.db
 # Unrelated files
 unrelated/
 docs/
+.agents/
