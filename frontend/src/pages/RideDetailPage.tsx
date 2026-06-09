@@ -26,7 +26,8 @@ import { useAuth } from '../hooks/useAuth'
 import type { PassengerOut } from '../types/models'
 import { inviteSchema, type InviteFormValues } from '../utils/validation'
 import SeatRenderer from '../components/SeatRenderer'
-import ShareSheet from '../components/ShareSheet'
+import { SharePreset } from '../components/SharePreset'
+import { generateSharePayload, type SharePresetId } from '../utils/sharePresets'
 import type { SeatData } from '../components/SeatRenderer'
 
 function RideDetailSkeleton() {
@@ -325,9 +326,6 @@ export default function RideDetailPage() {
   const [storyAnonymized, setStoryAnonymized] = useState(true)
   const [exportingImage, setExportingImage] = useState(false)
   const [exportingJson, setExportingJson] = useState(false)
-  const [copyingLink, setCopyingLink] = useState(false)
-  const [sharingStory, setSharingStory] = useState(false)
-  const [copyingText, setCopyingText] = useState(false)
   const storyCardRef = useRef<HTMLDivElement | null>(null)
 
   const inviteToken = searchParams.get('invite')
@@ -549,42 +547,45 @@ export default function RideDetailPage() {
     },
   })
 
-  const handleDownloadStoryImage = async () => {
-    if (!storyCardRef.current) return
+  const generateStoryImageBlob = async (): Promise<Blob | null> => {
+    if (!storyCardRef.current) return null
 
+    // Wait for fonts
+    if (document.fonts?.ready) {
+      await document.fonts.ready
+    }
+
+    // Small extra delay to ensure everything is rendered
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    const dataUrl = await htmlToImage.toPng(storyCardRef.current, {
+      pixelRatio: 2, 
+      backgroundColor: 'transparent',
+      cacheBust: false,
+      style: {
+        transform: 'none',
+      }
+    })
+
+    if (!dataUrl) return null
+    const response = await fetch(dataUrl)
+    return await response.blob()
+  }
+
+  const handleDownloadStoryImage = async () => {
     setExportingImage(true)
     try {
-      const card = storyCardRef.current
-      
-      // Wait for fonts
-      if (document.fonts?.ready) {
-        await document.fonts.ready
-      }
-
-      // Small extra delay to ensure everything is rendered
-      await new Promise(resolve => setTimeout(resolve, 100))
-
-      // html-to-image captures the element more accurately by using SVG foreignObject.
-      // We use a pixelRatio of 2 for high quality without excessive memory.
-      // toPng is often more stable across browsers than toBlob.
-      const dataUrl = await htmlToImage.toPng(card, {
-        pixelRatio: 2, 
-        backgroundColor: 'transparent',
-        cacheBust: false,
-        style: {
-          transform: 'none',
-        }
-      })
-
-      if (!dataUrl) {
+      const blob = await generateStoryImageBlob()
+      if (!blob) {
         toast.error('Nepodařilo se připravit PNG export.')
         return
       }
-
+      const dataUrl = URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = dataUrl
       link.download = `sitzy-jizda-${ride.id}.png`
       link.click()
+      URL.revokeObjectURL(dataUrl)
       toast.success('PNG karta byla stažena.')
     } catch (err) {
       console.error('PNG export failed:', err)
@@ -613,103 +614,8 @@ export default function RideDetailPage() {
     }
   }
 
-  const handleCopyStoryLink = async () => {
-    setCopyingLink(true)
-    try {
-      const link = `${window.location.origin}/rides/${ride.id}`
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(link)
-      } else {
-        const textarea = document.createElement('textarea')
-        textarea.value = link
-        textarea.setAttribute('readonly', 'true')
-        textarea.style.position = 'absolute'
-        textarea.style.left = '-9999px'
-        document.body.appendChild(textarea)
-        textarea.select()
-        document.execCommand('copy')
-        document.body.removeChild(textarea)
-      }
-      toast.success('Odkaz byl zkopírován.')
-    } catch {
-      toast.error('Nepodařilo se zkopírovat odkaz.')
-    } finally {
-      setCopyingLink(false)
-    }
-  }
-
-  const buildSharePayload = () => {
-    const link = `${window.location.origin}/rides/${ride.id}`
-    return {
-      link,
-      text: `Jízda do ${ride.destination} (${formatLocalDateTime(ride.departure_time)}). Přidej se v Sitzy: ${link}`,
-    }
-  }
-
-  const isNativeShareSupported = () => {
-    if (typeof navigator === 'undefined' || typeof navigator.share !== 'function') {
-      return false
-    }
-
-    const payload = buildSharePayload()
-    if (typeof navigator.canShare === 'function') {
-      try {
-        return navigator.canShare({
-          title: `Sitzy: ${ride.destination}`,
-          text: payload.text,
-          url: payload.link,
-        })
-      } catch {
-        return false
-      }
-    }
-
-    return true
-  }
-
-  const handleCopyShareText = async () => {
-    const payload = buildSharePayload()
-    setCopyingText(true)
-    try {
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(payload.text)
-      } else {
-        const textarea = document.createElement('textarea')
-        textarea.value = payload.text
-        textarea.setAttribute('readonly', 'true')
-        textarea.style.position = 'absolute'
-        textarea.style.left = '-9999px'
-        document.body.appendChild(textarea)
-        textarea.select()
-        document.execCommand('copy')
-        document.body.removeChild(textarea)
-      }
-      toast.success('Text pro sdílení byl zkopírován.')
-    } catch {
-      toast.error('Nepodařilo se zkopírovat text pro sdílení.')
-    } finally {
-      setCopyingText(false)
-    }
-  }
-
-  const handleNativeShare = async () => {
-    const payload = buildSharePayload()
-    setSharingStory(true)
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: `Sitzy: ${ride.destination}`,
-          text: payload.text,
-          url: payload.link,
-        })
-        toast.success('Sdílení dokončeno.')
-        return
-      }
-    } catch {
-      // User cancellation should not show an error.
-    } finally {
-      setSharingStory(false)
-    }
+  const buildSharePayload = (presetId: SharePresetId) => {
+    return generateSharePayload(presetId, { id: ride.id, destination: ride.destination, departure_time: ride.departure_time })
   }
 
   const canLeaveRide = Boolean(user && !isOwner && !isCurrentDriver)
@@ -918,18 +824,21 @@ export default function RideDetailPage() {
           </div>
 
           <div className="flex flex-wrap justify-end gap-2">
-            <ShareSheet
-              nativeShareSupported={isNativeShareSupported()}
-              sharing={sharingStory}
-              copyingText={copyingText}
-              copyingLink={copyingLink}
-              exportingImage={exportingImage}
-              exportingJson={exportingJson}
-              onShare={handleNativeShare}
-              onCopyText={handleCopyShareText}
-              onCopyLink={handleCopyStoryLink}
+            <SharePreset
+              title={`Sitzy: ${ride.destination}`}
+              text={buildSharePayload('messenger_whatsapp_text_first').text}
+              url={buildSharePayload('messenger_whatsapp_text_first').link}
               onDownloadPng={handleDownloadStoryImage}
               onExportJson={handleExportStoryJson}
+              exportingImage={exportingImage}
+              exportingJson={exportingJson}
+              xText={buildSharePayload('x_compact').text}
+              xUrl={buildSharePayload('x_compact').link}
+              fbText={buildSharePayload('facebook_story').text}
+              fbUrl={buildSharePayload('facebook_story').link}
+              waText={buildSharePayload('messenger_whatsapp_text_first').text}
+              waUrl={buildSharePayload('messenger_whatsapp_text_first').link}
+              onGenerateBlob={generateStoryImageBlob}
             />
           </div>
         </div>
