@@ -12,3 +12,8 @@ format:
 # === TESTY ===
 test:
 	pytest api/tests
+
+# === PRE-COMMIT HOOKS ===
+setup-hooks:
+	.venv/Scripts/pip install pre-commit
+	.venv/Scripts/pre-commit install

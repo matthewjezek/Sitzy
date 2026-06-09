@@ -1,0 +1,16 @@
+repos:
+  - repo: local
+    hooks:
+      - id: frontend-checks
+        name: Frontend Checks
+        entry: python scripts/run_frontend_checks.py
+        language: system
+        files: ^frontend/
+        pass_filenames: false
+
+      - id: backend-checks
+        name: Backend Checks
+        entry: python scripts/run_backend_checks.py
+        language: system
+        files: ^api/
+        pass_filenames: false
