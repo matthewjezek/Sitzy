@@ -274,6 +274,7 @@ test('accept-then-seat flow allows manual seat confirmation with seat_position p
   await page.getByRole('button', { name: 'Přijmout' }).click()
 
   await expect(page).toHaveURL(/\/rides\/ride-1\?invite=invite-seat-manual$/)
+  await expect(page.getByText('Vyberte sedadlo pro dokončení přijetí pozvánky.')).toBeVisible()
   const seatButton = page.locator('button').filter({ hasText: '2' }).first()
   await seatButton.click()
   await expect(page.getByRole('button', { name: 'Potvrdit vybrané sedadlo' })).toBeEnabled()
