@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       includeAssets: ['favicon.ico', 'favicon.svg', 'apple-touch-icon.png', 'icons/*.png', 'splash/*.png'],
       manifest: {
         name: 'Sitzy',
@@ -53,7 +53,6 @@ export default defineConfig({
           },
         ],
         cleanupOutdatedCaches: true,
-        skipWaiting: true,
         clientsClaim: true,
       },
     }),

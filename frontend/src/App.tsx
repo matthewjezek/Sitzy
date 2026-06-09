@@ -27,6 +27,7 @@ import {
   THEME_CHANGED_EVENT,
 } from './utils/theme'
 import DashboardPage from './pages/DashboardPage'
+import { PWAProvider } from './context/PWAProvider'
 
 const isDev = import.meta.env.MODE === 'development'
 
@@ -150,16 +151,18 @@ function App() {
   
   return (
     <Router>
-      <AppRoutes />
-      <ToastContainer
-        position="bottom-left"
-        autoClose={3000}
-        hideProgressBar
-        pauseOnHover
-        draggable
-        theme={resolvedTheme === 'dark' ? 'dark' : 'light'}
-        transition={Slide}
-      />
+      <PWAProvider>
+        <AppRoutes />
+        <ToastContainer
+          position="bottom-left"
+          autoClose={3000}
+          hideProgressBar
+          pauseOnHover
+          draggable
+          theme={resolvedTheme === 'dark' ? 'dark' : 'light'}
+          transition={Slide}
+        />
+      </PWAProvider>
     </Router>
   )
 }
