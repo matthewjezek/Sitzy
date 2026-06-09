@@ -10,6 +10,7 @@ export interface SeatData {
   position_label?: string;
   user_name?: string;
   occupied?: boolean;
+  avatar_url?: string;
 }
 
 export interface SeatRendererProps {
@@ -18,6 +19,7 @@ export interface SeatRendererProps {
   selectedSeat?: number | null;
   onSeatSelect?: (position: number | null) => void;
   ownerName?: string;
+  driverAvatarUrl?: string | null;
   mode: 'interactive' | 'display';
   className?: string;
   orientation?: 'portrait' | 'landscape';
@@ -305,31 +307,43 @@ const SeatNumber = styled.span<{ $orientation: SeatOrientation }>`
   }
 `;
 
-const DriverBadge = styled.span<{ $orientation: SeatOrientation }>`
+const OccupantAvatar = styled.div<{ $isDriver?: boolean; $orientation: SeatOrientation; $compact?: boolean }>`
   position: absolute;
   top: 38%;
   left: 50%;
   transform: ${props => props.$orientation === 'landscape'
     ? 'translateX(-50%) rotate(90deg)'
     : 'translateX(-50%)'};
-  display: inline-flex;
+  width: ${props => props.$compact ? '1.4rem' : '2.2rem'};
+  height: ${props => props.$compact ? '1.4rem' : '2.2rem'};
+  border-radius: 50%;
+  display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 1.5em;
-  height: 1.5em;
-  padding: 0 0.3em;
-  border-radius: 999px;
-  background: linear-gradient(180deg, #fde68a 0%, #f59e0b 100%);
-  border: 1px solid rgba(120, 53, 15, 0.12);
-  color: #7c2d12;
-  font-size: 0.75em;
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: 0.04em;
-  box-shadow: 0 5px 12px rgba(245, 158, 11, 0.2);
-  pointer-events: none;
+  overflow: hidden;
+  background: #6366f1; /* Indigo */
+  color: white;
+  font-weight: 700;
+  font-size: ${props => props.$compact ? '0.55rem' : '0.85rem'};
+  border: ${props => props.$compact ? '1px' : '2px'} solid ${props => props.$isDriver ? '#f59e0b' : '#3b82f6'}; /* Amber for driver, Blue for passenger */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15), ${props => props.$isDriver ? '0 0 8px rgba(245, 158, 11, 0.4)' : 'none'};
   z-index: 6;
+  pointer-events: none;
+  user-select: none;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  span {
+    line-height: 1;
+    display: inline-block;
+  }
 `;
+
 
 const Legend = styled.div`
   display: grid;
@@ -385,6 +399,7 @@ export const SeatRenderer: React.FC<SeatRendererProps> = ({
   selectedSeat,
   onSeatSelect,
   ownerName = 'Řidič',
+  driverAvatarUrl = null,
   mode = 'interactive',
   className = '',
   orientation = 'portrait',
@@ -503,6 +518,12 @@ export const SeatRenderer: React.FC<SeatRendererProps> = ({
           ? 'Vaše vybrané sedadlo'
           : isInteractive ? 'Volné sedadlo, klikněte pro výběr' : 'Volné sedadlo';
 
+    const isOccupied = state === SeatState.OCCUPIED || isDriver;
+    const occupantAvatar = isDriver ? driverAvatarUrl : seat?.avatar_url;
+    const occupantInitials = isDriver 
+      ? (ownerName?.[0]?.toUpperCase() ?? 'Ř') 
+      : (seat?.user_name?.[0]?.toUpperCase() ?? 'P');
+
     return (
       <SeatButton
         $state={state}
@@ -517,7 +538,15 @@ export const SeatRenderer: React.FC<SeatRendererProps> = ({
         aria-label={ariaLabel}
       >
         <SeatVisual src={seatSvg} alt="" aria-hidden="true" $state={state} />
-        {isDriver && <DriverBadge $orientation={orientation} title="Řidič">Ř</DriverBadge>}
+        {isOccupied && (
+          <OccupantAvatar $isDriver={isDriver} $orientation={orientation} $compact={compact}>
+            {occupantAvatar ? (
+              <img src={occupantAvatar} alt="" crossOrigin="anonymous" />
+            ) : (
+              <span>{occupantInitials}</span>
+            )}
+          </OccupantAvatar>
+        )}
         {!compact && <SeatNumber $orientation={orientation}>{seat?.position_label || position}</SeatNumber>}
       </SeatButton>
     );

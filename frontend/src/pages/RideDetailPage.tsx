@@ -794,6 +794,7 @@ export default function RideDetailPage() {
             layout={seatRendererLayout}
             seats={seatRendererSeats}
             ownerName={ride.driver?.full_name ?? ride.car?.owner_name ?? 'Řidič'}
+            driverAvatarUrl={ride.driver?.avatar_url ?? null}
             mode={requiresSeatSelection ? 'interactive' : 'display'}
             selectedSeat={requiresSeatSelection ? selectedSeat : undefined}
             onSeatSelect={requiresSeatSelection ? setSelectedSeat : undefined}
@@ -877,6 +878,7 @@ export default function RideDetailPage() {
                   layout={seatRendererLayout}
                   seats={storySeatData}
                   ownerName={storyAnonymized ? 'Řidič' : storyDriverName}
+                  driverAvatarUrl={storyAnonymized ? null : (ride?.driver?.avatar_url ?? null)}
                   mode="display"
                   orientation="landscape"
                   showHeader={false}
