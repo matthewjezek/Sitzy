@@ -332,7 +332,8 @@ function PassengersSection({
                     <button
                       type="button"
                       onClick={() => onRemovePassenger(p.user_id, p.full_name ?? 'Neznámý')}
-                      disabled={removingUserId === p.user_id}
+                      disabled={removingUserId === p.user_id || isThisOwner}
+                      title={isThisOwner ? 'Majitel nemůže být odebrán ze své jízdy.' : undefined}
                       className="button-danger text-xs flex items-center justify-center gap-1 flex-1 sm:flex-none h-10"
                     >
                       <FiUserX size={16} />

@@ -405,6 +405,12 @@ def cancel_booking(
     ride = _get_ride_or_404(ride_id, db)
     _assert_ride_not_past(ride)
 
+    if ctx.user.id == ride.car.owner_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Car owner cannot leave their own ride. Cancel it instead.",
+        )
+
     passenger = (
         db.query(Passenger).filter_by(user_id=ctx.user.id, ride_id=ride_id).first()
     )
@@ -634,6 +640,12 @@ def remove_passenger(
         raise HTTPException(
             status_code=400,
             detail="Cannot remove the current driver. Transfer driver role first.",
+        )
+
+    if passenger_user_id == ride.car.owner_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Car owner cannot leave their own ride. Cancel it instead.",
         )
 
     passenger = (

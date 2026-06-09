@@ -432,6 +432,53 @@ def test_leave_ride_rejects_owner(fake_user_context, monkeypatch: pytest.MonkeyP
     )
 
 
+def test_cancel_booking_rejects_owner(
+    fake_user_context, monkeypatch: pytest.MonkeyPatch
+):
+    car = _car(fake_user_context.user.id)
+    ride = _ride(car, fake_user_context.user.id)
+    monkeypatch.setattr(rides, "_get_ride_or_404", lambda ride_id, db: ride)
+
+    client = create_client(
+        router=rides.router,
+        prefix="/rides",
+        fake_db=FakeDB(),
+        current_user=fake_user_context,
+    )
+
+    response = client.delete(f"/rides/{ride.id}/book")
+
+    assert response.status_code == 400
+    assert (
+        response.json()["detail"]
+        == "Car owner cannot leave their own ride. Cancel it instead."
+    )
+
+
+def test_remove_passenger_rejects_owner(
+    fake_user_context, monkeypatch: pytest.MonkeyPatch
+):
+    car = _car(fake_user_context.user.id)
+    # The current driver is a different user, so owner is just a passenger
+    ride = _ride(car, uuid4())
+    monkeypatch.setattr(rides, "_get_ride_or_404", lambda ride_id, db: ride)
+
+    client = create_client(
+        router=rides.router,
+        prefix="/rides",
+        fake_db=FakeDB(),
+        current_user=fake_user_context,
+    )
+
+    response = client.delete(f"/rides/{ride.id}/passengers/{fake_user_context.user.id}")
+
+    assert response.status_code == 400
+    assert (
+        response.json()["detail"]
+        == "Car owner cannot leave their own ride. Cancel it instead."
+    )
+
+
 def test_remove_passenger_rejects_current_driver(
     fake_user_context, monkeypatch: pytest.MonkeyPatch
 ):

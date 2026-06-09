@@ -577,6 +577,34 @@ test('role matrix shows owner, driver and passenger action visibility correctly'
   await page.goto('/rides/ride-1')
   await expect(page.getByRole('button', { name: 'Opustit jízdu' })).toBeEnabled()
   await expect(page.getByRole('heading', { name: 'Pozvánky' })).toHaveCount(0)
+
+  // Owner is a passenger on their own ride (after transferring driver role)
+  const ownerPassengerRide = {
+    ...mockRide,
+    driver_user_id: 'driver-2',
+    car: {
+      ...mockCar,
+      owner_id: mockUser.id,
+      owner_name: mockUser.full_name ?? undefined,
+    },
+    passengers: [
+      {
+        user_id: mockUser.id,
+        seat_position: 2,
+        full_name: mockUser.full_name,
+        avatar_url: null,
+      },
+    ],
+  }
+
+  await mockAuthenticatedApi(page, { ride: ownerPassengerRide, rides: [ownerPassengerRide] })
+  await page.goto('/rides/ride-1')
+  
+  // Owner cannot remove themselves from their own ride
+  const ownerPassengerRow = page.locator('li').filter({ hasText: 'Majitel' })
+  const removeBtn = ownerPassengerRow.locator('button.button-danger')
+  await expect(removeBtn).toBeDisabled()
+  await expect(removeBtn).toHaveAttribute('title', 'Majitel nemůže být odebrán ze své jízdy.')
 })
 
 test.describe('invitation edge cases', () => {
