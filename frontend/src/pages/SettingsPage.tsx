@@ -43,6 +43,14 @@ export default function SettingsPage() {
   const [showRevokedSessions, setShowRevokedSessions] = useState(false)
   const [isCompactMobile, setIsCompactMobile] = useState(false)
   const [socialExpanded, setSocialExpanded] = useState(true)
+  const [anonymizeExports, setAnonymizeExports] = useState<boolean>(() => {
+    return localStorage.getItem('sitzy_anonymize_exports') !== 'false';
+  })
+  const handleAnonymizeExportsChange = (checked: boolean) => {
+    setAnonymizeExports(checked)
+    localStorage.setItem('sitzy_anonymize_exports', checked ? 'true' : 'false')
+    toast.success(checked ? 'Anonymizace exportů byla zapnuta.' : 'Anonymizace exportů byla vypnuta.')
+  }
   const deleteDialogRef = useRef<HTMLDialogElement>(null)
   const confirmDialogRef = useRef<HTMLDialogElement>(null)
   const [confirmConfig, setConfirmConfig] = useState<{
@@ -455,6 +463,27 @@ export default function SettingsPage() {
               Podle systému
             </button>
           </div>
+        </div>
+
+        <div className="settings-section p-4 sm:p-6">
+          <div className="settings-section-header">
+            <h2 className="settings-section-title">Soukromí a exporty</h2>
+          </div>
+          <div className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              id="anonymize-exports"
+              checked={anonymizeExports}
+              onChange={(e) => handleAnonymizeExportsChange(e.target.checked)}
+              className="w-4 h-4 rounded text-accent focus:ring-accent border-zinc-300 dark:border-zinc-700 hover:cursor-pointer"
+            />
+            <label htmlFor="anonymize-exports" className="text-sm font-medium hover:cursor-pointer">
+              Anonymizovat exporty (výchozí)
+            </label>
+          </div>
+          <p className="text-xs text-secondary mt-2">
+            Při zapnutí budou exportované karty a soubory JSON standardně skrývat jména a avatary účastníků. Nastavení lze změnit i přímo u konkrétního exportu.
+          </p>
         </div>
 
         <div className="settings-section p-4 sm:p-6 border-2 border-red-500/20">
