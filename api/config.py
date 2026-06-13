@@ -40,6 +40,8 @@ class Settings(BaseSettings):
 
     # CORS
     frontend_origin: str = Field(..., validation_alias="FRONTEND_ORIGIN", min_length=1)
+    # Origin lockdown (Cloudflare Worker Secret)
+    worker_secret: str | None = Field(None, validation_alias="WORKER_SECRET")
     # Development-only feature flags
     demo_fixtures_enabled: bool = Field(False, validation_alias="DEMO_FIXTURES_ENABLED")
     demo_fixture_whitelist_emails: str = Field(

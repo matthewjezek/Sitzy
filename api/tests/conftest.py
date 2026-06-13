@@ -30,6 +30,7 @@ os.environ.setdefault("ACCESS_TOKEN_EXPIRE_MINUTES", "15")
 os.environ.setdefault("REFRESH_TOKEN_EXPIRE_DAYS", "7")
 os.environ.setdefault("FRONTEND_ORIGIN", "http://localhost:5173")
 os.environ.setdefault("DATABASE_URL", "sqlite+pysqlite:///:memory:")
+os.environ["WORKER_SECRET"] = ""
 
 from api.database import get_db  # noqa: E402
 from api.deps import UserContext, get_current_user  # noqa: E402

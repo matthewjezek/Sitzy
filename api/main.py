@@ -47,6 +47,23 @@ app.state.limiter = limiter
 
 
 @app.middleware("http")
+async def verify_worker_secret_middleware(
+    request: Request,
+    call_next: Callable[[Request], Awaitable[Response]],
+) -> Response:
+    """Verify requests include the secret header from Cloudflare Worker."""
+    if request.method == "OPTIONS":
+        return await call_next(request)
+
+    expected_secret = settings.worker_secret
+    if expected_secret:
+        secret = request.headers.get("x-worker-secret")
+        if secret != expected_secret:
+            return Response("Forbidden", status_code=403)
+    return await call_next(request)
+
+
+@app.middleware("http")
 async def logging_middleware(
     request: Request,
     call_next: Callable[[Request], Awaitable[Response]],
