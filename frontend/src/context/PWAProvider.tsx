@@ -28,7 +28,7 @@ export const PWAProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       console.error('Error registering PWA service worker:', err);
       setError('Failed to register PWA updates');
     },
-    onRegisteredSW(swUrl, r) {
+    onRegisteredSW(_swUrl, r) {
       if (r) {
         setRegistration(r);
       }
