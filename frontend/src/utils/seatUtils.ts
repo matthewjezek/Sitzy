@@ -35,3 +35,19 @@ export function getSeatPositionLabel(layout: string, position: number): string {
       return `pozice ${position}`;
   }
 }
+
+export function mapCarLayoutForSeatRenderer(layout: string | undefined): string {
+  const normalized = layout?.toLowerCase() ?? ''
+  if (normalized.includes('coupe') || normalized.includes('kup')) return 'TRAPAQ'
+  if (normalized.includes('minivan')) return 'PRAQ'
+  if (normalized.includes('praq')) return 'PRAQ'
+  if (normalized.includes('trapaq')) return 'TRAPAQ'
+  return 'SEDAQ'
+}
+
+export function getSeatCapacity(layout: string | undefined): number {
+  const normalized = layout?.toLowerCase() ?? ''
+  if (normalized.includes('coupe') || normalized.includes('kup') || normalized.includes('trapaq')) return 2
+  if (normalized.includes('minivan') || normalized.includes('praq')) return 7
+  return 4
+}

@@ -15,8 +15,6 @@ import {
 } from 'react-icons/fi'
 import { BiCar } from 'react-icons/bi'
 import { toast } from 'react-toastify'
-import logoLight from '../assets/sitzy_logo_full.svg'
-import logoDark from '../assets/sitzy_logo_full_dark.svg'
 import { formatLocalDateTime } from '../utils/datetime'
 import instance from '../api/axios'
 import { useRide } from '../hooks/useRide'
@@ -25,6 +23,8 @@ import { useAuth } from '../hooks/useAuth'
 import type { PassengerOut } from '../types/models'
 import { inviteSchema, type InviteFormValues } from '../utils/validation'
 import SeatRenderer from '../components/SeatRenderer'
+import { RideSummaryCard } from '../components/RideSummaryCard'
+import { mapCarLayoutForSeatRenderer, getSeatCapacity } from '../utils/seatUtils'
 import { SharePreset } from '../components/SharePreset'
 import { generateSharePayload, type SharePresetId } from '../utils/sharePresets'
 import type { SeatData } from '../components/SeatRenderer'
@@ -395,7 +395,7 @@ export default function RideDetailPage() {
     confirmDialogRef.current?.close()
   }
   const [finishingInvite, setFinishingInvite] = useState(false)
-  const [storyAnonymized, setStoryAnonymized] = useState(true)
+  const [storyAnonymized, setStoryAnonymized] = useState(() => localStorage.getItem('sitzy_anonymize_exports') !== 'false')
   const [exportingImage, setExportingImage] = useState(false)
   const [exportingJson, setExportingJson] = useState(false)
   const storyCardRef = useRef<HTMLDivElement | null>(null)
@@ -488,22 +488,6 @@ export default function RideDetailPage() {
     )
   }
 
-  const mapCarLayoutForSeatRenderer = (layout: string | undefined): string => {
-    const normalized = layout?.toLowerCase() ?? ''
-    if (normalized.includes('coupe') || normalized.includes('kup')) return 'TRAPAQ'
-    if (normalized.includes('minivan')) return 'PRAQ'
-    if (normalized.includes('praq')) return 'PRAQ'
-    if (normalized.includes('trapaq')) return 'TRAPAQ'
-    return 'SEDAQ'
-  }
-
-  const getSeatCapacity = (layout: string | undefined): number => {
-    const normalized = layout?.toLowerCase() ?? ''
-    if (normalized.includes('coupe') || normalized.includes('kup') || normalized.includes('trapaq')) return 2
-    if (normalized.includes('minivan') || normalized.includes('praq')) return 7
-    return 4
-  }
-
   const clearInviteQueryParam = () => {
     const next = new URLSearchParams(searchParams)
     next.delete('invite')
@@ -553,25 +537,6 @@ export default function RideDetailPage() {
       }))
   }, [ride?.passengers, storyAnonymized])
 
-  const storySeatData = useMemo(() => {
-    return (ride?.passengers ?? []).map((passenger) => ({
-      position: passenger.seat_position,
-      user_name: storyAnonymized ? undefined : passenger.full_name ?? undefined,
-      avatar_url: storyAnonymized ? undefined : (passenger.avatar_url ?? undefined),
-      occupied: true,
-    }))
-  }, [ride?.passengers, storyAnonymized])
-
-  const storyPeople = useMemo(() => {
-    const driver = {
-      id: 'driver',
-      seat: 1,
-      name: storyAnonymized ? 'Řidič' : storyDriverName,
-      avatar: storyAnonymized ? null : (ride?.driver?.avatar_url ?? null),
-      isDriver: true,
-    }
-    return [driver, ...storyPassengers]
-  }, [ride?.driver?.avatar_url, storyDriverName, storyAnonymized, storyPassengers])
 
   const [isWide, setIsWide] = useState(typeof window !== 'undefined' ? window.innerWidth >= 1024 : false)
 
@@ -844,85 +809,12 @@ export default function RideDetailPage() {
           </div>
 
           <div className="story-card-wrapper">
-            <div ref={storyCardRef} className="story-card" aria-label="Náhled sdílené karty">
-              <div className="story-card-top">
-                  <div className="story-card-brand">
-                    <img src={logoLight} alt="Sitzy" className="logo logo-light story-card-brand-logo h-4" />
-                    <img src={logoDark} alt="Sitzy" className="logo logo-dark story-card-brand-logo h-4" />
-                  </div>
-                <span className="story-card-chip">
-                  {storyAnonymized ? 'Anonymizováno' : 'Sdílení s údaji'}
-                </span>
-              </div>
-
-              <div className="story-card-heading">
-                <p className="story-card-label">Cíl jízdy</p>
-                <h3 className="story-card-title">{ride.destination}</h3>
-              </div>
-
-              <div className="story-card-meta">
-                <div className="story-meta-item">
-                  <FiClock size={12} aria-hidden="true" />
-                  <span>{formatLocalDateTime(ride.departure_time)}</span>
-                </div>
-                <div className="story-meta-item">
-                  <BiCar size={12} aria-hidden="true" />
-                  <span>{ride.car?.name ?? 'Auto'} • {ride.car?.layout ?? 'Layout'}</span>
-                </div>
-                <div className="story-meta-item">
-                  <span>{occupiedCount}/{seatCapacity} obsazeno</span>
-                </div>
-              </div>
-
-              <div className="story-seat-stage">
-                <SeatRenderer
-                  layout={seatRendererLayout}
-                  seats={storySeatData}
-                  ownerName={storyAnonymized ? 'Řidič' : storyDriverName}
-                  driverAvatarUrl={storyAnonymized ? null : (ride?.driver?.avatar_url ?? null)}
-                  mode="display"
-                  orientation="landscape"
-                  showHeader={false}
-                  showLegend={false}
-                  compact={true}
-                  className="story-seat-renderer"
-                />
-              </div>
-
-              <div className="story-people">
-                {storyPeople.slice(0, storyPeople.length > 4 ? 3 : 4).map((person) => (
-                  <div key={person.id} className={`story-person ${person.isDriver ? 'story-person-driver' : ''}`}>
-                    <div className="story-person-avatar" aria-hidden="true">
-                      {person.avatar ? (
-                        <img src={person.avatar} alt="" crossOrigin="anonymous" />
-                      ) : (
-                        <span>{person.name.slice(0, 1).toUpperCase()}</span>
-                      )}
-                    </div>
-                    <div className="story-person-info">
-                      <span className="story-person-name">{person.name}</span>
-                      <span className="story-person-seat">Sedadlo {person.seat}</span>
-                    </div>
-                  </div>
-                ))}
-                {storyPeople.length > 4 && (
-                  <div className="story-person">
-                    <div className="story-person-avatar" aria-hidden="true">
-                      <span>+{storyPeople.length - 3}</span>
-                    </div>
-                    <div className="story-person-info">
-                      <span className="story-person-name">Další</span>
-                      <span className="story-person-seat">pasažéři</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="story-card-footer">
-                <span>Vygenerováno {formatLocalDateTime(new Date().toISOString())}</span>
-                <span className="story-card-watermark">Sitzy Demo</span>
-              </div>
-            </div>
+            <RideSummaryCard
+              ref={storyCardRef}
+              ride={ride}
+              anonymized={storyAnonymized}
+              watermarkText="Sitzy Demo"
+            />
           </div>
 
           <div className="flex flex-wrap justify-end gap-2">
