@@ -12,6 +12,7 @@ import { DeleteDialog, ConfirmDialog } from '../components/Dialog';
 import { useAuth } from '../hooks/useAuth';
 import { usePWAUpdate } from '../hooks/usePWAUpdate';
 import type { SocialDashboard, SocialSessionInfo } from '../types/models';
+import pkg from '../../package.json';
 
 function SettingsSkeleton() {
   return (
@@ -416,11 +417,16 @@ export default function SettingsPage() {
 
             {import.meta.env.MODE === 'production' && isPWAInstalled && (
               <div className="settings-section p-4 sm:p-6">
-                <div className="settings-section-header">
-                  <h2 className="settings-section-title">Aktualizace aplikace</h2>
-                  <p className="text-sm text-secondary mt-1">
-                    Aplikace se automaticky aktualizuje na pozadí.
-                  </p>
+                <div className="settings-section-header flex items-start justify-between gap-4">
+                  <div>
+                    <h2 className="settings-section-title">Aktualizace aplikace</h2>
+                    <p className="text-sm text-secondary mt-1">
+                      Aplikace se automaticky aktualizuje na pozadí.
+                    </p>
+                  </div>
+                  <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-secondary border theme-border shrink-0">
+                    Verze {pkg.version}
+                  </span>
                 </div>
 
                 {error && (
