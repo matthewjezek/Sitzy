@@ -730,3 +730,32 @@ def test_unlink_provider_rejects_when_only_provider_left(fake_user_context):
 
     assert response.status_code == 409
     assert response.json()["detail"] == "Cannot unlink the only login provider."
+
+
+def test_revoke_other_sessions(fake_user_context):
+    session1 = SimpleNamespace(
+        id=uuid4(),
+        user_id=fake_user_context.user.id,
+        revoked_at=None,
+    )
+    session2 = SimpleNamespace(
+        id=fake_user_context.session_id,
+        user_id=fake_user_context.user.id,
+        revoked_at=None,
+    )
+
+    # query will return session1 (the other session)
+    fake_db = FakeDB(query_results={SocialSession: FakeQuery(all_result=[session1])})
+    client = create_client(
+        router=auth.router,
+        prefix="/auth",
+        fake_db=fake_db,
+        current_user=fake_user_context,
+    )
+
+    response = client.post("/auth/social/sessions/revoke-others")
+
+    assert response.status_code == 204
+    assert session1.revoked_at is not None
+    assert session2.revoked_at is None
+    assert fake_db.commit_called is True
