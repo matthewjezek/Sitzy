@@ -56,7 +56,7 @@ async def verify_worker_secret_middleware(
         return await call_next(request)
 
     expected_secret = settings.worker_secret
-    if expected_secret:
+    if expected_secret and settings.environment == "production":
         secret = request.headers.get("x-worker-secret")
         if secret != expected_secret:
             return Response("Forbidden", status_code=403)

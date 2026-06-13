@@ -20,8 +20,9 @@ def test_worker_secret_middleware_when_disabled(
 def test_worker_secret_middleware_when_enabled_and_secret_matches(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Test that if WORKER_SECRET is configured, requests with correct x-worker-secret header pass through."""
+    """Test that if WORKER_SECRET is configured and environment is production, requests with correct x-worker-secret header pass through."""
     monkeypatch.setattr(settings, "worker_secret", "test-secret-value-123")
+    monkeypatch.setattr(settings, "environment", "production")
 
     client = TestClient(app)
     response = client.get(
@@ -34,8 +35,9 @@ def test_worker_secret_middleware_when_enabled_and_secret_matches(
 def test_worker_secret_middleware_when_enabled_and_secret_mismatches(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Test that if WORKER_SECRET is configured, requests with wrong or missing x-worker-secret header are rejected with 403."""
+    """Test that if WORKER_SECRET is configured and environment is production, requests with wrong or missing x-worker-secret header are rejected with 403."""
     monkeypatch.setattr(settings, "worker_secret", "test-secret-value-123")
+    monkeypatch.setattr(settings, "environment", "production")
 
     client = TestClient(app)
     # Missing header
@@ -52,8 +54,9 @@ def test_worker_secret_middleware_when_enabled_and_secret_mismatches(
 def test_worker_secret_middleware_bypasses_options(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Test that OPTIONS requests bypass the x-worker-secret check even if WORKER_SECRET is enabled."""
+    """Test that OPTIONS requests bypass the x-worker-secret check even if WORKER_SECRET is enabled and environment is production."""
     monkeypatch.setattr(settings, "worker_secret", "test-secret-value-123")
+    monkeypatch.setattr(settings, "environment", "production")
 
     client = TestClient(app)
     response = client.options("/alive")
