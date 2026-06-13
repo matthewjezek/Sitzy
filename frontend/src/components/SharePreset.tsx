@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react"
 import { FaXTwitter, FaFacebook, FaWhatsapp } from "react-icons/fa6"
-import { FiDownload, FiFileText, FiShare2, FiX } from "react-icons/fi"
+import { FiDownload, FiFileText, FiShare2, FiX, FiLink } from "react-icons/fi"
 import { toast } from "react-toastify"
 import { useNativeShare } from "../hooks/useNativeShare"
 import { 
@@ -80,10 +80,26 @@ export const ShareButtonGroup: React.FC<{
       url: getWhatsAppShareUrl(waText, waUrl),
       color: 'hover:border-green-200 dark:hover:border-green-900/50 hover:text-green-500',
     },
+    {
+      label: 'Kopírovat',
+      icon: <FiLink size={20} />,
+      url: '#',
+      color: 'hover:border-zinc-300 dark:hover:border-zinc-700 hover:text-indigo-600',
+      onClick: (e: React.MouseEvent) => {
+        e.preventDefault()
+        navigator.clipboard.writeText(xUrl)
+          .then(() => {
+            toast.success('Odkaz na cestu byl zkopírován do schránky!')
+          })
+          .catch((err) => {
+            console.error('Chyba při kopírování:', err)
+          })
+      }
+    },
   ]
 
   return (
-    <div className="grid grid-cols-4 gap-2 py-4">
+    <div className="grid grid-cols-5 gap-1.5 py-4">
       {shareLinks.map((link) => (
         <a
           key={link.label}
@@ -91,7 +107,7 @@ export const ShareButtonGroup: React.FC<{
           target="_blank"
           rel="noopener noreferrer"
           onClick={link.onClick}
-          className={`flex flex-col items-center gap-2 p-2.5 rounded-xl border border-zinc-100 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/30 transition-all duration-200 text-zinc-500 dark:text-zinc-400 ${link.color}`}
+          className={`flex flex-col items-center gap-1.5 p-1.5 rounded-xl border border-zinc-100 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/30 transition-all duration-200 text-zinc-500 dark:text-zinc-400 ${link.color}`}
           aria-label={`Sdílet na ${link.label}`}
         >
           <span className="text-zinc-800 dark:text-zinc-200 transition-colors">
