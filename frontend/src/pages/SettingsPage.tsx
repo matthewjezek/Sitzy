@@ -41,8 +41,35 @@ export default function SettingsPage() {
   const [busySessionId, setBusySessionId] = useState<string | null>(null)
   const [busyProvider, setBusyProvider] = useState<string | null>(null)
   const [showRevokedSessions, setShowRevokedSessions] = useState(false)
-  const [isCompactMobile, setIsCompactMobile] = useState(false)
-  const [socialExpanded, setSocialExpanded] = useState(true)
+  const [activeTab, setActiveTab] = useState<'profile' | 'social' | 'sessions' | 'privacy' | 'dev'>('profile')
+  const [revokingOthers, setRevokingOthers] = useState(false)
+  const [showDemoUI, setShowDemoUIState] = useState(() => localStorage.getItem('sitzy_show_demo_ui') !== 'false')
+  const handleToggleDemoUI = (checked: boolean) => {
+    setShowDemoUIState(checked)
+    localStorage.setItem('sitzy_show_demo_ui', checked ? 'true' : 'false')
+    window.dispatchEvent(new Event('sitzy:show_demo_ui_changed'))
+    toast.success(checked ? 'Demo banner byl zapnut.' : 'Demo banner byl skryt.')
+  }
+  const handleRevokeOthers = () => {
+    showConfirm(
+      'Odhlásit ostatní zařízení',
+      'Opravdu chcete zneplatnit všechny ostatní relace a odhlásit se na ostatních zařízeních?',
+      async () => {
+        try {
+          setRevokingOthers(true)
+          await instance.post('/auth/social/sessions/revoke-others')
+          toast.success('Ostatní relace byly zneplatněny.')
+          await refreshSocialDashboard()
+        } catch {
+          toast.error('Nepodařilo se zneplatnit ostatní relace.')
+        } finally {
+          setRevokingOthers(false)
+        }
+      },
+      'warning',
+      'Odhlásit ostatní'
+    )
+  }
   const [anonymizeExports, setAnonymizeExports] = useState<boolean>(() => {
     return localStorage.getItem('sitzy_anonymize_exports') !== 'false';
   })
@@ -102,19 +129,7 @@ export default function SettingsPage() {
     loadDashboard()
   }, [])
 
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(max-width: 639px)')
-    const syncCompactMode = () => setIsCompactMobile(mediaQuery.matches)
 
-    syncCompactMode()
-    mediaQuery.addEventListener('change', syncCompactMode)
-
-    return () => mediaQuery.removeEventListener('change', syncCompactMode)
-  }, [])
-
-  useEffect(() => {
-    setSocialExpanded(!isCompactMobile)
-  }, [isCompactMobile])
 
   const formatDate = (value: string | null) => {
     if (!value) return '—'
@@ -258,6 +273,18 @@ export default function SettingsPage() {
 
   if (loading) return <SettingsSkeleton />
 
+  const isDevMode = import.meta.env.MODE === 'development';
+  type TabId = 'profile' | 'social' | 'sessions' | 'privacy' | 'dev';
+  const tabs: { id: TabId; label: string }[] = [
+    { id: 'profile', label: 'Profil' },
+    { id: 'social', label: 'Propojení' },
+    { id: 'sessions', label: 'Aktivní relace' },
+    { id: 'privacy', label: 'Soukromí' }
+  ];
+  if (isDevMode) {
+    tabs.push({ id: 'dev', label: 'Vývoj / Tester' });
+  }
+
   return (
     <div className="page-container flex-col pt-24 pb-10">
       <div className="page-content max-w-3xl mx-auto px-3 sm:px-6 flex flex-col gap-4 sm:gap-6">
@@ -287,56 +314,168 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <div className="settings-section p-4 sm:p-6">
-          <div className="settings-section-header">
-            <h2 className="settings-section-title">Profil</h2>
-          </div>
-          <div className="flex items-center gap-3 sm:gap-4">
-            {user?.avatar_url ? (
-              <img
-                src={user.avatar_url}
-                alt="Avatar"
-                referrerPolicy="no-referrer"
-                className="w-16 h-16 rounded-full object-cover"
-              />
-            ) : (
-              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full initials-avatar flex items-center justify-center text-xl sm:text-2xl font-bold">
-                {user?.full_name?.[0]?.toUpperCase() ?? '?'}
-              </div>
-            )}
-            <div className="min-w-0">
-              <p className="font-semibold text-base sm:text-lg truncate">{user?.full_name ?? 'Neznámý uživatel'}</p>
-              <p className="text-sm text-secondary truncate">{user?.email ?? '—'}</p>
-              {!user?.email && (
-                <p className="text-xs text-secondary mt-1 leading-5">
-                  Primární identita je vedená přes poskytovatele, ne přes e-mail.
-                </p>
-              )}
-            </div>
-          </div>
+        <div className="flex border-b theme-divider overflow-x-auto scrollbar-none gap-2">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-4 py-2.5 border-b-2 font-semibold text-sm whitespace-nowrap transition-all duration-200 hover:cursor-pointer ${
+                activeTab === tab.id
+                  ? 'border-accent text-accent'
+                  : 'border-transparent text-secondary hover:text-primary'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
-        <div className="settings-section p-4 sm:p-6">
-          <button
-            type="button"
-            className="settings-section-header w-full justify-between text-left"
-            onClick={() => setSocialExpanded((value) => !value)}
-            aria-expanded={socialExpanded}
-          >
-            <div>
-              <h2 className="settings-section-title">Sociální účty a relace</h2>
+        {activeTab === 'profile' && (
+          <>
+            <div className="settings-section p-4 sm:p-6">
+              <div className="settings-section-header">
+                <h2 className="settings-section-title">Profil</h2>
+              </div>
+              <div className="flex items-center gap-3 sm:gap-4">
+                {user?.avatar_url ? (
+                  <img
+                    src={user.avatar_url}
+                    alt="Avatar"
+                    referrerPolicy="no-referrer"
+                    className="w-16 h-16 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full initials-avatar flex items-center justify-center text-xl sm:text-2xl font-bold">
+                    {user?.full_name?.[0]?.toUpperCase() ?? '?'}
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <p className="font-semibold text-base sm:text-lg truncate">{user?.full_name ?? 'Neznámý uživatel'}</p>
+                  <p className="text-sm text-secondary truncate">{user?.email ?? '—'}</p>
+                  {!user?.email && (
+                    <p className="text-xs text-secondary mt-1 leading-5">
+                      Primární identita je vedená přes poskytovatele, ne přes e-mail.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="settings-section p-4 sm:p-6">
+              <div className="settings-section-header">
+                <h2 className="settings-section-title">Motiv</h2>
+              </div>
+              <div className="setting-value-group justify-start">
+                <button
+                  type="button"
+                  onClick={() => handleThemeChange('light')}
+                  className={`setting-value-option ${themePreference === 'light' ? 'setting-value-option-active' : ''}`}
+                  aria-pressed={themePreference === 'light'}
+                >
+                  Světlý
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleThemeChange('dark')}
+                  className={`setting-value-option ${themePreference === 'dark' ? 'setting-value-option-active' : ''}`}
+                  aria-pressed={themePreference === 'dark'}
+                >
+                  Tmavý
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleThemeChange('system')}
+                  className={`setting-value-option ${themePreference === 'system' ? 'setting-value-option-active' : ''}`}
+                  aria-pressed={themePreference === 'system'}
+                >
+                  Podle systému
+                </button>
+              </div>
+            </div>
+
+            <div className="settings-section p-4 sm:p-6">
+              <div className="settings-section-header">
+                <h2 className="settings-section-title">Dokumenty</h2>
+              </div>
+              <div className="flex flex-col gap-2">
+                <Link
+                  to="/privacy"
+                  className="text-sm text-link"
+                >
+                  Zásady ochrany osobních údajů
+                </Link>
+                <Link
+                  to="/terms"
+                  className="text-sm text-link"
+                >
+                  Podmínky použití
+                </Link>
+              </div>
+            </div>
+
+            {import.meta.env.MODE === 'production' && isPWAInstalled && (
+              <div className="settings-section p-4 sm:p-6">
+                <div className="settings-section-header">
+                  <h2 className="settings-section-title">Aktualizace aplikace</h2>
+                  <p className="text-sm text-secondary mt-1">
+                    Aplikace se automaticky aktualizuje na pozadí.
+                  </p>
+                </div>
+
+                {error && (
+                  <div className="text-sm text-error mt-3">
+                    {error}
+                  </div>
+                )}
+
+                {isUpdateAvailable ? (
+                  <div className="mt-4">
+                    <button
+                      type="button"
+                      onClick={applyUpdate}
+                      className="button-primary w-full"
+                    >
+                      Použít aktualizaci a restartovat aplikaci
+                    </button>
+                  </div>
+                ) : (
+                  <p className="text-xs text-secondary mt-3">
+                    Žádná aktualizace není momentálně k dispozici.
+                  </p>
+                )}
+              </div>
+            )}
+
+            <div className="settings-section p-4 sm:p-6 border-2 border-red-500/20">
+              <div className="settings-section-header">
+                <h2 className="settings-section-title text-danger">Nebezpečná zóna</h2>
+              </div>
+              <p className="text-sm text-secondary mb-3">
+                Smazání účtu je nevratné. Budou smazána všechna vaše auta, jízdy, pozvánky a účast v jízdách.
+              </p>
+              <button
+                type="button"
+                onClick={toggleDeleteDialog}
+                className="button-danger w-full"
+              >
+                Smazat účet trvale
+              </button>
+            </div>
+          </>
+        )}
+
+        {activeTab === 'social' && (
+          <div className="settings-section p-4 sm:p-6">
+            <div className="settings-section-header">
+              <h2 className="settings-section-title">Připojení poskytovatelé</h2>
               <p className="text-sm text-secondary mt-1">
-                {isCompactMobile ? 'Klepněte pro zobrazení detailů.' : 'Připojení poskytovatelé, aktivní relace a auditní stopa.'}
+                Správa propojení se sociálními sítěmi a auditní stopa integrace.
               </p>
             </div>
-            <span className="text-xs text-link font-medium whitespace-nowrap">
-              {socialExpanded ? 'Skrýt' : 'Zobrazit'}
-            </span>
-          </button>
 
-          {socialExpanded && (
             <div className="mt-4 flex flex-col gap-4">
-              {socialLoading && <p className="text-sm text-secondary">Načítám sociální dashboard...</p>}
+              {socialLoading && <p className="text-sm text-secondary">Načítám propojení...</p>}
 
               {!socialLoading && socialDashboard && socialDashboard.accounts.length === 0 && (
                 <p className="text-sm text-secondary">Žádný připojený poskytovatel.</p>
@@ -356,8 +495,9 @@ export default function SettingsPage() {
                       </p>
                     </div>
                     <button
+                      type="button"
                       onClick={() => handleUnlinkProvider(account.provider)}
-                      className="setting-value-option shrink-0 w-full sm:w-auto"
+                      className="setting-value-option shrink-0 w-full sm:w-auto font-medium"
                       disabled={busyProvider === account.provider}
                     >
                       {busyProvider === account.provider ? 'Odpojuji...' : 'Odpojit'}
@@ -366,10 +506,52 @@ export default function SettingsPage() {
                 </div>
               ))}
 
+              {!socialLoading && socialDashboard && socialDashboard.events.length > 0 && (
+                <div className="pt-4 border-t theme-divider">
+                  <p className="text-sm font-medium mb-2">Audit integrace (posledních 30 událostí)</p>
+                  <div className="flex flex-col gap-1 max-h-60 overflow-auto pr-1">
+                    {socialDashboard.events.map((event, idx) => (
+                      <p key={`${event.created_at}-${event.event}-${idx}`} className="text-xs text-secondary">
+                        {formatDate(event.created_at)} · {event.provider ?? 'oauth'} · {event.event}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'sessions' && (
+          <div className="settings-section p-4 sm:p-6">
+            <div className="settings-section-header">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <h2 className="settings-section-title">Aktivní relace</h2>
+                  <p className="text-sm text-secondary mt-1">
+                    Seznam přihlášených zařízení a relací k tomuto účtu.
+                  </p>
+                </div>
+                {!socialLoading && socialDashboard && activeSessionCount > 1 && (
+                  <button
+                    type="button"
+                    onClick={handleRevokeOthers}
+                    disabled={revokingOthers}
+                    className="button-danger text-xs font-semibold py-1.5 px-3 rounded-lg shrink-0"
+                  >
+                    {revokingOthers ? 'Odhlašuji...' : 'Odhlásit ostatní zařízení'}
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-4 flex flex-col gap-4">
+              {socialLoading && <p className="text-sm text-secondary">Načítám relace...</p>}
+
               {!socialLoading && socialDashboard && socialDashboard.sessions.length > 0 && (
-                <div className="pt-2 border-t theme-divider">
+                <div>
                   <div className="mb-2 flex items-center justify-between gap-2">
-                    <p className="text-sm font-medium">Relace</p>
+                    <p className="text-sm font-medium">Seznam relací</p>
                     {hiddenRevokedCount > 0 && (
                       <button
                         type="button"
@@ -391,7 +573,7 @@ export default function SettingsPage() {
                         key={session.id}
                         className={`rounded-xl border p-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4 ${
                           session.is_current
-                            ? 'session-current'
+                            ? 'session-current font-semibold'
                             : 'theme-border theme-surface-muted'
                         }`}
                       >
@@ -401,11 +583,12 @@ export default function SettingsPage() {
                           </p>
                           <p className="text-xs text-secondary">Vytvořeno: {formatDate(session.created_at)}</p>
                           <p className="text-xs text-secondary">Platnost do: {formatDate(session.expires_at)}</p>
-                          <p className="text-xs text-secondary">UA: {session.user_agent ?? 'Neznámé zařízení'}</p>
+                          <p className="text-xs text-secondary truncate max-w-md">UA: {session.user_agent ?? 'Neznámé zařízení'}</p>
                         </div>
                         <button
+                          type="button"
                           onClick={() => handleRevokeSession(session)}
-                          className="setting-value-option w-full sm:w-auto"
+                          className="setting-value-option w-full sm:w-auto text-xs"
                           disabled={Boolean(session.revoked_at) || busySessionId === session.id}
                         >
                           {session.revoked_at
@@ -419,166 +602,85 @@ export default function SettingsPage() {
                   </div>
                 </div>
               )}
-
-              {!socialLoading && socialDashboard && socialDashboard.events.length > 0 && (
-                <div className="pt-2 border-t theme-divider">
-                  <p className="text-sm font-medium mb-2">Audit integrace (posledních 30 událostí)</p>
-                  <div className="flex flex-col gap-1 max-h-44 overflow-auto pr-1">
-                    {socialDashboard.events.map((event, idx) => (
-                      <p key={`${event.created_at}-${event.event}-${idx}`} className="text-xs text-secondary">
-                        {formatDate(event.created_at)} · {event.provider ?? 'oauth'} · {event.event}
-                      </p>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
-        <div className="settings-section p-4 sm:p-6">
-          <div className="settings-section-header">
-            <h2 className="settings-section-title">Motiv</h2>
-          </div>
-          <div className="setting-value-group justify-start">
-            <button
-              onClick={() => handleThemeChange('light')}
-              className={`setting-value-option ${themePreference === 'light' ? 'setting-value-option-active' : ''}`}
-              aria-pressed={themePreference === 'light'}
-            >
-              Světlý
-            </button>
-            <button
-              onClick={() => handleThemeChange('dark')}
-              className={`setting-value-option ${themePreference === 'dark' ? 'setting-value-option-active' : ''}`}
-              aria-pressed={themePreference === 'dark'}
-            >
-              Tmavý
-            </button>
-            <button
-              onClick={() => handleThemeChange('system')}
-              className={`setting-value-option ${themePreference === 'system' ? 'setting-value-option-active' : ''}`}
-              aria-pressed={themePreference === 'system'}
-            >
-              Podle systému
-            </button>
-          </div>
-        </div>
-
-        <div className="settings-section p-4 sm:p-6">
-          <div className="settings-section-header">
-            <h2 className="settings-section-title">Soukromí a exporty</h2>
-          </div>
-          <div className="flex items-center gap-3">
-            <input
-              type="checkbox"
-              id="anonymize-exports"
-              checked={anonymizeExports}
-              onChange={(e) => handleAnonymizeExportsChange(e.target.checked)}
-              className="w-4 h-4 rounded text-accent focus:ring-accent border-zinc-300 dark:border-zinc-700 hover:cursor-pointer"
-            />
-            <label htmlFor="anonymize-exports" className="text-sm font-medium hover:cursor-pointer">
-              Anonymizovat exporty (výchozí)
-            </label>
-          </div>
-          <p className="text-xs text-secondary mt-2">
-            Při zapnutí budou exportované karty a soubory JSON standardně skrývat jména a avatary účastníků. Nastavení lze změnit i přímo u konkrétního exportu.
-          </p>
-        </div>
-
-        <div className="settings-section p-4 sm:p-6 border-2 border-red-500/20">
-          <div className="settings-section-header">
-            <h2 className="settings-section-title text-danger">Nebezpečná zóna</h2>
-          </div>
-          <p className="text-sm text-secondary mb-3">
-            Smazání účtu je nevratné. Budou smazána všechna vaše auta, jízdy, pozvánky a účast v jízdách.
-          </p>
-          <button
-            onClick={toggleDeleteDialog}
-            className="button-danger w-full"
-          >
-            Smazat účet trvale
-          </button>
-        </div>
-
-        <div className="settings-section p-4 sm:p-6">
-          <div className="settings-section-header">
-            <h2 className="settings-section-title">Dokumenty</h2>
-          </div>
-          <div className="flex flex-col gap-2">
-            <Link
-              to="/privacy"
-              className="text-sm text-link"
-            >
-              Zásady ochrany osobních údajů
-            </Link>
-            <Link
-              to="/terms"
-              className="text-sm text-link"
-            >
-              Podmínky použití
-            </Link>
-          </div>
-        </div>
-
-        {import.meta.env.MODE === 'production' && isPWAInstalled && (
+        {activeTab === 'privacy' && (
           <div className="settings-section p-4 sm:p-6">
             <div className="settings-section-header">
-              <h2 className="settings-section-title">Aktualizace aplikace</h2>
+              <h2 className="settings-section-title">Soukromí a exporty</h2>
               <p className="text-sm text-secondary mt-1">
-                Aplikace se automaticky aktualizuje na pozadí.
+                Konstrukce exportů a nastavení sdílení dat z jízd.
               </p>
             </div>
-
-            {error && (
-              <div className="text-sm text-error mt-3">
-                {error}
-              </div>
-            )}
-
-            {isUpdateAvailable ? (
-              <div className="mt-4">
-                <button
-                  onClick={applyUpdate}
-                  className="button-primary w-full"
-                >
-                  Použít aktualizaci a restartovat aplikaci
-                </button>
-              </div>
-            ) : (
-              <p className="text-xs text-secondary mt-3">
-                Žádná aktualizace není momentálně k dispozici.
-              </p>
-            )}
+            <div className="flex items-center gap-3 mt-4">
+              <input
+                type="checkbox"
+                id="anonymize-exports"
+                checked={anonymizeExports}
+                onChange={(e) => handleAnonymizeExportsChange(e.target.checked)}
+                className="w-4 h-4 rounded text-accent focus:ring-accent border-zinc-300 dark:border-zinc-700 hover:cursor-pointer"
+              />
+              <label htmlFor="anonymize-exports" className="text-sm font-medium hover:cursor-pointer">
+                Anonymizovat exporty (výchozí)
+              </label>
+            </div>
+            <p className="text-xs text-secondary mt-2">
+              Při zapnutí budou exportované karty a soubory JSON standardně skrývat jména a avatary účastníků. Nastavení lze změnit i přímo u konkrétního exportu.
+            </p>
           </div>
         )}
 
-        {import.meta.env.MODE === 'development' && (
+        {activeTab === 'dev' && import.meta.env.MODE === 'development' && (
           <div className="settings-section p-4 sm:p-6 border-dashed border-2 border-accent">
             <div className="settings-section-header">
-              <h2 className="settings-section-title">Development / Tester</h2>
+              <h2 className="settings-section-title">Vývojářské nástroje</h2>
+              <p className="text-sm text-secondary mt-1">
+                Nástroje pro prezentaci a simulaci dat (pouze vývojové prostředí).
+              </p>
             </div>
-            <p className="text-sm text-secondary mb-3">Nástroje pro generování a reset demo dat (pouze vývojové prostředí).</p>
-            <div className="flex flex-col gap-3">
-              <button
-                onClick={handleGenerateDemoData}
-                className="button-primary w-full"
-                disabled={demoBusy}
-              >
-                {demoBusy ? 'Probíhá...' : 'Vygenerovat demo data'}
-              </button>
-              <button
-                onClick={handleResetDemoData}
-                className="button-secondary w-full"
-                disabled={demoBusy}
-              >
-                {demoBusy ? 'Probíhá...' : 'Reset demo dat'}
-              </button>
+
+            <div className="mt-4 flex flex-col gap-4">
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id="toggle-demo-banner"
+                  checked={showDemoUI}
+                  onChange={(e) => handleToggleDemoUI(e.target.checked)}
+                  className="w-4 h-4 rounded text-accent focus:ring-accent border-zinc-300 dark:border-zinc-700 hover:cursor-pointer"
+                />
+                <label htmlFor="toggle-demo-banner" className="text-sm font-medium hover:cursor-pointer">
+                  Zobrazit demo banner v aplikaci
+                </label>
+              </div>
+              <p className="text-xs text-secondary">
+                Zobrazí nebo skryje žlutý pulsing banner „Vývoj / Test Mode“ v pravém dolním rohu obrazovky.
+              </p>
+
+              <div className="border-t theme-divider pt-4 flex flex-col gap-3">
+                <p className="text-sm font-medium">Generování testovacích dat</p>
+                <button
+                  type="button"
+                  onClick={handleGenerateDemoData}
+                  className="button-primary w-full"
+                  disabled={demoBusy}
+                >
+                  {demoBusy ? 'Probíhá...' : 'Vygenerovat demo data'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleResetDemoData}
+                  className="button-secondary w-full"
+                  disabled={demoBusy}
+                >
+                  {demoBusy ? 'Probíhá...' : 'Reset demo dat'}
+                </button>
+              </div>
             </div>
           </div>
         )}
 
-      
       <DeleteDialog 
         ref={deleteDialogRef} 
         toggle={toggleDeleteDialog}

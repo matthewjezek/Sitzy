@@ -481,6 +481,39 @@ def revoke_session_by_id(
         _clear_refresh_cookie(response)
 
 
+@router.post("/social/sessions/revoke-others", status_code=status.HTTP_204_NO_CONTENT)
+def revoke_other_sessions(
+    ctx: UserContext = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> None:
+    """Revoke all active sessions belonging to the current user except the current
+    session."""
+    sessions = (
+        db.query(SocialSession)
+        .filter(
+            SocialSession.user_id == ctx.user.id,
+            SocialSession.id != ctx.session_id,
+            SocialSession.revoked_at.is_(None),
+        )
+        .all()
+    )
+
+    revoked_count = 0
+    for session in sessions:
+        session.revoked_at = datetime.now(timezone.utc)
+        revoked_count += 1
+
+    if revoked_count > 0:
+        emit_integration_event(
+            event="social_sessions_revoked_others",
+            provider=None,
+            user_id=ctx.user.id,
+            metadata={"revoked_count": revoked_count, "via": "dashboard"},
+            db=db,
+        )
+        db.commit()
+
+
 @router.post(
     "/social/providers/{provider}/unlink", status_code=status.HTTP_204_NO_CONTENT
 )
