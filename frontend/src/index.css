@@ -3,10 +3,12 @@
 @layer base {
   html {
     background-color: #ffffff;
+    color-scheme: light;
   }
 
   html.dark {
     background-color: #0f172a;
+    color-scheme: dark;
   }
 
   body {
@@ -1054,6 +1056,7 @@
     background-color: #1f2937;
     border-color: rgba(115, 80, 242, 0.3);
     color: #f3f4f6;
+    color-scheme: dark;
   }
 
   .dark .form-input:focus {
