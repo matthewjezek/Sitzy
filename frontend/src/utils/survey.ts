@@ -38,3 +38,41 @@ export function completeTask(checkpointName: string) {
       console.error(`[Survey] Failed to save checkpoint '${checkpointName}':`, err)
     })
 }
+
+export async function startSurveySession(user: {
+  social_accounts?: Array<{ provider: string; social_id: string }>
+  full_name: string | null
+}) {
+  const token = localStorage.getItem('survey_token')
+  if (!token) {
+    console.debug('[Survey] startSurveySession skipped: no survey_token in localStorage.')
+    return
+  }
+
+  const activeAccount = user.social_accounts?.[0]
+  if (!activeAccount) {
+    console.debug('[Survey] startSurveySession skipped: no social accounts found.')
+    return
+  }
+
+  try {
+    const res = await fetch('/api/start-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        socialId: activeAccount.social_id,
+        platform: activeAccount.provider,
+        userName: user.full_name || 'Anonymní',
+        existingToken: token
+      })
+    })
+    if (!res.ok) {
+      throw new Error(`Edge returned status ${res.status}`)
+    }
+    const data = await res.json()
+    console.log('[Survey] Session successfully initialized in KV:', data)
+  } catch (err) {
+    console.error('[Survey] Failed to initialize survey session in KV:', err)
+  }
+}
+
