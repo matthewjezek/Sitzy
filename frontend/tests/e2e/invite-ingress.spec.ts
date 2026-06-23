@@ -45,6 +45,7 @@ test.describe('Invite ingress route /i/:inviteToken', () => {
     await mockAuthenticatedApi(page, {
       ride: {
         id: RIDE_ID,
+        car: null,
         car_id: 'car-1',
         car_driver_id: 'driver-1',
         driver_user_id: 'user-1',
