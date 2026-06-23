@@ -544,6 +544,18 @@ def unlink_provider(
             detail="Cannot unlink the only login provider.",
         )
 
+    current_session = (
+        db.query(SocialSession).filter(SocialSession.id == ctx.session_id).first()
+    )
+    if (
+        current_session
+        and current_session.social_account.provider.lower() == normalized_provider
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot unlink the provider you are currently logged in with.",
+        )
+
     account_to_unlink = next(
         (a for a in accounts if a.provider.lower() == normalized_provider), None
     )

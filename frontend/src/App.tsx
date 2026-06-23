@@ -29,6 +29,7 @@ const CarDetailPage = lazy(() => import('./pages/CarDetailPage'))
 const CreateCarPage = lazy(() => import('./pages/CreateCarPage'))
 const InviteEntryPage = lazy(() => import('./pages/InviteEntryPage'))
 const DashboardPage = lazy(() => import('./pages/DashboardPage'))
+const SurveyRedirectPage = lazy(() => import('./pages/SurveyRedirectPage'))
 
 const isDev = import.meta.env.MODE === 'development'
 
@@ -92,6 +93,7 @@ function AppRoutes() {
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/i/:inviteToken" element={<InviteEntryPage />} />
+        <Route path="/survey" element={<SurveyRedirectPage />} />
 
         <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
           {/* Dashboard */}
@@ -120,6 +122,25 @@ function AppRoutes() {
     </Suspense>
   )
 }
+
+// Handle survey token synchronously on load to ensure child components have access to it on first render
+const initSurveyToken = () => {
+  const params = new URLSearchParams(window.location.search)
+  const token = params.get('token')
+  if (token) {
+    if (window.location.hostname === '127.0.0.1') {
+      const newUrl = window.location.href.replace('127.0.0.1', 'localhost')
+      window.location.replace(newUrl)
+      return
+    }
+    localStorage.setItem('survey_token', token)
+    params.delete('token')
+    const newSearch = params.toString()
+    const newPath = window.location.pathname + (newSearch ? `?${newSearch}` : '')
+    window.history.replaceState({}, '', newPath)
+  }
+}
+initSurveyToken()
 
 function App() {
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>(() => resolveThemePreference(getThemePreference()))

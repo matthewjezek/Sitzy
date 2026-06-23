@@ -28,6 +28,7 @@ import { RideSummaryCard } from '../components/RideSummaryCard'
 import { mapCarLayoutForSeatRenderer, getSeatCapacity } from '../utils/seatUtils'
 import { SharePreset } from '../components/SharePreset'
 import { generateSharePayload, type SharePresetId } from '../utils/sharePresets'
+import { completeTask } from '../utils/survey'
 import type { SeatData } from '../components/SeatRenderer'
 import ErrorView from '../components/ErrorView'
 import { ConfirmDialog } from '../components/Dialog'
@@ -849,6 +850,7 @@ export default function RideDetailPage() {
               waText={buildSharePayload('messenger_whatsapp_text_first').text}
               waUrl={buildSharePayload('messenger_whatsapp_text_first').link}
               onGenerateBlob={generateStoryImageBlob}
+              onShare={() => completeTask('create_public_invite')}
             />
           </div>
         </div>

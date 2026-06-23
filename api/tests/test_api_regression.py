@@ -732,6 +732,35 @@ def test_unlink_provider_rejects_when_only_provider_left(fake_user_context):
     assert response.json()["detail"] == "Cannot unlink the only login provider."
 
 
+def test_unlink_provider_rejects_active_provider(fake_user_context):
+    account1 = SimpleNamespace(provider="facebook")
+    account2 = SimpleNamespace(provider="google")
+    session = SimpleNamespace(
+        id=fake_user_context.session_id,
+        social_account=account1,
+    )
+    fake_db = FakeDB(
+        query_results={
+            SocialAccount: FakeQuery(all_result=[account1, account2]),
+            SocialSession: FakeQuery(first_result=session),
+        }
+    )
+    client = create_client(
+        router=auth.router,
+        prefix="/auth",
+        fake_db=fake_db,
+        current_user=fake_user_context,
+    )
+
+    response = client.post("/auth/social/providers/facebook/unlink")
+
+    assert response.status_code == 400
+    assert (
+        response.json()["detail"]
+        == "Cannot unlink the provider you are currently logged in with."
+    )
+
+
 def test_revoke_other_sessions(fake_user_context):
     session1 = SimpleNamespace(
         id=uuid4(),

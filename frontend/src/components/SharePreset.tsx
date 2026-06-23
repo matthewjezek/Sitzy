@@ -25,6 +25,7 @@ interface SharePresetProps {
   waText: string
   waUrl: string
   onGenerateBlob?: () => Promise<Blob | null>
+  onShare?: () => void
 }
 
 export const ShareButtonGroup: React.FC<{
@@ -288,12 +289,16 @@ export const SharePreset: React.FC<SharePresetProps> = ({
   fbUrl,
   waText,
   waUrl,
-  onGenerateBlob
+  onGenerateBlob,
+  onShare
 }) => {
   const { isMobile, isSupported, share } = useNativeShare()
   const [modalOpen, setModalOpen] = useState(false)
 
   const handleShare = async () => {
+    if (onShare) {
+      onShare()
+    }
     if (isMobile && isSupported) {
       try {
         if (onGenerateBlob) {

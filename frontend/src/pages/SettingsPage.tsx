@@ -8,6 +8,7 @@ import {
   getThemePreference,
   type ThemePreference,
 } from '../utils/theme';
+import { completeTask } from '../utils/survey';
 import { DeleteDialog, ConfirmDialog } from '../components/Dialog';
 import { useAuth } from '../hooks/useAuth';
 import { usePWAUpdate } from '../hooks/usePWAUpdate';
@@ -38,6 +39,102 @@ export default function SettingsPage() {
   const navigate = useNavigate();
   const [themePreference, setThemePreference] = useState<ThemePreference>(() => getThemePreference())
   const [socialDashboard, setSocialDashboard] = useState<SocialDashboard | null>(null)
+
+  const modifySocialDashboardForSurvey = (data: SocialDashboard): SocialDashboard => {
+    if (!localStorage.getItem('survey_token')) return data
+
+    const cloned = JSON.parse(JSON.stringify(data)) as SocialDashboard
+
+    // 1. Session injection: if no mock revoked flag is set, inject a second session
+    const mockSessionRevoked = localStorage.getItem('survey_mock_session_revoked') === 'true'
+    const hasOtherSessions = cloned.sessions.some((s: SocialSessionInfo) => !s.is_current && !s.revoked_at)
+    if (!mockSessionRevoked && !hasOtherSessions) {
+      cloned.sessions.push({
+        id: 'mock-session-survey-other',
+        provider: cloned.accounts[0]?.provider === 'twitter' ? 'facebook' : 'twitter',
+        created_at: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
+        expires_at: new Date(Date.now() + 5 * 24 * 3600 * 1000).toISOString(),
+        revoked_at: null,
+        user_agent: 'Safari on iPhone (Simulated Study Session)',
+        is_current: false,
+      })
+    } else if (mockSessionRevoked) {
+      const mockSession = cloned.sessions.find((s: SocialSessionInfo) => s.id === 'mock-session-survey-other')
+      if (mockSession) {
+        mockSession.revoked_at = new Date().toISOString()
+      } else {
+        cloned.sessions.push({
+          id: 'mock-session-survey-other',
+          provider: cloned.accounts[0]?.provider === 'twitter' ? 'facebook' : 'twitter',
+          created_at: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
+          expires_at: new Date(Date.now() + 5 * 24 * 3600 * 1000).toISOString(),
+          revoked_at: new Date().toISOString(),
+          user_agent: 'Safari on iPhone (Simulated Study Session)',
+          is_current: false,
+        })
+      }
+    }
+
+    // Filter out accounts that have been marked as unlinked in survey mode
+    cloned.accounts = cloned.accounts.filter((acc: { provider: string }) => {
+      const val = localStorage.getItem(`survey_mock_${acc.provider.toLowerCase()}_unlinked`)
+      return !val || val === 'false'
+    })
+
+    // 2. Provider unlinking injection: if they only have 1 provider, inject a mock second provider
+    if (cloned.accounts.length === 1) {
+      const currentProvider = cloned.accounts[0].provider
+      const mockProvider = currentProvider.toLowerCase() === 'twitter' ? 'facebook' : 'twitter'
+      const mockProviderUnlinkedVal = localStorage.getItem(`survey_mock_${mockProvider}_unlinked`)
+      const mockProviderUnlinked = mockProviderUnlinkedVal && mockProviderUnlinkedVal !== 'false'
+
+      if (!mockProviderUnlinked) {
+        cloned.accounts.push({
+          provider: mockProvider,
+          social_id: `mock-${mockProvider}-id`,
+          linked_at: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
+          provider_email: `survey-participant@mock-${mockProvider}.com`,
+          has_real_email: true,
+          active_sessions: 1,
+          last_login_at: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
+        })
+
+        // Also push a linking event
+        cloned.events.unshift({
+          event: 'linked',
+          provider: mockProvider,
+          created_at: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
+          metadata: {},
+        })
+      }
+    }
+
+    // 3. Inject audit events for any unlinked providers
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith('survey_mock_') && key.endsWith('_unlinked')) {
+        const provider = key.substring('survey_mock_'.length, key.length - '_unlinked'.length)
+        const timestamp = localStorage.getItem(key)
+        if (timestamp && timestamp !== 'false') {
+          const alreadyHasEvent = cloned.events.some(
+            e => e.event === 'social_provider_unlinked' && e.provider?.toLowerCase() === provider.toLowerCase()
+          )
+          if (!alreadyHasEvent) {
+            cloned.events.unshift({
+              event: 'social_provider_unlinked',
+              provider: provider,
+              created_at: timestamp === 'true' ? new Date().toISOString() : timestamp,
+              metadata: { provider: provider },
+            })
+          }
+        }
+      }
+    })
+
+    // Sort events by created_at descending to make sure audit looks correct
+    cloned.events.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+
+    return cloned
+  }
   const [socialLoading, setSocialLoading] = useState(false)
   const [busySessionId, setBusySessionId] = useState<string | null>(null)
   const [busyProvider, setBusyProvider] = useState<string | null>(null)
@@ -51,6 +148,27 @@ export default function SettingsPage() {
     window.dispatchEvent(new Event('sitzy:show_demo_ui_changed'))
     toast.success(checked ? 'Demo banner byl zapnut.' : 'Demo banner byl skryt.')
   }
+  const [hasSurveyToken, setHasSurveyToken] = useState(() => Boolean(localStorage.getItem('survey_token')))
+  const handleToggleSurveyMode = () => {
+    if (hasSurveyToken) {
+      localStorage.removeItem('survey_token')
+      localStorage.removeItem('survey_completed')
+      localStorage.removeItem('survey_completed_checkpoints')
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('survey_mock_')) {
+          localStorage.removeItem(key)
+        }
+      })
+      toast.success('Testovací režim průzkumu byl vypnut.')
+    } else {
+      localStorage.setItem('survey_token', 'test-study-token')
+      toast.success('Testovací režim průzkumu byl zapnut.')
+    }
+    setHasSurveyToken(!hasSurveyToken)
+    setTimeout(() => {
+      window.location.reload()
+    }, 500)
+  }
   const handleRevokeOthers = () => {
     showConfirm(
       'Odhlásit ostatní zařízení',
@@ -58,8 +176,12 @@ export default function SettingsPage() {
       async () => {
         try {
           setRevokingOthers(true)
+          if (localStorage.getItem('survey_token')) {
+            localStorage.setItem('survey_mock_session_revoked', 'true')
+          }
           await instance.post('/auth/social/sessions/revoke-others')
           toast.success('Ostatní relace byly zneplatněny.')
+          completeTask('session_revoked_others')
           await refreshSocialDashboard()
         } catch {
           toast.error('Nepodařilo se zneplatnit ostatní relace.')
@@ -119,7 +241,7 @@ export default function SettingsPage() {
       setSocialLoading(true)
       try {
         const { data } = await instance.get<SocialDashboard>('/auth/social/dashboard')
-        setSocialDashboard(data)
+        setSocialDashboard(modifySocialDashboardForSurvey(data))
       } catch {
         toast.error('Nepodařilo se načíst sociální připojení.')
       } finally {
@@ -139,7 +261,7 @@ export default function SettingsPage() {
 
   const refreshSocialDashboard = async () => {
     const { data } = await instance.get<SocialDashboard>('/auth/social/dashboard')
-    setSocialDashboard(data)
+    setSocialDashboard(modifySocialDashboardForSurvey(data))
   }
 
   const handleThemeChange = (nextTheme: ThemePreference) => {
@@ -161,8 +283,15 @@ export default function SettingsPage() {
     try {
       await instance.delete('/auth/delete-account')
       toast.success('Účet byl úspěšně smazán.')
+      completeTask('account_anonymized')
       localStorage.removeItem('access_token')
-      navigate('/login', { replace: true })
+      
+      if (localStorage.getItem('survey_token')) {
+        localStorage.setItem('survey_completed', 'true')
+        navigate('/survey', { replace: true })
+      } else {
+        navigate('/login', { replace: true })
+      }
     } catch (err) {
       toast.error(
         isAxiosError(err)
@@ -176,6 +305,14 @@ export default function SettingsPage() {
   const handleRevokeSession = async (session: SocialSessionInfo) => {
     try {
       setBusySessionId(session.id)
+      if (session.id === 'mock-session-survey-other') {
+        localStorage.setItem('survey_mock_session_revoked', 'true')
+        toast.success('Relace byla zneplatněna.')
+        completeTask('session_revoked_others')
+        await refreshSocialDashboard()
+        return
+      }
+
       await instance.post(`/auth/social/sessions/${session.id}/revoke`)
 
       if (session.is_current) {
@@ -196,11 +333,27 @@ export default function SettingsPage() {
   }
 
   const handleUnlinkProvider = async (provider: string) => {
+    // Prevent unlinking the logged-in provider
+    const currentSession = socialDashboard?.sessions.find(s => s.is_current)
+    if (currentSession && currentSession.provider === provider) {
+      toast.error('Nelze odpojit poskytovatele, kterým jste právě přihlášeni.')
+      return
+    }
+
     try {
       setBusyProvider(provider)
+      if (localStorage.getItem('survey_token')) {
+        localStorage.setItem(`survey_mock_${provider.toLowerCase()}_unlinked`, 'true')
+        toast.success(`Poskytovatel ${provider} byl odpojen.`)
+        completeTask('unlink_social')
+        await refreshSocialDashboard()
+        return
+      }
+
       await instance.post(`/auth/social/providers/${provider}/unlink`)
       await Promise.all([refreshSocialDashboard(), refreshUser()])
       toast.success(`Poskytovatel ${provider} byl odpojen.`)
+      completeTask('unlink_social')
     } catch (err) {
       toast.error(
         isAxiosError(err)
@@ -500,14 +653,23 @@ export default function SettingsPage() {
                         E-mail z poskytovatele: {account.has_real_email ? account.provider_email : 'Nedostupný (provider-only identita)'}
                       </p>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => handleUnlinkProvider(account.provider)}
-                      className="setting-value-option shrink-0 w-full sm:w-auto font-medium"
-                      disabled={busyProvider === account.provider}
-                    >
-                      {busyProvider === account.provider ? 'Odpojuji...' : 'Odpojit'}
-                    </button>
+                    {(() => {
+                      const currentSession = socialDashboard?.sessions.find(s => s.is_current)
+                      const isCurrentProvider = currentSession?.provider === account.provider
+                      return (
+                        <button
+                          type="button"
+                          onClick={() => handleUnlinkProvider(account.provider)}
+                          className={`setting-value-option shrink-0 w-full sm:w-auto font-medium ${
+                            isCurrentProvider ? 'opacity-50 cursor-not-allowed hover:bg-transparent text-zinc-400 dark:text-zinc-600' : ''
+                          }`}
+                          disabled={busyProvider === account.provider || isCurrentProvider}
+                          title={isCurrentProvider ? 'Tento účet nelze odpojit, protože jste jím přihlášeni.' : undefined}
+                        >
+                          {busyProvider === account.provider ? 'Odpojuji...' : isCurrentProvider ? 'Přihlášen' : 'Odpojit'}
+                        </button>
+                      )
+                    })()}
                   </div>
                 </div>
               ))}
@@ -683,6 +845,17 @@ export default function SettingsPage() {
                   {demoBusy ? 'Probíhá...' : 'Reset demo dat'}
                 </button>
               </div>
+
+              <div className="border-t theme-divider pt-4 flex flex-col gap-3">
+                <p className="text-sm font-medium">Testování uživatelského průzkumu</p>
+                <button
+                  type="button"
+                  onClick={handleToggleSurveyMode}
+                  className={`w-full ${hasSurveyToken ? 'button-danger' : 'button-primary'}`}
+                >
+                  {hasSurveyToken ? 'Deaktivovat testovací režim průzkumu' : 'Aktivovat testovací režim průzkumu'}
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -693,6 +866,11 @@ export default function SettingsPage() {
         action={handleDeleteAccount}
       >
         <h3 className="dialog-title">Opravdu chcete smazat svůj účet?</h3>
+        {localStorage.getItem('survey_token') && (
+          <div className="p-3 mb-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300 leading-normal text-left">
+            <strong>Účastníku průzkumu:</strong> Smazáním účtu splníte poslední úkol a budete automaticky přesměrováni zpět k odeslání závěrečného dotazníku dotazníkového šetření.
+          </div>
+        )}
         <p className="dialog-text">
           Tato akce je <strong>nevratná</strong>. Všechna vaše data budou trvale smazána:
         </p>

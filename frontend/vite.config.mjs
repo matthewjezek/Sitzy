@@ -56,5 +56,20 @@ export default defineConfig({
         clientsClaim: true,
       },
     }),
-  ],
+    {
+      name: 'api-mock-plugin',
+      configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+          if (req.url && req.url.startsWith('/api/')) {
+            console.log('[Vite Dev Server] Intercepting KV /api request:', req.method, req.url)
+            res.setHeader('Content-Type', 'application/json')
+            res.statusCode = 200
+            res.end(JSON.stringify({ success: true, mock: true }))
+            return
+          }
+          next()
+        })
+      }
+    }
+  ]
 })

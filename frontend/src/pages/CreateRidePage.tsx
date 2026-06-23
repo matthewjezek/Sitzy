@@ -7,6 +7,7 @@ import { useRide } from '../hooks/useRide'
 import { useCar } from '../hooks/useCar'
 import { rideSchema, type RideFormValues } from '../utils/validation'
 import { localInputToUTC, nowForDatetimeInput } from '../utils/datetime'
+import { completeTask } from '../utils/survey'
 
 function CreateRideSkeleton() {
   return (
@@ -59,6 +60,7 @@ export default function CreateRidePage() {
       })
       if (result) {
         toast.success('Jízda byla vytvořena.')
+        completeTask('create_ride')
         navigate(`/rides/${result.id}`)
       }
     } finally {

@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router'
 import instance from '../api/axios'
 import { toast } from 'react-toastify'
 import SplashScreen from '../components/SplashScreen'
+import { completeTask } from '../utils/survey'
 
 export default function OAuthCallbackPage() {
   const [searchParams] = useSearchParams()
@@ -33,6 +34,7 @@ export default function OAuthCallbackPage() {
         const data = response.data
         localStorage.setItem('access_token', data.access_token)
         toast.success('Přihlášení úspěšné!')
+        completeTask('login_oauth')
         const redirectPath = localStorage.getItem('post_login_redirect')
         if (redirectPath) {
           localStorage.removeItem('post_login_redirect')
