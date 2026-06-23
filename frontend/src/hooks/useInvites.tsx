@@ -58,7 +58,23 @@ export function useInvites(rideId?: string, enabled = true): UseInvitesReturn {
         : `/invitations/received`;
       const res = await instance.get<Invitation[]>(url);
       const data = Array.isArray(res.data) ? res.data : [];
-      setInvites(data.filter((i) => i.status === "Pending" && i.invited_email !== "public@sitzy.local"));
+      const filtered = data.filter((i) => i.status === "Pending" && i.invited_email !== "public@sitzy.local");
+      
+      const hasSurveyToken = Boolean(localStorage.getItem('survey_token'));
+      const mockInviteAccepted = localStorage.getItem('survey_mock_invite_accepted') === 'true';
+      const mockInviteRejected = localStorage.getItem('survey_mock_invite_rejected') === 'true';
+      
+      if (hasSurveyToken && !rideId && !mockInviteAccepted && !mockInviteRejected) {
+        filtered.push({
+          token: "survey-mock-invite-token",
+          ride_id: "survey-mock-ride",
+          invited_email: "survey@sitzy.page",
+          status: "Pending",
+          created_at: new Date().toISOString()
+        });
+      }
+      
+      setInvites(filtered);
     } catch (err) {
       handleError(err, "Nepodařilo se načíst pozvánky.");
     } finally {
@@ -120,6 +136,17 @@ export function useInvites(rideId?: string, enabled = true): UseInvitesReturn {
 
   // POST /invitations/:token/accept|reject
   const respondInvite = useCallback(async (token: string, accept: boolean) => {
+    if (token === "survey-mock-invite-token") {
+      if (accept) {
+        localStorage.setItem("survey_mock_invite_accepted", "true");
+      } else {
+        localStorage.setItem("survey_mock_invite_rejected", "true");
+      }
+      setInvites((prev) => prev.filter((i) => i.token !== token));
+      notifyInvitesChanged(rideId);
+      return;
+    }
+
     // Optimistic update
     setInvites((prev) =>
       prev.map((i) =>

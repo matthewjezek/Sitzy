@@ -201,4 +201,59 @@ test.describe('Survey flow tests', () => {
     // The unlinked provider audit event should be visible in the audit trail
     await expect(page.getByText(/twitter · social_provider_unlinked/i)).toBeVisible()
   })
+
+  test('survey mode invitation and seat selection flow: shows mock invite, accepts, and confirms seat selection', async ({ page }) => {
+    await seedAuthenticated(page)
+    await mockAuthenticatedApi(page, { invites: [] })
+
+    // Set survey token
+    await page.addInitScript(() => {
+      localStorage.setItem('survey_token', 'test-survey-token-invite')
+    })
+
+    await page.goto('/')
+
+    // Expect bell icon to have 1 unread notification
+    const bellBtn = page.getByRole('button', { name: 'Otevřít notifikace' }).first()
+    await expect(bellBtn).toBeVisible()
+    await expect(bellBtn.locator('.unread-count-badge')).toHaveText('1')
+
+    // Click bell icon to open notifications dropdown
+    await bellBtn.click()
+    await expect(page.getByText('Pozvánka na jízdu')).toBeVisible()
+
+    // Setup intercept for api checkpoint report
+    let checkpointReported = false
+    await page.route('**/api/checkpoint', async (route) => {
+      const postData = route.request().postDataJSON()
+      if (postData.checkpointName === 'accept_invite' && postData.token === 'test-survey-token-invite') {
+        checkpointReported = true
+      }
+      await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' })
+    })
+
+    // Click "Přijmout" in notifications
+    await page.getByRole('button', { name: 'Přijmout' }).click()
+
+    // Should navigate to /rides/survey-mock-ride?invite=survey-mock-invite-token
+    await expect(page).toHaveURL(/\/rides\/survey-mock-ride\?invite=survey-mock-invite-token$/)
+
+    // Verify Skoda Octavia ride details are visible
+    await expect(page.getByText('Škoda Octavia IV').first()).toBeVisible()
+    await expect(page.getByText('Praha (Hlavní nádraží)').first()).toBeVisible()
+
+    // Seat selector should be visible. We choose the front passenger seat (seat 2, which is empty)
+    const seatButton = page.locator('button').filter({ hasText: '2' }).first()
+    await seatButton.click()
+    await expect(page.getByRole('button', { name: 'Potvrdit vybrané sedadlo' })).toBeEnabled()
+    await page.getByRole('button', { name: 'Potvrdit vybrané sedadlo' }).click()
+
+    // Check it succeeds
+    await expect(page).toHaveURL(/\/rides\/survey-mock-ride$/)
+    await expect(page.getByText('Pozvánka přijata a sedadlo potvrzeno.')).toBeVisible()
+    expect(checkpointReported).toBe(true)
+
+    // Check that we are displayed as passenger in the list of passengers
+    await expect(page.getByText('Můj profil (Pasažér)')).toBeVisible()
+  })
 })

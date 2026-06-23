@@ -52,6 +52,7 @@ function SurveyChecklistWidget() {
 
   const tasks = [
     { id: 'login_oauth', label: 'Přihlášení (Facebook/X)' },
+    { id: 'accept_invite', label: 'Výběr místa z pozvánky' },
     { id: 'create_ride', label: 'Vytvoření jízdy' },
     { id: 'create_public_invite', label: 'Nasdílení jízdy' },
     { id: 'session_revoked_others', label: 'Odhlášení jiných relací' },

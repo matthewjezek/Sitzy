@@ -522,6 +522,18 @@ export default function RideDetailPage() {
 
     setFinishingInvite(true)
     try {
+      if (inviteToken === 'survey-mock-invite-token') {
+        localStorage.setItem('survey_mock_invite_accepted', 'true')
+        localStorage.setItem('survey_mock_ride_user_seat', String(autoAssign ? 2 : selectedSeat))
+        completeTask('accept_invite')
+        await fetchRide(id)
+        notifyInvitesChanged()
+        clearInviteQueryParam()
+        setSelectedSeat(null)
+        toast.success('Pozvánka přijata a sedadlo potvrzeno.')
+        return
+      }
+
       await instance.post(`/invitations/${inviteToken}/accept`, autoAssign ? {} : { seat_position: selectedSeat })
       await fetchRide(id)
       notifyInvitesChanged()

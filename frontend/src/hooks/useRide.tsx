@@ -44,6 +44,60 @@ export function useRide() {
 
   // GET /rides/:id
   const fetchRide = useCallback(async (rideId: string, inviteToken?: string) => {
+    if (rideId === 'survey-mock-ride') {
+      setLoading(true)
+      setError(null)
+      setNotFound(false)
+      
+      const userSeat = localStorage.getItem('survey_mock_ride_user_seat')
+      const isAccepted = localStorage.getItem('survey_mock_invite_accepted') === 'true'
+      
+      const passengers = [
+        {
+          user_id: "survey-mock-passenger-2",
+          seat_position: 4,
+          full_name: "Jan Smutný",
+          avatar_url: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150"
+        }
+      ]
+      
+      if (isAccepted && userSeat) {
+        passengers.push({
+          user_id: "me",
+          seat_position: Number(userSeat),
+          full_name: "Můj profil (Pasažér)",
+          avatar_url: null
+        })
+      }
+      
+      const mockRide: RideOut = {
+        id: "survey-mock-ride",
+        car_id: "survey-mock-car",
+        car_driver_id: "survey-mock-driver-cd",
+        driver_user_id: "survey-mock-driver-user",
+        departure_time: new Date(Date.now() + 86400000).toISOString(),
+        destination: "Praha (Hlavní nádraží)",
+        created_at: new Date().toISOString(),
+        passengers: passengers,
+        car: {
+          id: "survey-mock-car",
+          owner_id: "survey-mock-driver-user",
+          name: "Škoda Octavia IV",
+          layout: "Sedan", // Sedan has 5 seats total (1 driver + 4 passengers)
+          owner_name: "Petr Novák"
+        },
+        driver: {
+          id: "survey-mock-driver-user",
+          full_name: "Petr Novák",
+          avatar_url: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150"
+        }
+      }
+      
+      setRide(mockRide)
+      setLoading(false)
+      return mockRide
+    }
+
     setLoading(true)
     setError(null)
     setNotFound(false)
@@ -118,6 +172,13 @@ export function useRide() {
 
   // POST /rides/:id/book – explicitní výběr sedadla
   const bookSeat = useCallback(async (rideId: string, seatPosition: number) => {
+    if (rideId === 'survey-mock-ride') {
+      localStorage.setItem('survey_mock_invite_accepted', 'true')
+      localStorage.setItem('survey_mock_ride_user_seat', String(seatPosition))
+      const updatedRide = await fetchRide(rideId)
+      return updatedRide
+    }
+
     // Optimistic update
     setRide(prev =>
       prev
@@ -151,10 +212,17 @@ export function useRide() {
       toastError(err, 'Nepodařilo se rezervovat sedadlo.')
       return null
     }
-  }, [])
+  }, [fetchRide])
 
   // DELETE /rides/:id/book – zrušení rezervace
   const cancelBooking = useCallback(async (rideId: string, seatPosition: number) => {
+    if (rideId === 'survey-mock-ride') {
+      localStorage.removeItem('survey_mock_invite_accepted')
+      localStorage.removeItem('survey_mock_ride_user_seat')
+      await fetchRide(rideId)
+      return true
+    }
+
     // Optimistic update
     setRide(prev =>
       prev
@@ -205,6 +273,13 @@ export function useRide() {
 
   // DELETE /rides/:id/leave – odchod z jízdy pro pasažéra
   const leaveRide = useCallback(async (rideId: string, userId: string) => {
+    if (rideId === 'survey-mock-ride') {
+      localStorage.removeItem('survey_mock_invite_accepted')
+      localStorage.removeItem('survey_mock_ride_user_seat')
+      await fetchRide(rideId)
+      return true
+    }
+
     // Optimistic update
     setRide(prev =>
       prev

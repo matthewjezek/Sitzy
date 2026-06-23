@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
-import { FiLogIn, FiPlusCircle, FiShare2, FiShield, FiArrowRight, FiCheckCircle } from 'react-icons/fi'
+import { FiLogIn, FiPlusCircle, FiShare2, FiShield, FiArrowRight, FiCheckCircle, FiBell, FiTrash2 } from 'react-icons/fi'
 
 export default function SurveyRedirectPage() {
   const navigate = useNavigate()
@@ -107,10 +107,20 @@ export default function SurveyRedirectPage() {
 
                 <div className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/10 transition-colors">
                   <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 shrink-0">
+                    <FiBell size={16} />
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-bold text-zinc-200">2. Výběr místa</h3>
+                    <p className="text-[11px] text-zinc-400 mt-0.5">Přijměte pozvánku v notifikacích a zvolte si sedadlo.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/10 transition-colors">
+                  <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 shrink-0">
                     <FiPlusCircle size={16} />
                   </div>
                   <div>
-                    <h3 className="text-xs font-bold text-zinc-200">2. Vytvoření jízdy</h3>
+                    <h3 className="text-xs font-bold text-zinc-200">3. Vytvoření jízdy</h3>
                     <p className="text-[11px] text-zinc-400 mt-0.5">Přidejte auto a založte novou společnou jízdu.</p>
                   </div>
                 </div>
@@ -120,7 +130,7 @@ export default function SurveyRedirectPage() {
                     <FiShare2 size={16} />
                   </div>
                   <div>
-                    <h3 className="text-xs font-bold text-zinc-200">3. Sdílení jízdy</h3>
+                    <h3 className="text-xs font-bold text-zinc-200">4. Sdílení jízdy</h3>
                     <p className="text-[11px] text-zinc-400 mt-0.5">Nasdílejte jízdu pomocí vygenerovaného odkazu.</p>
                   </div>
                 </div>
@@ -130,8 +140,18 @@ export default function SurveyRedirectPage() {
                     <FiShield size={16} />
                   </div>
                   <div>
-                    <h3 className="text-xs font-bold text-zinc-200">4. Nastavení & Soukromí</h3>
-                    <p className="text-[11px] text-zinc-400 mt-0.5">Vyzkoušejte odpojení sítě, odhlášení relací či smazání účtu.</p>
+                    <h3 className="text-xs font-bold text-zinc-200">5. Správa účtu</h3>
+                    <p className="text-[11px] text-zinc-400 mt-0.5">Vyzkoušejte odpojení sítě a odhlášení jiných relací.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/5 hover:border-white/10 transition-colors">
+                  <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 shrink-0">
+                    <FiTrash2 size={16} />
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-bold text-zinc-200">6. Smazání účtu</h3>
+                    <p className="text-[11px] text-zinc-400 mt-0.5">Smažte svá data přes soft-delete pro konec průzkumu.</p>
                   </div>
                 </div>
               </div>
@@ -145,6 +165,9 @@ export default function SurveyRedirectPage() {
               <ul className="list-disc list-inside space-y-1.5 text-zinc-400 leading-relaxed">
                 <li>
                   <strong className="text-zinc-300">Doporučené přihlášení:</strong> Pro snadný start doporučujeme použít přihlášení přes <strong className="text-indigo-300">X (Twitter)</strong>, které je plně veřejné. Facebook vyžaduje z důvodu schvalovacích pravidel společnosti Meta manuální přidání do testovací skupiny (pokud ho chcete vyzkoušet, <a href="https://m.me/MattyMatejJezek" target="_blank" rel="noopener noreferrer" className="text-indigo-300 underline">napište mi</a> své jméno/uživatelské jméno a přidám vás).
+                </li>
+                <li>
+                  <strong className="text-zinc-300">Výběr místa z pozvánky:</strong> Po přihlášení klikněte na ikonu zvonečku (notifikace) v horním menu, klikněte na „Přijmout“ a na detailu jízdy si vyberte libovolné volné sedadlo v autě.
                 </li>
                 <li>
                   <strong className="text-zinc-300">Simulace pro usnadnění:</strong> Pro účely průzkumu jsme vám v nastavení automaticky nasimulovali druhé připojené sociální propojení a druhou aktivní relaci (Safari na iPhone).
