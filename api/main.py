@@ -60,26 +60,7 @@ async def verify_worker_secret_middleware(
         secret = request.headers.get("x-worker-secret")
         if secret != expected_secret:
             return Response("Forbidden", status_code=403)
-
-    response = await call_next(request)
-
-    # In production or when origin verification is required, ensure CORS headers
-    # are set because proxy requests (e.g. from Cloudflare Worker fetch) may have their
-    # Origin header stripped, causing CORSMiddleware to skip adding them.
-    if expected_secret:
-        if "access-control-allow-origin" not in response.headers:
-            response.headers["Access-Control-Allow-Origin"] = settings.frontend_origin
-            response.headers["Access-Control-Allow-Credentials"] = "true"
-            if "access-control-allow-methods" not in response.headers:
-                response.headers["Access-Control-Allow-Methods"] = (
-                    "GET, POST, PATCH, DELETE, OPTIONS"
-                )
-            if "access-control-allow-headers" not in response.headers:
-                response.headers["Access-Control-Allow-Headers"] = (
-                    "Authorization, Content-Type, x-worker-secret"
-                )
-
-    return response
+    return await call_next(request)
 
 
 @app.middleware("http")
