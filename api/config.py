@@ -48,6 +48,11 @@ class Settings(BaseSettings):
         "", validation_alias="DEMO_FIXTURE_WHITELIST_EMAILS"
     )
 
+    @field_validator("frontend_origin")
+    @classmethod
+    def clean_frontend_origin(cls, v: str) -> str:
+        return v.rstrip("/")
+
     @field_validator("x_redirect_uri", "facebook_redirect_uri")
     @classmethod
     def https_in_production(cls, v: AnyUrl, info: ValidationInfo) -> AnyUrl:
