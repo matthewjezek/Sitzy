@@ -113,6 +113,25 @@ test('settings page exposes theme, document, and demo controls', async ({ page }
   await expect(page.locator('html')).toHaveClass(/dark/)
 })
 
+test('settings page allows deleting account and redirects to login', async ({ page }) => {
+  await seedAuthenticated(page)
+  await mockAuthenticatedApi(page)
+
+  await page.goto('/settings')
+
+  // Click on "Smazat účet trvale" button to open the confirmation dialog
+  await page.getByRole('button', { name: 'Smazat účet trvale' }).click()
+
+  // Verify the dialog is visible and click "Smazat"
+  await expect(page.getByText('Opravdu chcete smazat svůj účet?')).toBeVisible()
+  await page.getByRole('button', { name: 'Smazat', exact: true }).click()
+
+  // Should redirect to login
+  await expect(page).toHaveURL(/\/login$/)
+  const accessToken = await page.evaluate(() => localStorage.getItem('access_token'))
+  expect(accessToken).toBeNull()
+})
+
 test('logged out users stay on login when opening protected pages', async ({ page }) => {
   await seedLoggedOut(page)
 

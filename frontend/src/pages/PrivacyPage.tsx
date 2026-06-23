@@ -124,8 +124,9 @@ export default function PrivacyPage() {
                     Vaše údaje uchováváme po dobu, kdy je váš účet aktivní. V případě smazání účtu:
                   </p>
                   <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 mt-2 space-y-1">
-                    <li>jsou okamžitě vymazány veškeré vaše osobní údaje,</li>
-                    <li>jsou trvale odstraněna data o vašich vozidlech a jízdách, kde jste zakladatelem,</li>
+                    <li>jsou okamžitě anonymizovány veškeré vaše osobní údaje (vaše jméno bude změněno na „Smazaný uživatel“, váš e-mail a profilový obrázek budou trvale vymazány),</li>
+                    <li>jsou smazány všechny vaše budoucí jízdy a budoucí účasti v jízdách,</li>
+                    <li>vaše minulá historie jízd a účast v nich zůstává zachována pro ostatní spolucestující, avšak bez jakýchkoliv vašich identifikovatelných osobních údajů,</li>
                     <li>jsou odstraněny všechny nevyužité pozvánky,</li>
                     <li>systémové logy a auditní záznamy jsou automaticky vymazány po 30 dnech.</li>
                   </ul>
@@ -330,8 +331,9 @@ export default function PrivacyPage() {
                     We retain your data as long as your account is active. When you delete your account:
                   </p>
                   <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 mt-2 space-y-1">
-                    <li>all of your personal data is immediately erased,</li>
-                    <li>records of your cars and rides you created are permanently deleted,</li>
+                    <li>all of your personal data is immediately anonymized (your name will be changed to "Deleted user", your email and profile picture will be permanently deleted),</li>
+                    <li>all of your future rides and future passenger entries will be deleted,</li>
+                    <li>your past ride history and participation remain preserved for other passengers, but without any of your identifiable personal data,</li>
                     <li>all unused invitations are removed,</li>
                     <li>system logs and audit trails are automatically cleared after 30 days.</li>
                   </ul>

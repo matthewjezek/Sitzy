@@ -1,14 +1,23 @@
 from datetime import datetime, timezone
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    Form,
+    HTTPException,
+    Query,
+    Request,
+    Response,
+    status,
+)
 from jose import JWTError
 from sqlalchemy.orm import Session
 
 from api.config import settings
 from api.database import get_db
 from api.deps import UserContext, get_current_user
-from api.models import IntegrationAuditLog, SocialAccount, SocialSession
+from api.models import IntegrationAuditLog, SocialAccount, SocialSession, User
 from api.schemas import (
     IntegrationAuditEventOut,
     SocialAccountDashboardOut,
@@ -562,6 +571,74 @@ def unlink_provider(
         _clear_refresh_cookie(response)
 
 
+def anonymize_user_data(user: User, db: Session) -> None:
+    """GDPR-compliant user anonymization (soft-deletion).
+
+    Preserves past rides and past passenger participations for other users
+    while deleting all future bookings, future rides, active sessions, and
+    OAuth linkages.
+    """
+    from datetime import datetime, timezone
+
+    from api.models import CarDriver, Passenger, Ride
+
+    now = datetime.now(timezone.utc)
+
+    # 1. Delete future passenger bookings for this user
+    future_bookings = (
+        db.query(Passenger)
+        .join(Ride)
+        .filter(Passenger.user_id == user.id, Ride.departure_time > now)
+        .all()
+    )
+    for booking in future_bookings:
+        db.delete(booking)
+
+    # 2. Delete future rides where this user is the driver
+    future_driver_rides = (
+        db.query(Ride)
+        .join(CarDriver)
+        .filter(CarDriver.driver_id == user.id, Ride.departure_time > now)
+        .all()
+    )
+    for ride in future_driver_rides:
+        db.delete(ride)
+
+    # 3. Handle owned cars:
+    # Delete future rides for their cars
+    for car in user.cars:
+        future_car_rides = (
+            db.query(Ride)
+            .filter(Ride.car_id == car.id, Ride.departure_time > now)
+            .all()
+        )
+        for ride in future_car_rides:
+            db.delete(ride)
+
+    # Delete cars that have no rides at all to clean database
+    for car in list(user.cars):
+        has_rides = db.query(Ride).filter(Ride.car_id == car.id).first() is not None
+        if not has_rides:
+            db.delete(car)
+
+    # 4. Deactivate driver status on all their CarDriver assignments
+    for cd in user.car_drivers:
+        cd.is_active = False
+
+    # 5. Delete OAuth linked accounts (so they cannot log back in)
+    for sa in list(user.social_accounts):
+        db.delete(sa)
+
+    # 6. Delete active sessions (so they are immediately logged out)
+    for ss in list(user.social_sessions):
+        db.delete(ss)
+
+    # 7. Anonymize user personal data
+    user.email = None
+    user.full_name = "Smazaný uživatel"
+    user.avatar_url = None
+
+
 @router.delete("/delete-account", status_code=status.HTTP_204_NO_CONTENT)
 @limiter.limit("3/minute")
 def delete_account(
@@ -572,13 +649,8 @@ def delete_account(
 ) -> None:
     """Delete user account and all associated data (GDPR compliance).
 
-    Cascades delete:
-    - SocialAccounts (OAuth links)
-    - SocialSessions (active sessions)
-    - Cars (owned vehicles)
-    - CarDrivers (driver assignments)
-    - Passenger entries (ride participations)
-    - Invitations are orphaned but remain for audit trail
+    Anonymizes the user to preserve past ride logs while deleting all future
+    data and linked credentials.
     """
     user = ctx.user
     user_id = str(user.id)
@@ -593,8 +665,7 @@ def delete_account(
         db=db,
     )
 
-    # Delete user (cascades handle related data via SQLAlchemy relationships)
-    db.delete(user)
+    anonymize_user_data(user, db)
     db.commit()
 
     # Clear refresh cookie
@@ -607,20 +678,20 @@ def delete_account(
 @limiter.limit("10/minute")
 def facebook_data_deletion_callback(
     request: Request,
-    signed_request: str,
+    signed_request: str = Form(...),
     db: Session = Depends(get_db),
 ) -> dict[str, str]:
     """Facebook Data Deletion Callback (required for App Review).
 
-    Facebook sends signed_request when user deletes app from their settings.
+    Facebook sends signed_request in a POST form request when user deletes app.
     We return a confirmation URL with code for tracking deletion status.
-
-    Note: For production, verify signed_request signature with app secret.
-    For academic/prototype use, we accept the request and process deletion.
 
     See: https://developers.facebook.com/docs/apps/delete-data
     Returns:
-    {"url": "https://sitzy.example.com/deletion-status?code=...&status=confirmed"}
+    {
+        "url": "https://sitzy.example.com/deletion-status?code=...&status=confirmed",
+        "confirmation_code": "..."
+    }
     """
     import base64
     import json
@@ -667,11 +738,11 @@ def facebook_data_deletion_callback(
             user_id = str(user.id)
 
             logger.info(
-                "Facebook deletion callback - deleting user",
+                "Facebook deletion callback - anonymizing user",
                 extra={"user_id": user_id, "facebook_id": facebook_user_id},
             )
 
-            db.delete(user)
+            anonymize_user_data(user, db)
             emit_integration_event(
                 event="account_deleted_by_provider_callback",
                 provider="facebook",
@@ -686,11 +757,15 @@ def facebook_data_deletion_callback(
                 extra={"facebook_id": facebook_user_id},
             )
 
-        # Return confirmation code as per Facebook spec
-        # In production, you would return:
-        # {"url": "https://your-domain.cz/deletion-status?code=..."}
-        # For development/testing, just return the confirmation code
-        return {"confirmation_code": confirmation_code}
+        # Return confirmation code and URL as per Facebook spec
+        status_url = (
+            f"{settings.frontend_origin.rstrip('/')}"
+            f"/deletion-status?code={confirmation_code}&status=confirmed"
+        )
+        return {
+            "url": status_url,
+            "confirmation_code": confirmation_code,
+        }
 
     except Exception as e:
         logger.error(

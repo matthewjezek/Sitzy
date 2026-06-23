@@ -252,9 +252,118 @@ def test_delete_account_deletes_user_and_clears_cookie(fake_user_context):
     response = client.delete("/auth/delete-account")
 
     assert response.status_code == 204
-    assert fake_user_context.user in fake_db.deleted
+    assert fake_user_context.user.email is None
+    assert fake_user_context.user.full_name == "Smazaný uživatel"
+    assert fake_user_context.user.avatar_url is None
     assert fake_db.commit_called is True
     assert "refresh_token=" in response.headers.get("set-cookie", "")
+
+
+def test_facebook_deletion_callback_success(monkeypatch: pytest.MonkeyPatch):
+    import base64
+    import json
+
+    from api.models import SocialAccount
+    from api.routers import auth
+
+    # Mock user and social account
+    fake_user = SimpleNamespace(
+        id=uuid4(),
+        email="fb-user@example.com",
+        full_name="FB User",
+        avatar_url="http://avatar",
+        cars=[],
+        social_accounts=[],
+        social_sessions=[],
+        car_drivers=[],
+    )
+    fake_social = SimpleNamespace(
+        id=uuid4(),
+        provider="facebook",
+        social_id="fb-123",
+        user=fake_user,
+    )
+    fake_user.social_accounts.append(fake_social)
+
+    fake_db = FakeDB(query_results={SocialAccount: FakeQuery(first_result=fake_social)})
+    client = create_client(router=auth.router, prefix="/auth", fake_db=fake_db)
+
+    # Construct valid signed_request
+    payload_data = {"user_id": "fb-123"}
+    payload_encoded = base64.urlsafe_b64encode(
+        json.dumps(payload_data).encode()
+    ).decode()
+    signed_request = f"sig.{payload_encoded}"
+
+    response = client.post(
+        "/auth/facebook/deletion",
+        data={"signed_request": signed_request},
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert "url" in data
+    assert "deletion-status" in data["url"]
+    assert "confirmation_code" in data
+    assert data["url"].endswith(f"code={data['confirmation_code']}&status=confirmed")
+    assert fake_user.email is None
+    assert fake_user.full_name == "Smazaný uživatel"
+    assert fake_user.avatar_url is None
+    assert fake_db.commit_called is True
+
+
+def test_facebook_deletion_callback_user_not_found():
+    import base64
+    import json
+
+    from api.models import SocialAccount
+    from api.routers import auth
+
+    fake_db = FakeDB(query_results={SocialAccount: FakeQuery(first_result=None)})
+    client = create_client(router=auth.router, prefix="/auth", fake_db=fake_db)
+
+    payload_data = {"user_id": "fb-not-exists"}
+    payload_encoded = base64.urlsafe_b64encode(
+        json.dumps(payload_data).encode()
+    ).decode()
+    signed_request = f"sig.{payload_encoded}"
+
+    response = client.post(
+        "/auth/facebook/deletion",
+        data={"signed_request": signed_request},
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert "url" in data
+    assert "confirmation_code" in data
+    assert fake_db.commit_called is False
+
+
+def test_facebook_deletion_callback_invalid():
+    from api.routers import auth
+
+    client = create_client(router=auth.router, prefix="/auth", fake_db=FakeDB())
+
+    # Missing user_id in signed request
+    import base64
+    import json
+
+    payload_encoded = base64.urlsafe_b64encode(json.dumps({}).encode()).decode()
+    signed_request = f"sig.{payload_encoded}"
+
+    response = client.post(
+        "/auth/facebook/deletion",
+        data={"signed_request": signed_request},
+    )
+    assert response.status_code == 400
+
+    # Malformed signed request (no dot)
+    response = client.post(
+        "/auth/facebook/deletion",
+        data={"signed_request": "malformed_request"},
+    )
+    assert response.status_code == 400
 
 
 def test_facebook_init_rate_limit_returns_429(monkeypatch: pytest.MonkeyPatch):
