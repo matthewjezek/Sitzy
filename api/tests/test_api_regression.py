@@ -759,3 +759,74 @@ def test_revoke_other_sessions(fake_user_context):
     assert session1.revoked_at is not None
     assert session2.revoked_at is None
     assert fake_db.commit_called is True
+
+
+def test_accept_public_invitation_allows_any_email(fake_user_context):
+    car = _car(uuid4())
+    ride = _ride(car, car.owner_id)
+    ride.departure_time = datetime.now(timezone.utc) + timedelta(minutes=10)
+
+    invitation = SimpleNamespace(
+        id=uuid4(),
+        token="public-token",
+        ride_id=ride.id,
+        invited_email="public@sitzy.local",
+        status=InvitationStatus.PENDING,
+        expires_at=datetime.now(timezone.utc) + timedelta(hours=1),
+        ride=ride,
+    )
+    fake_db = FakeDB(
+        query_results={
+            Invitation: FakeQuery(first_result=invitation),
+            Passenger: FakeQuery(first_result=None),
+        }
+    )
+    client = create_client(
+        router=invitations.router,
+        prefix="/invitations",
+        fake_db=fake_db,
+        current_user=fake_user_context,
+    )
+
+    response = client.post("/invitations/public-token/accept", json={})
+
+    assert response.status_code == 200
+    assert invitation.status == InvitationStatus.PENDING  # remains reusable
+    assert len(fake_db.added) == 1
+    assert isinstance(fake_db.added[0], Passenger)
+    assert fake_db.added[0].user_id == fake_user_context.user.id
+
+
+def test_get_ride_allows_public_invitation_with_any_user_email(
+    fake_user_context, monkeypatch: pytest.MonkeyPatch
+):
+    car = _car(uuid4())
+    ride = _ride(car, car.owner_id)
+    # Ensure user email is different from public@sitzy.local
+    fake_user_context.user.email = "different-email@example.com"
+
+    invitation = SimpleNamespace(
+        id=uuid4(),
+        token="public-token",
+        ride_id=ride.id,
+        invited_email="public@sitzy.local",
+        status=InvitationStatus.PENDING,
+        expires_at=datetime.now(timezone.utc) + timedelta(hours=1),
+    )
+    monkeypatch.setattr(rides, "_get_ride_or_404", lambda ride_id, db: ride)
+    monkeypatch.setattr(
+        rides, "get_or_create_public_invitation", lambda ride_id, db: invitation
+    )
+
+    fake_db = FakeDB(query_results={Invitation: FakeQuery(first_result=invitation)})
+    client = create_client(
+        router=rides.router,
+        prefix="/rides",
+        fake_db=fake_db,
+        current_user=fake_user_context,
+    )
+
+    response = client.get(f"/rides/{ride.id}?invite_token=public-token")
+
+    assert response.status_code == 200
+    assert response.json()["id"] == str(ride.id)

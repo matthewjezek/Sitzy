@@ -204,6 +204,7 @@ class RideOut(BaseModel):
     passengers: list[PassengerOut] = []
     car: CarOut | None = None
     driver: UserBasicOut | None = None
+    public_invite_token: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -212,6 +213,17 @@ class RideOut(BaseModel):
         from .models import Ride
 
         r = cast("Ride", ride)
+
+        public_invite_token = None
+        if hasattr(r, "invitations"):
+            for inv in r.invitations:
+                if (
+                    inv.invited_email == "public@sitzy.local"
+                    and inv.status == InvitationStatus.PENDING
+                ):
+                    public_invite_token = inv.token
+                    break
+
         return cls(
             id=r.id,
             car_id=r.car_id,
@@ -228,6 +240,7 @@ class RideOut(BaseModel):
                 and getattr(r.car_driver, "driver", None)
                 else None
             ),
+            public_invite_token=public_invite_token,
         )
 
 
@@ -294,3 +307,5 @@ class InvitationResolveOut(BaseModel):
     expires_at: datetime
     destination: str | None = None
     departure_time: datetime | None = None
+    driver_name: str | None = None
+    car_name: str | None = None

@@ -789,4 +789,34 @@ test.describe('invitation edge cases', () => {
     await expect(page.getByText('Vyberte sedadlo pro dokončení přijetí pozvánky.')).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Brno', level: 1 })).toBeVisible()
   })
+
+  test('desktop share modal copies and shares public ingress URL if pending invite is present', async ({ page }) => {
+    await seedAuthenticated(page)
+    const pendingInviteToken = 'invite-share-test-token'
+    await mockAuthenticatedApi(page, {
+      invites: [
+        {
+          invited_email: 'public@sitzy.local',
+          status: 'Pending',
+          created_at: '2026-04-10T12:00:00.000Z',
+          token: pendingInviteToken,
+          ride_id: mockRide.id,
+        }
+      ]
+    })
+
+    await page.goto('/rides/ride-1')
+    
+    // Open the share modal
+    await page.getByRole('button', { name: 'Sdílet' }).click()
+
+    // Assert that the share links point to the public /i/:token link
+    const twitterLink = page.locator('a[aria-label="Sdílet na X (Twitter)"]')
+    const twitterHref = await twitterLink.getAttribute('href')
+    expect(twitterHref).toContain(pendingInviteToken)
+ 
+    const waLink = page.locator('a[aria-label="Sdílet na WhatsApp"]')
+    const waHref = await waLink.getAttribute('href')
+    expect(waHref).toContain(pendingInviteToken)
+  })
 })

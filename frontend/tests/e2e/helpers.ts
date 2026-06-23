@@ -263,7 +263,14 @@ export async function mockAuthenticatedApi(page: Page, overrides?: {
         return
       }
       
-      await route.fulfill({ json: ride })
+      const publicInvite = mutableInvites.find(
+        inv => inv.ride_id === ride.id && inv.invited_email === 'public@sitzy.local' && inv.status === 'Pending'
+      )
+      const rideWithToken = {
+        ...ride,
+        public_invite_token: overrides?.ride?.public_invite_token ?? (publicInvite ? publicInvite.token : null),
+      }
+      await route.fulfill({ json: rideWithToken })
       return
     }
 

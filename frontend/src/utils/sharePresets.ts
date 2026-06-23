@@ -20,8 +20,10 @@ type RideLike = {
   departure_time: string
 }
 
-export function generateSharePayload(presetId: SharePresetId, ride: RideLike) {
-  const link = `${window.location.origin}/rides/${ride.id}`
+export function generateSharePayload(presetId: SharePresetId, ride: RideLike, inviteToken?: string | null) {
+  const link = inviteToken
+    ? `${window.location.origin}/i/${inviteToken}`
+    : `${window.location.origin}/rides/${ride.id}`
   const departure = formatLocalDateTime(ride.departure_time)
 
   switch (presetId) {

@@ -80,6 +80,7 @@ export interface RideOut {
   passengers: PassengerOut[];
   car: Car | null;
   driver?: UserBasicOut | null;
+  public_invite_token?: string | null;
 }
 
 export interface RideCreate {
@@ -107,6 +108,8 @@ export interface InvitationResolve {
   expires_at: string;
   destination: string | null;
   departure_time: string | null;
+  driver_name?: string | null;
+  car_name?: string | null;
 }
 
 // Add the new basic user profile type

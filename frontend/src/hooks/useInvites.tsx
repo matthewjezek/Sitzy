@@ -27,7 +27,7 @@ export interface UseInvitesReturn {
   fetchInvites: () => Promise<void>;
 }
 
-export function useInvites(rideId?: string): UseInvitesReturn {
+export function useInvites(rideId?: string, enabled = true): UseInvitesReturn {
   const [invites, setInvites] = useState<Invitation[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,6 +49,7 @@ export function useInvites(rideId?: string): UseInvitesReturn {
 
   // GET /invitations/ride/:rideId  nebo  GET /invitations/received
   const fetchInvites = useCallback(async () => {
+    if (!enabled) return;
     setLoading(true);
     setError(null);
     try {
@@ -57,16 +58,17 @@ export function useInvites(rideId?: string): UseInvitesReturn {
         : `/invitations/received`;
       const res = await instance.get<Invitation[]>(url);
       const data = Array.isArray(res.data) ? res.data : [];
-      setInvites(data.filter((i) => i.status === "Pending"));
+      setInvites(data.filter((i) => i.status === "Pending" && i.invited_email !== "public@sitzy.local"));
     } catch (err) {
       handleError(err, "Nepodařilo se načíst pozvánky.");
     } finally {
       setLoading(false);
     }
-  }, [rideId]);
+  }, [rideId, enabled]);
 
   useEffect(() => {
     const handleInvitesChanged = (event: Event) => {
+      if (!enabled) return;
       const customEvent = event as CustomEvent<InvitesChangedDetail>;
       const changedRideId = customEvent.detail?.rideId;
 
@@ -79,7 +81,7 @@ export function useInvites(rideId?: string): UseInvitesReturn {
 
     window.addEventListener(INVITES_CHANGED_EVENT, handleInvitesChanged);
     return () => window.removeEventListener(INVITES_CHANGED_EVENT, handleInvitesChanged);
-  }, [fetchInvites, rideId]);
+  }, [fetchInvites, rideId, enabled]);
 
   // POST /rides/:rideId/invite
   const createInvite = useCallback(async (email: string) => {
@@ -145,8 +147,10 @@ export function useInvites(rideId?: string): UseInvitesReturn {
   }, [rideId]);
 
   useEffect(() => {
-    fetchInvites();
-  }, [fetchInvites]);
+    if (enabled) {
+      fetchInvites();
+    }
+  }, [fetchInvites, enabled]);
 
   return { invites, loading, error, createInvite, cancelInvite, respondInvite, fetchInvites };
 }

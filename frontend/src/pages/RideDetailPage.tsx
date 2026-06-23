@@ -12,6 +12,7 @@ import {
   FiXCircle,
   FiEye,
   FiEyeOff,
+  FiCopy,
 } from 'react-icons/fi'
 import { BiCar } from 'react-icons/bi'
 import { toast } from 'react-toastify'
@@ -189,6 +190,20 @@ function InviteSection({ rideId, canCancelInvites }: { rideId: string; canCancel
 
           {canCancelInvites && (
             <div className="flex gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  const inviteLink = `${window.location.origin}/i/${inv.token}`
+                  navigator.clipboard.writeText(inviteLink)
+                    .then(() => toast.success('Odkaz na pozvánku byl zkopírován.'))
+                    .catch(() => toast.error('Nepodařilo se zkopírovat odkaz.'))
+                }}
+                className="text-xs button-secondary flex items-center gap-1"
+                aria-label={`Kopírovat odkaz pozvánky pro ${inv.invited_email}`}
+              >
+                <FiCopy size={12} />
+                <span>Kopírovat odkaz</span>
+              </button>
               <button
                 type="button"
                 disabled={cancellingToken === inv.token}
@@ -401,6 +416,8 @@ export default function RideDetailPage() {
   const storyCardRef = useRef<HTMLDivElement | null>(null)
 
   const inviteToken = searchParams.get('invite')
+  const isOwner = ride?.car?.owner_id === user?.id
+  const activeInviteToken = inviteToken || ride?.public_invite_token || null
 
   useEffect(() => {
     if (id) {
@@ -571,7 +588,6 @@ export default function RideDetailPage() {
     </div>
   )
 
-  const isOwner = ride.car?.owner_id === user?.id
   const isCurrentDriver = ride.driver_user_id === user?.id
   const isPassenger = Boolean(user && (ride.passengers ?? []).some(p => p.user_id === user.id))
   const isPastRide = new Date(ride.departure_time).getTime() < Date.now()
@@ -680,7 +696,7 @@ export default function RideDetailPage() {
   }
 
   const buildSharePayload = (presetId: SharePresetId) => {
-    return generateSharePayload(presetId, { id: ride.id, destination: ride.destination, departure_time: ride.departure_time })
+    return generateSharePayload(presetId, { id: ride.id, destination: ride.destination, departure_time: ride.departure_time }, activeInviteToken)
   }
 
   const canLeaveRide = Boolean(user && !isOwner && !isCurrentDriver)

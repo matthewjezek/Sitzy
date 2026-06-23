@@ -149,12 +149,30 @@ def resolve_invitation_token(
     )
     db.commit()
 
+    driver_name = None
+    car_name = None
+    if invitation.ride:
+        car_driver = getattr(invitation.ride, "car_driver", None)
+        driver = getattr(car_driver, "driver", None) if car_driver else None
+        car = getattr(invitation.ride, "car", None)
+        owner = getattr(car, "owner", None) if car else None
+
+        if driver:
+            driver_name = getattr(driver, "full_name", None)
+        elif owner:
+            driver_name = getattr(owner, "full_name", None)
+
+        if car:
+            car_name = getattr(car, "name", None)
+
     return InvitationResolveOut(
         ride_id=invitation.ride_id,
         status=invitation.status,
         expires_at=invitation.expires_at,
         destination=invitation.ride.destination if invitation.ride else None,
         departure_time=invitation.ride.departure_time if invitation.ride else None,
+        driver_name=driver_name,
+        car_name=car_name,
     )
 
 
@@ -182,12 +200,17 @@ def accept_invitation(
         raise HTTPException(
             status_code=400, detail="Invitation has already been processed."
         )
-    if not ctx.user.email or invitation.invited_email.lower() != ctx.user.email.lower():
-        logger.warning(
-            "Invitation acceptance denied - email mismatch",
-            extra={"user_id": str(ctx.user.id), "token": token},
-        )
-        raise HTTPException(status_code=403, detail="This is not your invitation.")
+    is_public_invite = invitation.invited_email.lower() == "public@sitzy.local"
+    if not is_public_invite:
+        if (
+            not ctx.user.email
+            or invitation.invited_email.lower() != ctx.user.email.lower()
+        ):
+            logger.warning(
+                "Invitation acceptance denied - email mismatch",
+                extra={"user_id": str(ctx.user.id), "token": token},
+            )
+            raise HTTPException(status_code=403, detail="This is not your invitation.")
 
     existing = (
         db.query(Passenger)
@@ -225,7 +248,8 @@ def accept_invitation(
             )
         seat_position = seat_in.seat_position
 
-    invitation.status = InvitationStatus.ACCEPTED
+    if not is_public_invite:
+        invitation.status = InvitationStatus.ACCEPTED
     passenger = Passenger(
         user_id=ctx.user.id,
         ride_id=invitation.ride_id,

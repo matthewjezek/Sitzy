@@ -80,6 +80,9 @@ def _has_pending_invitation_access(
     if not invitation:
         return False
 
+    if invitation.invited_email.lower() == "public@sitzy.local":
+        return True
+
     return invitation.invited_email.lower() == user_email.lower()
 
 
@@ -269,6 +272,9 @@ def create_ride(
     db.add(ride)
     db.commit()
     db.refresh(ride)
+
+    get_or_create_public_invitation(ride.id, db)
+
     logger.info(
         "Ride created",
         extra={
@@ -278,6 +284,30 @@ def create_ride(
         },
     )
     return RideOut.from_ride(ride)
+
+
+def get_or_create_public_invitation(ride_id: UUID, db: Session) -> Invitation:
+    public_invite = (
+        db.query(Invitation)
+        .filter(
+            Invitation.ride_id == ride_id,
+            Invitation.invited_email == "public@sitzy.local",
+            Invitation.status == InvitationStatus.PENDING,
+        )
+        .first()
+    )
+    if not public_invite:
+        public_invite = Invitation(
+            ride_id=ride_id,
+            invited_email="public@sitzy.local",
+            token=generate_token(32),
+            status=InvitationStatus.PENDING,
+            expires_at=datetime.now(timezone.utc) + timedelta(days=365),
+        )
+        db.add(public_invite)
+        db.commit()
+        db.refresh(public_invite)
+    return public_invite
 
 
 @router.get("/{ride_id}", response_model=RideOut)
@@ -297,6 +327,7 @@ def get_ride(
         invite_token=invite_token,
         user_email=ctx.user.email,
     )
+    get_or_create_public_invitation(ride_id, db)
     return RideOut.from_ride(ride)
 
 
