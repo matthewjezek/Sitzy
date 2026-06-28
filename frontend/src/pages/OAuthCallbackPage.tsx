@@ -49,7 +49,7 @@ export default function OAuthCallbackPage() {
           setTargetPath(redirectPath)
           return
         }
-        setTargetPath('/')
+        setTargetPath('/dashboard')
       })
       .catch(error => {
         const errorDetail = error.response?.data?.detail || ''

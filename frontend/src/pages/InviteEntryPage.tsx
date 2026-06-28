@@ -13,6 +13,7 @@ export default function InviteEntryPage() {
   const [loading, setLoading] = useState(true)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [inviteDetails, setInviteDetails] = useState<InvitationResolve | null>(null)
+  const hasToken = Boolean(localStorage.getItem('access_token'))
 
   useEffect(() => {
     const resolveInvite = async () => {
@@ -27,8 +28,6 @@ export default function InviteEntryPage() {
         setInviteDetails(data)
         
         const targetPath = `/rides/${data.ride_id}?invite=${encodeURIComponent(inviteToken)}`
-        const hasToken = Boolean(localStorage.getItem('access_token'))
-
         if (hasToken) {
           // If authenticated, skip landing page and redirect directly
           navigate(targetPath, { replace: true })
@@ -53,7 +52,7 @@ export default function InviteEntryPage() {
     }
 
     void resolveInvite()
-  }, [inviteToken, navigate])
+  }, [inviteToken, navigate, hasToken])
 
   const handleAccept = () => {
     if (!inviteDetails || !inviteToken) return
@@ -86,7 +85,7 @@ export default function InviteEntryPage() {
               <h1 className="text-xl font-bold text-red-500">Chyba pozvánky</h1>
               <p className="text-sm text-secondary">{errorMsg}</p>
               <button
-                onClick={() => navigate('/')}
+                onClick={() => navigate(hasToken ? '/dashboard' : '/')}
                 className="button-secondary mt-2 w-full"
               >
                 Zpět na hlavní stránku
@@ -167,7 +166,7 @@ export default function InviteEntryPage() {
 
               <button
                 type="button"
-                onClick={() => navigate('/')}
+                onClick={() => navigate(hasToken ? '/dashboard' : '/')}
                 className="button-secondary w-full h-10"
               >
                 Zatím ne

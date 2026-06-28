@@ -59,7 +59,7 @@ test.describe('Survey flow tests', () => {
 
     // Click continue to go to dashboard
     await continueBtn.click()
-    await expect(page).toHaveURL(/\/$/)
+    await expect(page).toHaveURL(/\/dashboard$/)
 
     // Checklist widget should be visible on dashboard
     const checklistToggle = page.getByRole('button', { name: /Úkoly \(\d\/\d\)/ })

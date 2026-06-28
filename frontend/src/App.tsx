@@ -15,6 +15,7 @@ import {
 import { PWAProvider } from './context/PWAProvider'
 
 const LoginPage = lazy(() => import('./pages/LoginPage'))
+const LandingPage = lazy(() => import('./pages/LandingPage'))
 const PageNotFound = lazy(() => import('./pages/PageNotFound'))
 const SettingsPage = lazy(() => import('./pages/SettingsPage'))
 const OAuthCallbackPage = lazy(() => import('./pages/OAuthCallbackPage'))
@@ -90,6 +91,7 @@ function AppRoutes() {
         </Route>
 
         {/* Public routes (accessible to everyone) */}
+        <Route path="/" element={<LandingPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/i/:inviteToken" element={<InviteEntryPage />} />
@@ -97,7 +99,7 @@ function AppRoutes() {
 
         <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
           {/* Dashboard */}
-          <Route path="/" element={<DashboardPage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
 
           {/* Rides */}
           <Route path="/rides" element={<RidesPage />} />

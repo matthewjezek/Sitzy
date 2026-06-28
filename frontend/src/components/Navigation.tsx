@@ -225,8 +225,8 @@ export default function Navigation() {
   }
 
   const isActive = (path: string) => {
-    if (path === '/') {
-      return location.pathname === '/'
+    if (path === '/dashboard') {
+      return location.pathname === '/dashboard'
     }
     return location.pathname === path || location.pathname.startsWith(`${path}/`)
   }
@@ -293,7 +293,7 @@ export default function Navigation() {
             <ArrowLeftIcon />
             <span className="whitespace-nowrap max-w-0 overflow-hidden transition-all duration-300 ease-in group-hover:max-w-[100px]">Zpět</span>
           </button>
-          <button className={`nav-button glass nav-hover-rocket ${isActive('/') ? 'glass-active' : ''}`} onClick={() => navigate('/')}>
+          <button className={`nav-button glass nav-hover-rocket ${isActive('/dashboard') ? 'glass-active' : ''}`} onClick={() => navigate('/dashboard')}>
             <RocketIcon />Start
           </button>
           <button className={`nav-button glass nav-hover-seat ${isActive('/rides') ? 'glass-active' : ''}`} onClick={() => navigate('/rides')}>
@@ -304,7 +304,7 @@ export default function Navigation() {
           </button>
         </div>
 
-        <Link to="/" className="flex items-center flex-shrink-0">
+        <Link to="/dashboard" className="flex items-center flex-shrink-0">
           <img src={logoLight} alt="Sitzy logo" className="logo logo-light h-10" />
           <img src={logoDark} alt="Sitzy logo" className="logo logo-dark h-10" />
         </Link>
@@ -349,7 +349,7 @@ export default function Navigation() {
         <div className="w-full max-w-screen-xl grid grid-cols-[1fr_auto_1fr] items-center p-4">
           
           <div className="flex justify-start">
-            {location.pathname !== '/' ? (
+            {location.pathname !== '/dashboard' ? (
               <button
                 className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-muted rounded-lg hover-list-bg"
                 onClick={() => navigate(-1)}
@@ -363,7 +363,7 @@ export default function Navigation() {
           </div>
 
           <Link 
-            to="/" 
+            to="/dashboard" 
             className="flex justify-center items-center h-10"
           >
             <img src={logoLight} alt="Sitzy logo" className="logo logo-light h-10" />
@@ -412,7 +412,7 @@ export default function Navigation() {
           >
             <nav aria-label="Hlavní menu">
               <ul className="font-medium flex flex-col gap-2 pt-3">
-                <li><Link to="/" className="inline-flex items-center gap-3 py-2 px-3 rounded-md w-full" onClick={closePanels}><RocketIcon />Start</Link></li>
+                <li><Link to="/dashboard" className="inline-flex items-center gap-3 py-2 px-3 rounded-md w-full" onClick={closePanels}><RocketIcon />Start</Link></li>
                 <hr className="border-light" />
                 <li><Link to="/rides" className="inline-flex items-center gap-3 py-2 px-3 rounded-md w-full" onClick={closePanels}><SeatIcon />Jízdy</Link></li>
                 <hr className="border-light" />

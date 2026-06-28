@@ -14,7 +14,8 @@ export default function DocHeader({ lang, setLang }: DocHeaderProps) {
     if (window.history.length > 1) {
       navigate(-1);
     } else {
-      navigate('/');
+      const hasToken = Boolean(localStorage.getItem('access_token'));
+      navigate(hasToken ? '/dashboard' : '/');
     }
   };
 
