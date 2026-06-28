@@ -859,3 +859,18 @@ def test_get_ride_allows_public_invitation_with_any_user_email(
 
     assert response.status_code == 200
     assert response.json()["id"] == str(ride.id)
+
+
+def test_invitation_schema_allows_local_domain():
+    from ..schemas import InvitationCreate
+
+    # This should succeed
+    inv = InvitationCreate(invited_email="public@sitzy.local")
+    assert inv.invited_email == "public@sitzy.local"
+
+    # Invalid email should raise ValidationError
+    import pytest
+    from pydantic import ValidationError
+
+    with pytest.raises(ValidationError):
+        InvitationCreate(invited_email="invalid-email")

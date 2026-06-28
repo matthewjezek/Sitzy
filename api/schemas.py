@@ -1,14 +1,17 @@
+import re
 from datetime import datetime
 from typing import TYPE_CHECKING, cast
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from .utils.base_models import BaseModelWithLabels
 from .utils.enums import CarLayout, InvitationStatus
 
 if TYPE_CHECKING:
     from .models import Car, Invitation, Seat
+
+EMAIL_RE = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
 
 
 # === User ===
@@ -271,13 +274,21 @@ class CarFullOut(CarOut):
 
 # === Invitation ===
 class InvitationCreate(BaseModel):
-    invited_email: EmailStr
+    invited_email: str
+
+    @field_validator("invited_email")
+    @classmethod
+    def validate_invited_email(cls, v: str) -> str:
+        v_clean = v.strip()
+        if not EMAIL_RE.match(v_clean):
+            raise ValueError("Invalid email format")
+        return v_clean
 
 
 class InvitationOut(BaseModelWithLabels["InvitationOut"]):
     id: UUID
     ride_id: UUID
-    invited_email: EmailStr
+    invited_email: str
     token: str
     status: InvitationStatus
     created_at: datetime
