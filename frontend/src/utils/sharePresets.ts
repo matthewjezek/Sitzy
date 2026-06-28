@@ -21,9 +21,10 @@ type RideLike = {
 }
 
 export function generateSharePayload(presetId: SharePresetId, ride: RideLike, inviteToken?: string | null) {
+  const ts = Math.floor(Date.now() / 1000)
   const link = inviteToken
-    ? `${window.location.origin}/i/${inviteToken}`
-    : `${window.location.origin}/rides/${ride.id}`
+    ? `${window.location.origin}/i/${inviteToken}?v=${ts}`
+    : `${window.location.origin}/rides/${ride.id}?v=${ts}`
   const departure = formatLocalDateTime(ride.departure_time)
 
   switch (presetId) {

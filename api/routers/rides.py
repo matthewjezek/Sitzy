@@ -20,6 +20,7 @@ from api.schemas import (
 )
 from api.utils.enums import InvitationStatus
 from api.utils.logging_config import get_logger
+from api.utils.og import draw_ride_og_image
 from api.utils.seats import get_layout_seat_positions
 from api.utils.security import generate_token
 
@@ -698,3 +699,36 @@ def remove_passenger(
         },
     )
     return Response(status_code=204)
+
+
+@router.get("/og/{ride_id}", response_class=Response)
+def get_ride_og_image(
+    ride_id: UUID,
+    db: Session = Depends(get_db),
+) -> Response:
+    """Public endpoint to generate real-time Open Graph image for a ride."""
+    ride = db.query(Ride).filter(Ride.id == ride_id).first()
+    if not ride:
+        raise HTTPException(status_code=404, detail="Ride not found.")
+
+    # Get occupied seat positions from passengers list
+    occupied_positions = [p.seat_position for p in ride.passengers]
+
+    # Call the Pillow image generator
+    try:
+        img_bytes = draw_ride_og_image(
+            destination=ride.destination,
+            departure_time=ride.departure_time,
+            car_name=ride.car.name,
+            car_layout=ride.car.layout.value,
+            occupied_seat_positions=occupied_positions,
+        )
+    except Exception as e:
+        logger.error(f"Failed to generate OG image for ride {ride_id}: {e}")
+        raise HTTPException(status_code=500, detail="Could not generate image.")
+
+    return Response(
+        content=img_bytes,
+        media_type="image/png",
+        headers={"Cache-Control": "public, max-age=60, must-revalidate"},
+    )
