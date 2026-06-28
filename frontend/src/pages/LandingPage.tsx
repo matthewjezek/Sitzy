@@ -525,11 +525,17 @@ export default function LandingPage() {
           </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-8 text-xs text-slate-500 dark:text-slate-400">
-            <div className="flex items-center gap-1">
-              <span>© {new Date().getFullYear()} Sitzy.</span>
-              <span>Made with</span>
-              <FiHeart className="text-rose-500 fill-rose-500 animate-pulse mx-0.5" size={10} />
-              <span>for Bachelor's Thesis.</span>
+            <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2">
+              <div className="flex items-center gap-1">
+                <span>© {new Date().getFullYear()} Sitzy.</span>
+                <span>Made with</span>
+                <FiHeart className="text-rose-500 fill-rose-500 animate-pulse mx-0.5" size={10} />
+                <span>for Bachelor's Thesis.</span>
+              </div>
+              <span className="hidden sm:inline text-zinc-300 dark:text-slate-800">•</span>
+              <span className="text-[10px] text-slate-400 dark:text-slate-500">
+                Designed by <a href="https://www.magnific.com" target="_blank" rel="noopener noreferrer" className="hover:underline">Magnific</a>
+              </span>
             </div>
             
             <div className="flex items-center gap-4 font-semibold">

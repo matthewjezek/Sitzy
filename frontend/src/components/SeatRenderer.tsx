@@ -393,6 +393,34 @@ const LegendHint = styled.p`
   html.dark & { color: #94a3b8; }
 `;
 
+const Attribution = styled.div`
+  font-size: 0.65rem;
+  color: #94a3b8;
+  text-align: center;
+  margin-top: 0.5rem;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    opacity: 0.9;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: underline;
+    &:hover {
+      color: #6366f1;
+    }
+  }
+
+  html.dark & {
+    color: #475569;
+    a:hover {
+      color: #818cf8;
+    }
+  }
+`;
+
 export const SeatRenderer: React.FC<SeatRendererProps> = ({
   layout,
   seats,
@@ -642,6 +670,11 @@ export const SeatRenderer: React.FC<SeatRendererProps> = ({
       )}
       {renderLegend && mode === 'interactive' && (
         <LegendHint>Volná sedadla jsou klikací. Řidič je vždy uzamčený a nelze jej vybrat.</LegendHint>
+      )}
+      {!compact && (
+        <Attribution>
+          Designed by <a href="https://www.magnific.com" target="_blank" rel="noopener noreferrer">Magnific</a>
+        </Attribution>
       )}
     </SeatRendererContainer>
   );
