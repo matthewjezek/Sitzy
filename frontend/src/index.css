@@ -668,7 +668,7 @@
     align-items: center;
     justify-content: center;
     padding: 1.5rem;
-    min-height: calc(100dvh - 4rem);
+    min-height: calc(100dvh - 4rem - env(safe-area-inset-top, 0px));
     background-color: var(--bg-light);
     transition: background-color 200ms ease;
   }
