@@ -160,7 +160,7 @@ export default function InviteEntryPage() {
                 onClick={handleAccept}
                 className="button-primary w-full h-11 flex items-center justify-center gap-2 group"
               >
-                <span>Přijmout pozvánku & vybrat sedadlo</span>
+                <span>Přijmout a vybrat sedadlo</span>
                 <FiArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
               </button>
 

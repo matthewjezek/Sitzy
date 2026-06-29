@@ -29,7 +29,7 @@ test.describe('Invite ingress route /i/:inviteToken', () => {
     await expect(page.getByText('Testtown')).toBeVisible()
 
     // Accept invitation and proceed to login
-    await page.getByRole('button', { name: 'Přijmout pozvánku & vybrat sedadlo' }).click()
+    await page.getByRole('button', { name: 'Přijmout a vybrat sedadlo' }).click()
 
     await expect(page).toHaveURL(/\/login/)
 

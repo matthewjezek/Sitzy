@@ -11,6 +11,7 @@ function formatLocalDateTime(utcIso: string): string {
     return new Intl.DateTimeFormat('cs-CZ', {
       dateStyle: 'medium',
       timeStyle: 'short',
+      timeZone: 'Europe/Prague',
     }).format(new Date(utcIso))
   } catch {
     return utcIso

@@ -1,6 +1,6 @@
 import io
 import os
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -47,8 +47,30 @@ def _load_font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
     return ImageFont.load_default()
 
 
+def get_prague_timezone(dt: datetime) -> timezone:
+    """Return Europe/Prague timezone object with DST offset (+1 or +2)."""
+    if dt.tzinfo is not None:
+        utc_dt = dt.astimezone(timezone.utc)
+    else:
+        utc_dt = dt.replace(tzinfo=timezone.utc)
+
+    year = utc_dt.year
+    march_31 = datetime(year, 3, 31, 1, 0, tzinfo=timezone.utc)
+    start_cest = march_31 - timedelta(days=(march_31.weekday() + 1) % 7)
+
+    october_31 = datetime(year, 10, 31, 1, 0, tzinfo=timezone.utc)
+    end_cest = october_31 - timedelta(days=(october_31.weekday() + 1) % 7)
+
+    if start_cest <= utc_dt < end_cest:
+        return timezone(timedelta(hours=2))
+    else:
+        return timezone(timedelta(hours=1))
+
+
 def format_czech_datetime(dt: datetime) -> str:
     """Format datetime to Czech layout: 'Čtvrtek 2. 7. v 17:30'."""
+    tz = get_prague_timezone(dt)
+    dt = dt.astimezone(tz)
     days = ["Pondělí", "Úterý", "Středa", "Čtvrtek", "Pátek", "Sobota", "Neděle"]
     day_name = days[dt.weekday()]
     return f"{day_name} {dt.day}. {dt.month}. v {dt.hour}:{dt.minute:02d}"
