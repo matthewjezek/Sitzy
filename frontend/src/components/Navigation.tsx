@@ -304,7 +304,7 @@ export default function Navigation() {
           </button>
         </div>
 
-        <Link to="/dashboard" className="flex items-center flex-shrink-0">
+        <Link to="/dashboard" className="flex items-center flex-shrink-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-lg outline-none">
           <img src={logoLight} alt="Sitzy logo" className="logo logo-light h-10" />
           <img src={logoDark} alt="Sitzy logo" className="logo logo-dark h-10" />
         </Link>
@@ -313,7 +313,7 @@ export default function Navigation() {
           <div className="relative">
             <button
               onClick={toggleBell}
-              className="nav-button p-0 glass rounded-full w-9 h-9 flex items-center justify-center relative"
+              className="nav-button p-0 glass rounded-full w-11 h-11 flex items-center justify-center relative"
               aria-label="Otevřít notifikace"
             >
               <FiBell className="nav-icon-bell" size={20} aria-hidden="true" />
@@ -330,7 +330,7 @@ export default function Navigation() {
             />
           </div>
           <button
-            className="nav-button p-0 glass rounded-full w-9 h-9 flex items-center justify-center nav-hover-settings"
+            className="nav-button p-0 glass rounded-full w-11 h-11 flex items-center justify-center nav-hover-settings"
             onClick={() => navigate('/settings')}
             aria-label="Nastavení"
           >
@@ -351,20 +351,20 @@ export default function Navigation() {
           <div className="flex justify-start">
             {location.pathname !== '/dashboard' ? (
               <button
-                className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-muted rounded-lg hover-list-bg"
+                className="inline-flex items-center p-2 w-11 h-11 justify-center text-sm text-muted rounded-lg hover-list-bg"
                 onClick={() => navigate(-1)}
                 aria-label="Zpět"
               >
                 <ArrowLeftIcon />
               </button>
             ) : (
-              <div className="w-10 h-10" aria-hidden="true" />
+              <div className="w-11 h-11" aria-hidden="true" />
             )}
           </div>
 
           <Link 
             to="/dashboard" 
-            className="flex justify-center items-center h-10"
+            className="flex justify-center items-center h-10 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-lg outline-none"
           >
             <img src={logoLight} alt="Sitzy logo" className="logo logo-light h-10" />
             <img src={logoDark} alt="Sitzy logo" className="logo logo-dark h-10" />
@@ -374,7 +374,7 @@ export default function Navigation() {
             
             <button
               type="button"
-              className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-muted rounded-lg hover-list-bg relative"
+              className="inline-flex items-center p-2 w-11 h-11 justify-center text-sm text-muted rounded-lg hover-list-bg relative"
               onClick={toggleBell}
               aria-expanded={bellOpen}
               aria-controls="mobile-notifications-dialog"
@@ -386,7 +386,7 @@ export default function Navigation() {
 
             <button
               type="button"
-              className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-muted rounded-lg hover-list-bg focus:outline-none"
+              className="inline-flex items-center p-2 w-11 h-11 justify-center text-sm text-muted rounded-lg hover-list-bg focus:outline-none"
               aria-controls="mobile-menu-dialog"
               aria-expanded={menuOpen}
               aria-haspopup="dialog"

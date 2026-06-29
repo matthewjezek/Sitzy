@@ -163,9 +163,9 @@ export default function SurveyRedirectPage() {
               <h3 className="font-semibold text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
                 Tipy pro hladký průběh testování:
               </h3>
-              <ul className="list-disc list-inside space-y-1.5 text-zinc-650 dark:text-zinc-400 leading-relaxed">
+              <ul className="list-disc list-inside space-y-1.5 text-zinc-600 dark:text-zinc-400 leading-relaxed">
                 <li>
-                  <strong className="text-zinc-700 dark:text-zinc-300">Doporučené přihlášení:</strong> Pro snadný start doporučujeme použít přihlášení přes <strong className="text-indigo-650 dark:text-indigo-400 font-semibold">X (Twitter)</strong>, které je plně veřejné. Facebook vyžaduje z důvodu schvalovacích pravidel společnosti Meta manuální přidání do testovací skupiny (pokud ho chcete vyzkoušet, <a href="https://m.me/MattyMatejJezek" target="_blank" rel="noopener noreferrer" className="text-link">napište mi</a> své jméno/uživatelské jméno a přidám vás).
+                  <strong className="text-zinc-700 dark:text-zinc-300">Doporučené přihlášení:</strong> Pro snadný start doporučujeme použít přihlášení přes <strong className="text-indigo-600 dark:text-indigo-400 font-semibold">X (Twitter)</strong>, které je plně veřejné. Facebook vyžaduje z důvodu schvalovacích pravidel společnosti Meta manuální přidání do testovací skupiny (pokud ho chcete vyzkoušet, <a href="https://m.me/MattyMatejJezek" target="_blank" rel="noopener noreferrer" className="text-link">napište mi</a> své jméno/uživatelské jméno a přidám vás).
                 </li>
                 <li>
                   <strong className="text-zinc-700 dark:text-zinc-300">Výběr místa z pozvánky:</strong> Po přihlášení klikněte na ikonu zvonečku (notifikace) v horním menu, klikněte na „Přijmout“ a na detailu jízdy si vyberte libovolné volné sedadlo v autě.

@@ -117,7 +117,7 @@ export default function InviteEntryPage() {
                 <div className="flex items-center gap-3">
                   <FiMapPin size={18} className="text-accent shrink-0" />
                   <div className="flex flex-col min-w-0">
-                    <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-semibold uppercase tracking-wider">Cíl cesty</span>
+                    <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-semibold uppercase tracking-wider">Cíl cesty</span>
                     <span className="text-sm font-bold truncate">{inviteDetails.destination}</span>
                   </div>
                 </div>
@@ -125,7 +125,7 @@ export default function InviteEntryPage() {
                 <div className="flex items-center gap-3">
                   <FiCalendar size={18} className="text-accent shrink-0" />
                   <div className="flex flex-col min-w-0">
-                    <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-semibold uppercase tracking-wider">Odjezd</span>
+                    <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-semibold uppercase tracking-wider">Odjezd</span>
                     <span className="text-sm font-medium truncate">
                       {inviteDetails.departure_time ? formatLocalDateTime(inviteDetails.departure_time) : 'Neznámý'}
                     </span>
@@ -136,7 +136,7 @@ export default function InviteEntryPage() {
                   <div className="flex items-center gap-3">
                     <FiUser size={18} className="text-accent shrink-0" />
                     <div className="flex flex-col min-w-0">
-                      <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-semibold uppercase tracking-wider">Řidič / Pořadatel</span>
+                      <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-semibold uppercase tracking-wider">Řidič / Pořadatel</span>
                       <span className="text-sm font-medium truncate">{inviteDetails.driver_name}</span>
                     </div>
                   </div>
@@ -146,7 +146,7 @@ export default function InviteEntryPage() {
                   <div className="flex items-center gap-3">
                     <BiCar size={18} className="text-accent shrink-0" />
                     <div className="flex flex-col min-w-0">
-                      <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-semibold uppercase tracking-wider">Vozidlo</span>
+                      <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-semibold uppercase tracking-wider">Vozidlo</span>
                       <span className="text-sm font-medium truncate">{inviteDetails.car_name}</span>
                     </div>
                   </div>
@@ -167,13 +167,13 @@ export default function InviteEntryPage() {
               <button
                 type="button"
                 onClick={() => navigate(hasToken ? '/dashboard' : '/')}
-                className="button-secondary w-full h-10"
+                className="button-secondary w-full h-11"
               >
                 Zatím ne
               </button>
             </div>
             
-            <p className="text-[11px] text-zinc-400 dark:text-zinc-500 text-center">
+            <p className="text-[11px] text-zinc-600 dark:text-zinc-400 text-center">
               Pro registraci a výběr místa v autě budete přesměrováni na přihlašovací stránku.
             </p>
           </div>

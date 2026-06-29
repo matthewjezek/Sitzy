@@ -43,7 +43,7 @@ export default function ErrorView({
             {onRetry && (
               <button
                 onClick={onRetry}
-                className="flex-1 button-primary flex items-center justify-center gap-2 h-10"
+                className="flex-1 button-primary flex items-center justify-center gap-2 h-11"
               >
                 <FiRefreshCw size={16} />
                 <span>Zkusit znovu</span>
@@ -51,7 +51,7 @@ export default function ErrorView({
             )}
             <button
               onClick={handleBack}
-              className="flex-1 button-secondary flex items-center justify-center gap-2 h-10"
+              className="flex-1 button-secondary flex items-center justify-center gap-2 h-11"
             >
               <FiArrowLeft size={16} />
               <span>Odejít</span>

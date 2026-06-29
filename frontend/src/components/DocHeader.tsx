@@ -37,7 +37,7 @@ export default function DocHeader({ lang, setLang }: DocHeaderProps) {
             className={`px-3 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
               lang === 'cs'
                 ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-xs'
-                : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'
+                : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'
             }`}
           >
             CZ
@@ -47,7 +47,7 @@ export default function DocHeader({ lang, setLang }: DocHeaderProps) {
             className={`px-3 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
               lang === 'en'
                 ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-xs'
-                : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'
+                : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'
             }`}
           >
             EN
