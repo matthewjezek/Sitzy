@@ -52,6 +52,9 @@ export function useRide() {
       const userSeat = localStorage.getItem('survey_mock_ride_user_seat')
       const isAccepted = localStorage.getItem('survey_mock_invite_accepted') === 'true'
       
+      const mockName = localStorage.getItem('survey_user_name') || 'Můj profil (Pasažér)'
+      const mockAvatar = localStorage.getItem('survey_user_avatar') || null
+      
       const passengers = [
         {
           user_id: "survey-mock-passenger-2",
@@ -65,8 +68,8 @@ export function useRide() {
         passengers.push({
           user_id: "me",
           seat_position: Number(userSeat),
-          full_name: "Můj profil (Pasažér)",
-          avatar_url: null
+          full_name: mockName,
+          avatar_url: mockAvatar
         })
       }
       

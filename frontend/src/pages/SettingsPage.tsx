@@ -45,19 +45,25 @@ export default function SettingsPage() {
 
     const cloned = JSON.parse(JSON.stringify(data)) as SocialDashboard
 
+    const completedTasks = JSON.parse(localStorage.getItem('survey_completed_checkpoints') || '[]') as string[]
+    const isTaskCompleted = completedTasks.includes('session_revoked_others') || localStorage.getItem('survey_mock_session_revoked') === 'true'
+    const isUnlinkCompleted = completedTasks.includes('unlink_social') || Object.keys(localStorage).some(k => k.startsWith('survey_mock_') && k.endsWith('_unlinked'))
+
     // 1. Session injection: if no mock revoked flag is set, inject a second session
     const mockSessionRevoked = localStorage.getItem('survey_mock_session_revoked') === 'true'
-    const hasOtherSessions = cloned.sessions.some((s: SocialSessionInfo) => !s.is_current && !s.revoked_at)
-    if (!mockSessionRevoked && !hasOtherSessions) {
-      cloned.sessions.push({
-        id: 'mock-session-survey-other',
-        provider: cloned.accounts[0]?.provider === 'twitter' ? 'facebook' : 'twitter',
-        created_at: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
-        expires_at: new Date(Date.now() + 5 * 24 * 3600 * 1000).toISOString(),
-        revoked_at: null,
-        user_agent: 'Safari on iPhone (Simulated Study Session)',
-        is_current: false,
-      })
+    if (!isTaskCompleted) {
+      const hasOtherSessions = cloned.sessions.some((s: SocialSessionInfo) => !s.is_current && !s.revoked_at)
+      if (!hasOtherSessions) {
+        cloned.sessions.push({
+          id: 'mock-session-survey-other',
+          provider: cloned.accounts[0]?.provider === 'twitter' ? 'facebook' : 'twitter',
+          created_at: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
+          expires_at: new Date(Date.now() + 5 * 24 * 3600 * 1000).toISOString(),
+          revoked_at: null,
+          user_agent: 'Safari on iPhone (Simulated Study Session)',
+          is_current: false,
+        })
+      }
     } else if (mockSessionRevoked) {
       const mockSession = cloned.sessions.find((s: SocialSessionInfo) => s.id === 'mock-session-survey-other')
       if (mockSession) {
@@ -81,8 +87,8 @@ export default function SettingsPage() {
       return !val || val === 'false'
     })
 
-    // 2. Provider unlinking injection: if they only have 1 provider, inject a mock second provider
-    if (cloned.accounts.length === 1) {
+    // 2. Provider unlinking injection: if they only have 1 provider and haven't unlinked yet, inject a mock second provider
+    if (!isUnlinkCompleted && cloned.accounts.length === 1) {
       const currentProvider = cloned.accounts[0].provider
       const mockProvider = currentProvider.toLowerCase() === 'twitter' ? 'facebook' : 'twitter'
       const mockProviderUnlinkedVal = localStorage.getItem(`survey_mock_${mockProvider}_unlinked`)
@@ -322,6 +328,9 @@ export default function SettingsPage() {
         return
       }
 
+      if (!session.is_current) {
+        completeTask('session_revoked_others')
+      }
       await refreshSocialDashboard()
 
       toast.success('Relace byla zneplatněna.')
@@ -351,9 +360,9 @@ export default function SettingsPage() {
       }
 
       await instance.post(`/auth/social/providers/${provider}/unlink`)
+      completeTask('unlink_social')
       await Promise.all([refreshSocialDashboard(), refreshUser()])
       toast.success(`Poskytovatel ${provider} byl odpojen.`)
-      completeTask('unlink_social')
     } catch (err) {
       toast.error(
         isAxiosError(err)

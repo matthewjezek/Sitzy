@@ -6,6 +6,7 @@ import InstallPrompt from '../utils/InstallPrompt'
 import { AuthProvider } from '../hooks/useAuth';
 import { FiCheck, FiList, FiX } from 'react-icons/fi'
 import { completeTask } from '../utils/survey'
+import { toast } from 'react-toastify'
 
 interface LayoutProps {
     children?: ReactNode
@@ -13,6 +14,17 @@ interface LayoutProps {
 
 function SurveyChecklistWidget() {
   const [isOpen, setIsOpen] = useState(false)
+  const handleCopyAnonymousLink = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault()
+    const url = window.location.origin + '/login'
+    navigator.clipboard.writeText(url).then(() => {
+      toast.info('Odkaz zkopírován! Otevřete anonymní okno (Ctrl+Shift+N / Cmd+Shift+N) a vložte jej (Ctrl+V).', {
+        autoClose: 10000,
+      })
+    }).catch(() => {
+      window.open(url, '_blank')
+    })
+  }
   const [completed, setCompleted] = useState<string[]>([])
   const hasSurveyToken = Boolean(localStorage.getItem('survey_token'))
 
@@ -114,7 +126,21 @@ function SurveyChecklistWidget() {
                   >
                     {isDone && <FiCheck size={10} strokeWidth={3} />}
                   </div>
-                  <span className="truncate">{task.label}</span>
+                  <div className="flex items-center justify-between w-full min-w-0">
+                    <span>{task.label}</span>
+                    {task.id === 'session_revoked_others' && !isDone && (
+                      <a
+                        href={window.location.origin + '/login'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={handleCopyAnonymousLink}
+                        className="text-[10px] text-indigo-400 hover:text-indigo-300 hover:underline ml-2 shrink-0 bg-indigo-500/10 px-1.5 py-0.5 rounded border border-indigo-500/20"
+                        title="Kliknutím zkopírujete odkaz. Otevřete jej v anonymním okně."
+                      >
+                        anonymní okno
+                      </a>
+                    )}
+                  </div>
                 </li>
               )
             })}

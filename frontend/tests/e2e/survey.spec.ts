@@ -254,6 +254,6 @@ test.describe('Survey flow tests', () => {
     expect(checkpointReported).toBe(true)
 
     // Check that we are displayed as passenger in the list of passengers
-    await expect(page.getByText('Můj profil (Pasažér)')).toBeVisible()
+    await expect(page.getByText('Jan Novák')).toBeVisible()
   })
 })
