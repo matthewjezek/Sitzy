@@ -61,6 +61,8 @@ export default async function middleware(request: Request) {
             const driverInfo = driver_name ? ` (Řidič: ${driver_name}${car_name ? ` - ${car_name}` : ''})` : ''
             const description = `Přidej se k naší spolujízdě! Cíl: ${destination || ''}. Odjezd: ${departureTimeFormatted}.${driverInfo}`
 
+            const imageQuery = url.search ? url.search : `?t=${Date.now()}`
+
             html = html
               .replace(/<title>Sitzy<\/title>/, `<title>Sitzy — Spolujízda ${destination ? `do ${destination}` : ''}</title>`)
               .replace(
@@ -73,7 +75,7 @@ export default async function middleware(request: Request) {
               )
               .replace(
                 /<meta property="og:image" content="[^"]*"\s*\/?>/g,
-                `<meta property="og:image" content="${apiBaseUrl}/rides/og/${ride_id}" />`
+                `<meta property="og:image" content="${apiBaseUrl}/rides/og/${ride_id}${imageQuery}" />`
               )
               .replace(
                 /<meta name="twitter:title" content="[^"]*"\s*\/?>/g,
@@ -85,7 +87,7 @@ export default async function middleware(request: Request) {
               )
               .replace(
                 /<meta name="twitter:image" content="[^"]*"\s*\/?>/g,
-                `<meta name="twitter:image" content="${apiBaseUrl}/rides/og/${ride_id}" />`
+                `<meta name="twitter:image" content="${apiBaseUrl}/rides/og/${ride_id}${imageQuery}" />`
               )
 
             return new Response(html, {
