@@ -818,54 +818,56 @@ export default function RideDetailPage() {
           )}
         </div>
 
-        <div className="card p-4 md:p-6 flex flex-col gap-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div>
-              <h2 className="font-semibold">Sdílená karta jízdy</h2>
-              <p className="text-sm text-secondary mt-1">
-                Mobilní náhled vhodný pro story export. Anonymizace je zapnutá ve výchozím stavu.
-              </p>
+        {!isPastRide && (
+          <div className="card p-4 md:p-6 flex flex-col gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <h2 className="font-semibold">Sdílená karta jízdy</h2>
+                <p className="text-sm text-secondary mt-1">
+                  Mobilní náhled vhodný pro story export. Anonymizace je zapnutá ve výchozím stavu.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setStoryAnonymized((prev) => !prev)}
+                className="button-secondary flex items-center gap-2 h-10"
+                aria-pressed={storyAnonymized}
+              >
+                {storyAnonymized ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                {storyAnonymized ? 'Anonymizováno' : 'Plné údaje'}
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => setStoryAnonymized((prev) => !prev)}
-              className="button-secondary flex items-center gap-2 h-10"
-              aria-pressed={storyAnonymized}
-            >
-              {storyAnonymized ? <FiEyeOff size={16} /> : <FiEye size={16} />}
-              {storyAnonymized ? 'Anonymizováno' : 'Plné údaje'}
-            </button>
-          </div>
 
-          <div className="story-card-wrapper">
-            <RideSummaryCard
-              ref={storyCardRef}
-              ride={ride}
-              anonymized={storyAnonymized}
-              watermarkText="Sitzy Demo"
-            />
-          </div>
+            <div className="story-card-wrapper">
+              <RideSummaryCard
+                ref={storyCardRef}
+                ride={ride}
+                anonymized={storyAnonymized}
+                watermarkText="Sitzy Demo"
+              />
+            </div>
 
-          <div className="flex flex-wrap justify-end gap-2">
-            <SharePreset
-              title={`Sitzy: ${ride.destination}`}
-              text={buildSharePayload('messenger_whatsapp_text_first').text}
-              url={buildSharePayload('messenger_whatsapp_text_first').link}
-              onDownloadPng={handleDownloadStoryImage}
-              onExportJson={handleExportStoryJson}
-              exportingImage={exportingImage}
-              exportingJson={exportingJson}
-              xText={buildSharePayload('x_compact').text}
-              xUrl={buildSharePayload('x_compact').link}
-              fbText={buildSharePayload('facebook_story').text}
-              fbUrl={buildSharePayload('facebook_story').link}
-              waText={buildSharePayload('messenger_whatsapp_text_first').text}
-              waUrl={buildSharePayload('messenger_whatsapp_text_first').link}
-              onGenerateBlob={generateStoryImageBlob}
-              onShare={() => completeTask('create_public_invite')}
-            />
+            <div className="flex flex-wrap justify-end gap-2">
+              <SharePreset
+                title={`Sitzy: ${ride.destination}`}
+                text={buildSharePayload('messenger_whatsapp_text_first').text}
+                url={buildSharePayload('messenger_whatsapp_text_first').link}
+                onDownloadPng={handleDownloadStoryImage}
+                onExportJson={handleExportStoryJson}
+                exportingImage={exportingImage}
+                exportingJson={exportingJson}
+                xText={buildSharePayload('x_compact').text}
+                xUrl={buildSharePayload('x_compact').link}
+                fbText={buildSharePayload('facebook_story').text}
+                fbUrl={buildSharePayload('facebook_story').link}
+                waText={buildSharePayload('messenger_whatsapp_text_first').text}
+                waUrl={buildSharePayload('messenger_whatsapp_text_first').link}
+                onGenerateBlob={generateStoryImageBlob}
+                onShare={() => completeTask('create_public_invite')}
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         <PassengersSection
           passengers={ride.passengers ?? []}

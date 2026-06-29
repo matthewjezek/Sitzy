@@ -111,10 +111,13 @@ export default function RidesPage() {
           <p className="empty-state-description">Pro zadané filtry nebyly nalezeny žádné výsledky.</p>
           {timeFilter === 'upcoming' && searchQuery === '' && (
             <button 
-              onClick={() => navigate('/rides/new')} 
+              onClick={() => {
+                setTimeFilter('all_time')
+                setRoleFilter('all_roles')
+              }} 
               className="button-primary flex items-center gap-2 mx-auto mt-4"
             >
-              <FiPlus size={18} aria-hidden="true" /> Naplánovat první jízdu
+              Zobrazit všechny jízdy
             </button>
           )}
         </div>
@@ -202,7 +205,7 @@ export default function RidesPage() {
               >
                 <option value="all_roles">Všechny role</option>
                 <option value="organizing">Organizuji</option>
-                <option value="participating">Jedu</option>
+                <option value="participating">Jedu jako pasažér</option>
               </select>
 
               <select 

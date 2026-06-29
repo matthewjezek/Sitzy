@@ -46,6 +46,11 @@ export default function CreateCarPage() {
   const layout = watch('layout')
 
   useEffect(() => {
+    // Preload CarDetailPage chunk to avoid lazy loading delay on redirect
+    import('./CarDetailPage').catch(() => {})
+  }, [])
+
+  useEffect(() => {
     if (!isEdit || !id) {
       document.title = 'Sitzy - Přidat auto'
       return
@@ -66,13 +71,13 @@ export default function CreateCarPage() {
         const result = await updateCar(id, data)
         if (result) {
           toast.success('Auto bylo upraveno.')
-          navigate(`/cars/${id}`)
+          navigate(`/cars/${id}`, { replace: true })
         }
       } else {
         const result = await createCar(data)
         if (result) {
           toast.success('Auto bylo vytvořeno.')
-          navigate(`/cars/${result.id}`)
+          navigate(`/cars/${result.id}`, { replace: true })
         }
       }
     } finally {

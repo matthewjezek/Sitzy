@@ -47,6 +47,11 @@ export default function CreateRidePage() {
   })
 
   useEffect(() => {
+    // Preload RideDetailPage chunk to avoid lazy loading delay on redirect
+    import('./RideDetailPage').catch(() => {})
+  }, [])
+
+  useEffect(() => {
     fetchMyCars()
     document.title = 'Sitzy - Nová jízda'
   }, [fetchMyCars])
@@ -61,7 +66,7 @@ export default function CreateRidePage() {
       if (result) {
         toast.success('Jízda byla vytvořena.')
         completeTask('create_ride')
-        navigate(`/rides/${result.id}`)
+        navigate(`/rides/${result.id}`, { replace: true })
       }
     } finally {
       setSubmitting(false)
