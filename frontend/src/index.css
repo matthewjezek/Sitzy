@@ -1016,10 +1016,15 @@
     transition: all 200ms ease;
   }
 
-  /* Reset iOS WebKit datetime styling to match other inputs */
   input[type="datetime-local"].form-input {
-    display: inline-flex;
-    align-items: center;
+    display: block; /* Standard block behavior prevents layout glitches */
+  }
+
+  input[type="datetime-local"].form-input::-webkit-date-and-time-value {
+    min-height: 0 !important; 
+    height: auto;
+    padding: 0;
+    margin: 0;
   }
 
   input[type="datetime-local"].form-input::-webkit-datetime-edit {
