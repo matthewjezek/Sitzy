@@ -125,8 +125,22 @@ function AppRoutes() {
   )
 }
 
+// Enforce canonical hostnames to prevent localStorage fragmentation
+const enforceCanonicalHost = () => {
+  const host = window.location.hostname.toLowerCase()
+  if (host.startsWith('www.')) {
+    const newHostname = window.location.hostname.substring(4)
+    const newUrl = window.location.href.replace(window.location.hostname, newHostname)
+    window.location.replace(newUrl)
+    return true
+  }
+  return false
+}
+
 // Handle survey token synchronously on load to ensure child components have access to it on first render
 const initSurveyToken = () => {
+  if (enforceCanonicalHost()) return
+
   const params = new URLSearchParams(window.location.search)
   const token = params.get('token')
   if (token) {
