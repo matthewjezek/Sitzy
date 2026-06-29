@@ -79,10 +79,10 @@ function SurveyChecklistWidget() {
       {!isOpen ? (
         <button
           onClick={() => setIsOpen(true)}
-          className="flex items-center gap-2 px-3 py-2 bg-slate-900/90 hover:bg-slate-800/90 text-white rounded-full shadow-xl border border-white/10 hover:cursor-pointer transition-all duration-200 hover:scale-[1.05]"
+          className="flex items-center gap-2 px-3 py-2 bg-white/95 hover:bg-zinc-50/95 dark:bg-slate-900/90 dark:hover:bg-slate-800/90 text-zinc-800 dark:text-white rounded-full shadow-lg dark:shadow-xl border border-zinc-200/80 dark:border-white/10 hover:cursor-pointer transition-all duration-200 hover:scale-[1.05]"
         >
           <div className="relative">
-            <FiList size={18} className="text-indigo-400" />
+            <FiList size={18} className="text-indigo-600 dark:text-indigo-400" />
             {doneCount < tasks.length && (
               <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-indigo-500 rounded-full animate-pulse" />
             )}
@@ -92,21 +92,21 @@ function SurveyChecklistWidget() {
           </span>
         </button>
       ) : (
-        <div className="w-64 backdrop-blur-md bg-slate-950/95 border border-white/10 rounded-xl p-4 shadow-2xl flex flex-col gap-3 animate-in slide-in-from-bottom-5 duration-300">
+        <div className="w-64 backdrop-blur-md bg-white/95 dark:bg-slate-950/95 border border-zinc-200/80 dark:border-white/10 rounded-xl p-4 shadow-xl dark:shadow-2xl flex flex-col gap-3 animate-in slide-in-from-bottom-5 duration-300">
           <div className="flex items-center justify-between">
-            <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-wider">
+            <h4 className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
               Úkoly průzkumu
             </h4>
             <button
               onClick={() => setIsOpen(false)}
-              className="p-1 hover:bg-white/10 rounded-full text-zinc-400 hover:text-white transition-colors hover:cursor-pointer"
+              className="p-1 hover:bg-zinc-100 dark:hover:bg-white/10 rounded-full text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors hover:cursor-pointer"
             >
               <FiX size={14} />
             </button>
           </div>
           
-          <div className="h-px bg-white/10" />
-
+          <div className="h-px bg-zinc-200 dark:bg-white/10" />
+ 
           <ul className="flex flex-col gap-2">
             {tasks.map(task => {
               const isDone = completed.includes(task.id)
@@ -114,14 +114,14 @@ function SurveyChecklistWidget() {
                 <li
                   key={task.id}
                   className={`flex items-center gap-2.5 text-xs transition-colors duration-200 ${
-                    isDone ? 'text-zinc-400 line-through decoration-zinc-600/50' : 'text-zinc-200 font-medium'
+                    isDone ? 'text-zinc-400 dark:text-zinc-500 line-through decoration-zinc-300 dark:decoration-zinc-700' : 'text-zinc-700 dark:text-zinc-200 font-medium'
                   }`}
                 >
                   <div
                     className={`w-4 h-4 rounded flex items-center justify-center shrink-0 border transition-all duration-300 ${
                       isDone
-                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400'
-                        : 'border-white/20 bg-white/5'
+                        ? 'bg-emerald-500/10 dark:bg-emerald-500/20 border-emerald-500 text-emerald-600 dark:text-emerald-400'
+                        : 'border-zinc-300 dark:border-white/20 bg-zinc-50 dark:bg-white/5'
                     }`}
                   >
                     {isDone && <FiCheck size={10} strokeWidth={3} />}
@@ -134,7 +134,7 @@ function SurveyChecklistWidget() {
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={handleCopyAnonymousLink}
-                        className="text-[10px] text-indigo-400 hover:text-indigo-300 hover:underline ml-2 shrink-0 bg-indigo-500/10 px-1.5 py-0.5 rounded border border-indigo-500/20"
+                        className="text-[10px] text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:underline ml-2 shrink-0 bg-indigo-500/10 px-1.5 py-0.5 rounded border border-indigo-500/20"
                         title="Kliknutím zkopírujete odkaz. Otevřete jej v anonymním okně."
                       >
                         anonymní okno
@@ -145,12 +145,12 @@ function SurveyChecklistWidget() {
               )
             })}
           </ul>
-
-          <div className="h-px bg-white/10" />
+ 
+          <div className="h-px bg-zinc-200 dark:bg-white/10" />
           
-          <div className="flex items-center justify-between text-[10px] text-zinc-500">
+          <div className="flex items-center justify-between text-[10px] text-zinc-500 dark:text-zinc-400">
             <span>Po dokončení přejděte na /survey</span>
-            <span className="font-semibold text-zinc-400">{Math.round((doneCount / tasks.length) * 100)}%</span>
+            <span className="font-semibold text-zinc-700 dark:text-zinc-400">{Math.round((doneCount / tasks.length) * 100)}%</span>
           </div>
         </div>
       )}
