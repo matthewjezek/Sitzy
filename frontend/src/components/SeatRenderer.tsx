@@ -273,7 +273,7 @@ const SeatButton = styled.button<{
   justify-content: center;
   transition: transform 0.2s ease, opacity 0.2s ease, filter 0.2s ease;
   cursor: ${props => props.$interactive && props.$state !== SeatState.OCCUPIED && props.$state !== SeatState.DRIVER ? 'pointer' : 'default'};
-  z-index: ${props => props.$state === SeatState.SELECTED ? 4 : props.$state === SeatState.OCCUPIED ? 3 : 2};
+  z-index: ${props => props.$state === SeatState.SELECTED ? 4 : props.$state === SeatState.FREE ? 3 : 2};
 
   &:hover:not(:disabled) { transform: translate(-50%, -50%) scale(1.04); }
   &:focus-visible { outline: 3px solid rgba(59, 130, 246, 0.35); outline-offset: 0.3rem; border-radius: 1rem; }
