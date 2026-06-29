@@ -60,7 +60,7 @@ export default function SurveyRedirectPage() {
       }
     })
 
-    const targetSurveyUrl = `https://tally.so/r/wM07J5${token ? `?token=${encodeURIComponent(token)}` : ''}`
+    const targetSurveyUrl = `https://tally.so/r/1AOYoW${token ? `?token=${encodeURIComponent(token)}` : ''}`
     window.location.href = targetSurveyUrl
   }
 
