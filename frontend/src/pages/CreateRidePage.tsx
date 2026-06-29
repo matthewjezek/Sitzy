@@ -11,7 +11,7 @@ import { completeTask } from '../utils/survey'
 
 function CreateRideSkeleton() {
   return (
-    <div className="page-container flex-col pt-24 pb-10">
+    <div className="page-container flex-col pt-6 pb-10">
       <div className="animate-pulse page-content max-w-lg mx-auto p-6 flex flex-col gap-6">
         <div className="h-8 w-48 rounded skeleton-dark mx-auto" />
         <div className="h-10 rounded-lg skeleton-dark" />
@@ -76,7 +76,7 @@ export default function CreateRidePage() {
   if (carsLoading) return <CreateRideSkeleton />
 
   return (
-    <div className="page-container flex-col pt-24 pb-10">
+    <div className="page-container flex-col pt-6 pb-10">
       <div className="page-content max-w-lg mx-auto p-6 flex flex-col gap-6">
         <h1 className="text-2xl font-bold text-center">Nová jízda</h1>
 

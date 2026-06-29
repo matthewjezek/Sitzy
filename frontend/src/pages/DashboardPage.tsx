@@ -27,7 +27,7 @@ export default function Dashboard() {
   const greetingName = firstName ? getCzechVocative(firstName) : 'řidiči';
 
   return (
-    <div className="page-container flex-col pt-24 pb-10">
+    <div className="page-container flex-col pt-6 pb-10">
       <div className="page-content max-w-2xl mx-auto flex flex-col gap-8">
         
         

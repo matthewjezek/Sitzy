@@ -108,8 +108,12 @@ export default function RidesPage() {
             <FiList size={28} aria-hidden="true" />
           </div>
           <h3 className="empty-state-title">Žádné jízdy</h3>
-          <p className="empty-state-description">Pro zadané filtry nebyly nalezeny žádné výsledky.</p>
-          {timeFilter === 'upcoming' && searchQuery === '' && (
+          <p className="empty-state-description">
+            {rides.length > 0 
+              ? 'Pro zadané filtry nebyly nalezeny žádné výsledky.' 
+              : 'Zatím nemáte naplánované žádné jízdy.'}
+          </p>
+          {timeFilter === 'upcoming' && searchQuery === '' && rides.length > 0 && (
             <button 
               onClick={() => {
                 setTimeFilter('all_time')
@@ -155,7 +159,7 @@ export default function RidesPage() {
   }
 
   return (
-    <div className="page-container flex-col pt-24 pb-10">
+    <div className="page-container flex-col pt-6 pb-10">
       <div className="page-content max-w-lg mx-auto flex flex-col gap-6">
 
         

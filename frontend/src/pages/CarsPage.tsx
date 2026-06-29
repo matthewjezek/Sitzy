@@ -6,7 +6,7 @@ import { SedanSvg, CoupeSvg, MinivanSvg } from '../assets/icons'
 
 function CarsListSkeleton() {
   return (
-    <div className="page-container flex-col pt-24 pb-10">
+    <div className="page-container flex-col pt-6 pb-10">
       <div className="animate-pulse page-content max-w-lg mx-auto p-6 flex flex-col gap-4">
         {[1, 2, 3].map(i => (
           <div key={i} className="h-20 rounded-xl skeleton-dark" />
@@ -37,7 +37,7 @@ export default function CarsPage() {
   if (loading) return <CarsListSkeleton />
 
   return (
-    <div className="page-container flex-col pt-24 pb-10">
+    <div className="page-container flex-col pt-6 pb-10">
       <div className="page-content max-w-lg mx-auto p-6 flex flex-col gap-6">
 
       <div className="flex items-center justify-between">

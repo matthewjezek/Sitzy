@@ -9,7 +9,7 @@ import { ConfirmDialog } from '../components/Dialog'
 
 function CarDetailSkeleton() {
   return (
-    <div className="page-container flex-col pt-24 pb-10">
+    <div className="page-container flex-col pt-6 pb-10">
       <div className="animate-pulse page-content max-w-lg mx-auto p-6 flex flex-col gap-6">
         <div className="h-8 w-48 rounded skeleton-dark mx-auto" />
         <div className="h-32 rounded-xl skeleton-dark" />
@@ -98,7 +98,7 @@ export default function CarDetailPage() {
   )
 
   if (notFound || !car) return (
-    <div className="page-container flex-col pt-24 pb-10">
+    <div className="page-container flex-col pt-6 pb-10">
       <div className="page-content max-w-lg mx-auto p-6 text-center flex flex-col gap-4">
         <p className="text-gray-500">Auto nebylo nalezeno.</p>
         <button
@@ -112,7 +112,7 @@ export default function CarDetailPage() {
   )
 
   return (
-    <div className="page-container flex-col pt-24 pb-10">
+    <div className="page-container flex-col pt-6 pb-10">
       <div className="page-content max-w-lg mx-auto p-6 flex flex-col gap-6">
 
         <div className="card p-6 flex items-center gap-4">

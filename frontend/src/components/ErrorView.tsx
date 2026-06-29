@@ -25,7 +25,7 @@ export default function ErrorView({
   }
 
   return (
-    <div className="page-container flex-col pt-24 pb-10">
+    <div className="page-container flex-col pt-6 pb-10">
       <div className="page-content max-w-md mx-auto p-4 flex flex-col gap-6">
         <div className="card p-6 flex flex-col items-center text-center gap-4 error-card">
           <div className="error-card-icon-wrapper">

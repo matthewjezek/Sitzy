@@ -17,7 +17,7 @@ import pkg from '../../package.json';
 
 function SettingsSkeleton() {
   return (
-    <div className="page-container flex-col pt-24 pb-10">
+    <div className="page-container flex-col pt-6 pb-10">
       <div className="animate-pulse page-content max-w-lg mx-auto p-6 flex flex-col gap-6">
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-full skeleton-dark" />
@@ -440,7 +440,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="page-container flex-col pt-24 pb-10">
+    <div className="page-container flex-col pt-6 pb-10">
       <div className="page-content max-w-3xl mx-auto px-3 sm:px-6 flex flex-col gap-4 sm:gap-6">
         <div className="settings-section p-4 sm:p-6">
           <div className="settings-section-header">

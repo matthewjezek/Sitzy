@@ -35,7 +35,7 @@ import { ConfirmDialog } from '../components/Dialog'
 
 function RideDetailSkeleton() {
   return (
-    <div className="page-container flex-col pt-24 pb-10">
+    <div className="page-container flex-col pt-6 pb-10">
       <div className="animate-pulse page-content max-w-md md:max-w-2xl lg:max-w-4xl mx-auto p-4 md:p-6 flex flex-col gap-6">
         <div className="h-40 rounded-xl skeleton-dark" />
         <div className="h-48 rounded-xl skeleton-dark" />
@@ -588,7 +588,7 @@ export default function RideDetailPage() {
   )
 
   if (notFound || !ride) return (
-    <div className="page-container flex-col pt-24 pb-10">
+    <div className="page-container flex-col pt-6 pb-10">
       <div className="page-content max-w-md md:max-w-2xl lg:max-w-4xl mx-auto p-4 md:p-6 text-center flex flex-col gap-4">
         <p className="text-secondary">Jízda nebyla nalezena.</p>
         <button
@@ -721,7 +721,7 @@ export default function RideDetailPage() {
       : 'status-pending'
 
   return (
-    <div className="page-container flex-col pt-24 pb-10">
+    <div className="page-container flex-col pt-6 pb-10">
       <div className="page-content max-w-md md:max-w-2xl lg:max-w-6xl mx-auto p-4 md:p-6 flex flex-col gap-6">
 
         <div className="card p-4 md:p-6 flex flex-col gap-4 relative overflow-hidden">
