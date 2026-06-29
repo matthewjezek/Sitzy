@@ -81,109 +81,99 @@ export default function SurveyRedirectPage() {
                 <h1 className="text-2xl md:text-3xl font-extrabold mt-3 tracking-tight text-zinc-900 dark:text-zinc-100">
                   Integrace webových služeb do sociálních sítí
                 </h1>
-                <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-3 leading-relaxed text-left">
-                  Tento průzkum je součástí akademické práce zaměřené na <strong>analýzu a pilotní implementaci integrace externích webových služeb do sociálních sítí</strong> (jako jsou Facebook, X / Twitter) s cílem usnadnit komunikaci a sdílení obsahu.
-                </p>
-                <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-2 leading-relaxed text-left">
-                  Funkčnost a bezpečnost navržených integračních rozhraní (autentizace přes OAuth a sdílení dynamických pozvánek) ověřujeme na této pilotní aplikaci <strong>Sitzy</strong> pro správu spolujízd a obsazování míst v autech.
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-2 leading-relaxed">
+                  Pilotní aplikace <strong className="text-zinc-700 dark:text-zinc-300">Sitzy</strong> pro testování OAuth přihlášení a sdílení obsahu přes sociální sítě.
                 </p>
               </div>
 
-              <div className="h-px bg-zinc-200 dark:bg-zinc-850 my-1" />
+              {/* Facebook warning callout */}
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-400/30 dark:border-amber-500/30 text-left">
+                <div className="p-1.5 rounded-lg bg-amber-500/20 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                </div>
+                <div className="text-xs">
+                  <p className="font-semibold text-amber-700 dark:text-amber-400">Facebook nefunguje bez schválení</p>
+                  <p className="text-amber-700/80 dark:text-amber-300/70 mt-0.5">
+                    Doporučujeme přihlášení přes <strong>X (Twitter)</strong> — je plně veřejné. Facebook vyžaduje manuální přidání do testovací skupiny.{' '}
+                    <a href="https://m.me/MattyMatejJezek" target="_blank" rel="noopener noreferrer" className="underline font-semibold hover:opacity-80 transition-opacity">Napište mi</a> a přidám vás.
+                  </p>
+                </div>
+              </div>
+
+              <div className="h-px bg-zinc-200 dark:bg-zinc-850" />
 
               <div>
-                <h2 className="text-sm font-semibold text-zinc-850 dark:text-zinc-200 mb-4">
-                  Během testování vás prosíme o vyzkoušení těchto úkolů:
+                <h2 className="text-sm font-semibold text-zinc-850 dark:text-zinc-200 mb-3">
+                  Úkoly k vyzkoušení:
                 </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div className="flex items-start gap-3 p-3 rounded-xl theme-surface-muted border theme-border hover:opacity-90 transition-opacity">
                     <div className="p-2 rounded-lg bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 shrink-0">
-                      <FiLogIn size={16} />
+                      <FiLogIn size={14} />
                     </div>
                     <div>
                       <h3 className="text-xs font-bold text-zinc-800 dark:text-zinc-200">1. Přihlášení</h3>
-                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">Zaregistrujte se / přihlaste se přes Facebook nebo X.</p>
+                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">Zaregistrujte se přes Facebook nebo X.</p>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-3 p-3 rounded-xl theme-surface-muted border theme-border hover:opacity-90 transition-opacity">
                     <div className="p-2 rounded-lg bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 shrink-0">
-                      <FiBell size={16} />
+                      <FiBell size={14} />
                     </div>
                     <div>
                       <h3 className="text-xs font-bold text-zinc-800 dark:text-zinc-200">2. Výběr místa</h3>
-                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">Přijměte pozvánku v notifikacích a zvolte si sedadlo.</p>
+                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">Přijměte pozvánku a zvolte sedadlo.</p>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-3 p-3 rounded-xl theme-surface-muted border theme-border hover:opacity-90 transition-opacity">
                     <div className="p-2 rounded-lg bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 shrink-0">
-                      <FiPlusCircle size={16} />
+                      <FiPlusCircle size={14} />
                     </div>
                     <div>
                       <h3 className="text-xs font-bold text-zinc-800 dark:text-zinc-200">3. Vytvoření jízdy</h3>
-                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">Přidejte auto a založte novou společnou jízdu.</p>
+                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">Přidejte auto a vytvořte jízdu.</p>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-3 p-3 rounded-xl theme-surface-muted border theme-border hover:opacity-90 transition-opacity">
                     <div className="p-2 rounded-lg bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 shrink-0">
-                      <FiShare2 size={16} />
+                      <FiShare2 size={14} />
                     </div>
                     <div>
                       <h3 className="text-xs font-bold text-zinc-800 dark:text-zinc-200">4. Sdílení jízdy</h3>
-                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">Nasdílejte jízdu pomocí vygenerovaného odkazu.</p>
+                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">Sdílejte jízdu vygenerovaným odkazem.</p>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-3 p-3 rounded-xl theme-surface-muted border theme-border hover:opacity-90 transition-opacity">
                     <div className="p-2 rounded-lg bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 shrink-0">
-                      <FiShield size={16} />
+                      <FiShield size={14} />
                     </div>
                     <div>
                       <h3 className="text-xs font-bold text-zinc-800 dark:text-zinc-200">5. Správa účtu</h3>
-                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">Vyzkoušejte odpojení sítě a odhlášení jiných relací.</p>
+                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">Odpojte síť a odhlaste jiné relace.</p>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-3 p-3 rounded-xl theme-surface-muted border theme-border hover:opacity-90 transition-opacity">
                     <div className="p-2 rounded-lg bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 shrink-0">
-                      <FiTrash2 size={16} />
+                      <FiTrash2 size={14} />
                     </div>
                     <div>
                       <h3 className="text-xs font-bold text-zinc-800 dark:text-zinc-200">6. Smazání účtu</h3>
-                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">Smažte svá data přes soft-delete pro konec průzkumu.</p>
+                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">Smažte účet pro dokončení průzkumu.</p>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Tips for Tasks */}
-            <div className="p-4 rounded-xl theme-surface-muted border theme-border text-left text-xs space-y-2">
-              <h3 className="font-semibold text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
-                Tipy pro hladký průběh testování:
-              </h3>
-              <ul className="list-disc list-inside space-y-1.5 text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                <li>
-                  <strong className="text-zinc-700 dark:text-zinc-300">Doporučené přihlášení:</strong> Pro snadný start doporučujeme použít přihlášení přes <strong className="text-indigo-600 dark:text-indigo-400 font-semibold">X (Twitter)</strong>, které je plně veřejné. Facebook vyžaduje z důvodu schvalovacích pravidel společnosti Meta manuální přidání do testovací skupiny (pokud ho chcete vyzkoušet, <a href="https://m.me/MattyMatejJezek" target="_blank" rel="noopener noreferrer" className="text-link">napište mi</a> své jméno/uživatelské jméno a přidám vás).
-                </li>
-                <li>
-                  <strong className="text-zinc-700 dark:text-zinc-300">Výběr místa z pozvánky:</strong> Po přihlášení klikněte na ikonu zvonečku (notifikace) v horním menu, klikněte na „Přijmout“ a na detailu jízdy si vyberte libovolné volné sedadlo v autě.
-                </li>
-                <li>
-                  <strong className="text-zinc-700 dark:text-zinc-300">Simulace pro usnadnění:</strong> Pro účely průzkumu jsme vám v nastavení automaticky nasimulovali druhé připojené sociální propojení a druhou aktivní relaci (Safari na iPhone).
-                </li>
-                <li>
-                  <strong className="text-zinc-700 dark:text-zinc-300">Odpojení účtu:</strong> V sekci <em>Propojení</em> klikněte na „Odpojit“ u nasimulovaného účtu.
-                </li>
-                <li>
-                  <strong className="text-zinc-700 dark:text-zinc-300">Odebrání jiných relací:</strong> V sekci <em>Aktivní relace</em> klikněte na „Odhlásit ostatní zařízení“ nebo odeberte simulovanou relaci Safari.
-                </li>
-                <li>
-                  <strong className="text-zinc-700 dark:text-zinc-300">Smazání účtu:</strong> Smazáním účtu v sekci <em>Profil</em> splníte poslední úkol a budete automaticky přesměrováni zpět k dotazníku.
-                </li>
-              </ul>
-            </div>
+              {/* Compact helper hints */}
+              <div className="p-3 rounded-xl theme-surface-muted border theme-border text-left text-[11px] space-y-1.5 text-zinc-500 dark:text-zinc-400">
+                <p><strong className="text-zinc-700 dark:text-zinc-300">Pozvánka:</strong> Po přihlášení klikněte na zvoneček v menu → Přijmout → vyberte sedadlo.</p>
+                <p><strong className="text-zinc-700 dark:text-zinc-300">Simulace:</strong> V nastavení jsou předpřipravena druhé propojení a relace (Safari na iPhone) pro úkoly 5 a 6.</p>
+              </div>
 
             <button
               onClick={handleStart}

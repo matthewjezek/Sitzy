@@ -15,7 +15,7 @@ test.describe('Survey flow tests', () => {
 
     // Verify introduction screen tasks and tips are visible
     await expect(page.getByRole('heading', { name: 'Integrace webových služeb do sociálních sítí' })).toBeVisible()
-    await expect(page.getByRole('heading', { name: 'Během testování vás prosíme o vyzkoušení těchto úkolů:' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Úkoly k vyzkoušení:' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Začít průzkum' })).toBeVisible()
 
     // Start survey redirects to login
