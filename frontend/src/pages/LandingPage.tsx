@@ -232,16 +232,16 @@ export default function LandingPage() {
     <div ref={containerRef} className="min-h-screen bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
       
       {/* ── HEADER ── */}
-      <header className="sticky top-0 z-50 w-full border-b border-zinc-200 dark:border-zinc-800/80 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
+      <header className="sticky top-0 z-50 w-full border-b border-zinc-200 dark:border-zinc-800/80 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md pt-[env(safe-area-inset-top)]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center">
             <img src={logoLight} alt="Sitzy logo" className="logo logo-light h-9" />
             <img src={logoDark} alt="Sitzy logo" className="logo logo-dark h-9" />
           </Link>
 
-          <div className="flex items-center gap-3 sm:gap-4">
-            {/* Language Switcher */}
-            <div className="bg-zinc-100 dark:bg-slate-800 p-0.5 rounded-lg flex gap-0.5 border border-zinc-200/50 dark:border-slate-700/50">
+          <div className="flex items-center gap-2 sm:gap-4">
+            {/* Language Switcher (Desktop) */}
+            <div className="bg-zinc-100 dark:bg-slate-800 p-0.5 rounded-lg hidden sm:flex gap-0.5 border border-zinc-200/50 dark:border-slate-700/50">
               <button
                 onClick={() => handleLanguageChange('cs')}
                 className={`px-2 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
@@ -264,9 +264,17 @@ export default function LandingPage() {
               </button>
             </div>
 
+            {/* Language Switcher (Mobile Compact Toggle) */}
+            <button
+              onClick={() => handleLanguageChange(lang === 'cs' ? 'en' : 'cs')}
+              className="px-2.5 py-1.5 text-xs font-bold rounded-lg bg-zinc-100 dark:bg-slate-800 border border-zinc-200/50 dark:border-slate-700/50 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-all cursor-pointer flex sm:hidden"
+            >
+              {lang === 'cs' ? 'EN' : 'CZ'}
+            </button>
+
             <button
               onClick={handleThemeToggle}
-              className="p-2 text-zinc-500 hover:text-zinc-905 dark:text-zinc-400 dark:hover:text-white rounded-lg bg-zinc-100 dark:bg-slate-800 border border-zinc-200/50 dark:border-slate-700/50 transition-colors cursor-pointer"
+              className="p-1.5 sm:p-2 text-zinc-500 hover:text-zinc-905 dark:text-zinc-400 dark:hover:text-white rounded-lg bg-zinc-100 dark:bg-slate-800 border border-zinc-200/50 dark:border-slate-700/50 transition-colors cursor-pointer"
               aria-label="Přepnout tmavý/světlý režim"
             >
               {resolveThemePreference(theme) === 'dark' ? <FiSun size={16} /> : <FiMoon size={16} />}
@@ -275,7 +283,7 @@ export default function LandingPage() {
             {/* Login Button */}
             <Link
               to="/login"
-              className="button-primary text-sm shadow-md hover:shadow-lg"
+              className="button-primary text-xs sm:text-sm px-2.5 py-1.5 sm:px-4 sm:py-2 whitespace-nowrap shadow-md hover:shadow-lg"
             >
               {t.navSignIn}
             </Link>

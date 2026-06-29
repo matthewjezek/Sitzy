@@ -148,7 +148,7 @@ export default function Layout({ children }: LayoutProps) {
         <AuthProvider>
             <div className="layout-wrapper">
                 <main className="layout-main">
-                    <div className="h-16 pt-[env(safe-area-inset-top)]">
+                    <div className="min-h-16 pt-[env(safe-area-inset-top)]">
                         <Navigation />
                     </div>    
                 {children ?? <Outlet />}

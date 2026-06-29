@@ -20,7 +20,7 @@ export default function DocHeader({ lang, setLang }: DocHeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
+    <header className="sticky top-0 z-50 w-full border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md pt-[env(safe-area-inset-top)]">
       <div className="max-w-2xl mx-auto px-4 h-16 flex items-center justify-between">
         <button
           onClick={handleBack}
@@ -30,7 +30,8 @@ export default function DocHeader({ lang, setLang }: DocHeaderProps) {
           <span>{lang === 'cs' ? 'Zpět' : 'Back'}</span>
         </button>
 
-        <div className="bg-zinc-100 dark:bg-zinc-800 p-0.5 rounded-lg flex gap-0.5">
+        {/* Language Switcher (Desktop) */}
+        <div className="bg-zinc-100 dark:bg-zinc-800 p-0.5 rounded-lg hidden sm:flex gap-0.5">
           <button
             onClick={() => setLang('cs')}
             className={`px-3 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
@@ -52,6 +53,14 @@ export default function DocHeader({ lang, setLang }: DocHeaderProps) {
             EN
           </button>
         </div>
+
+        {/* Language Switcher (Mobile Compact Toggle) */}
+        <button
+          onClick={() => setLang(lang === 'cs' ? 'en' : 'cs')}
+          className="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200/50 dark:border-slate-700/50 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-all cursor-pointer flex sm:hidden"
+        >
+          {lang === 'cs' ? 'EN' : 'CZ'}
+        </button>
       </div>
     </header>
   );
