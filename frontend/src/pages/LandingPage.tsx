@@ -246,8 +246,8 @@ export default function LandingPage() {
                 onClick={() => handleLanguageChange('cs')}
                 className={`px-2 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
                   lang === 'cs'
-                    ? 'bg-white dark:bg-slate-700 text-indigo-650 dark:text-indigo-400 shadow-xs'
-                    : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'
+                    ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                    : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'
                 }`}
               >
                 CZ
@@ -256,8 +256,8 @@ export default function LandingPage() {
                 onClick={() => handleLanguageChange('en')}
                 className={`px-2 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
                   lang === 'en'
-                    ? 'bg-white dark:bg-slate-700 text-indigo-650 dark:text-indigo-400 shadow-xs'
-                    : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'
+                    ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                    : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'
                 }`}
               >
                 EN
@@ -274,7 +274,7 @@ export default function LandingPage() {
 
             <button
               onClick={handleThemeToggle}
-              className="p-1.5 sm:p-2 text-zinc-500 hover:text-zinc-905 dark:text-zinc-400 dark:hover:text-white rounded-lg bg-zinc-100 dark:bg-slate-800 border border-zinc-200/50 dark:border-slate-700/50 transition-colors cursor-pointer"
+              className="p-1.5 sm:p-2 text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white rounded-lg bg-zinc-100 dark:bg-slate-800 border border-zinc-200/50 dark:border-slate-700/50 transition-colors cursor-pointer"
               aria-label="Přepnout tmavý/světlý režim"
             >
               {resolveThemePreference(theme) === 'dark' ? <FiSun size={16} /> : <FiMoon size={16} />}
@@ -360,7 +360,7 @@ export default function LandingPage() {
                       className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all hover:cursor-pointer ${
                         demoLayout === layout
                           ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                          : 'text-zinc-650 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+                          : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
                       }`}
                     >
                       {layout === 'SEDAQ' ? t.sedan : layout === 'TRAPAQ' ? t.coupe : t.minivan}

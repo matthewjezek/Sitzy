@@ -100,7 +100,7 @@ export default function CreateCarPage() {
           {LAYOUTS.map(l => (
             <label
               key={l.value}
-              className={`w-full max-w-[11rem] min-h-[10rem] flex flex-col items-center justify-center text-center gap-2 p-4 rounded-xl border-2 cursor-pointer transition
+              className={`w-full max-w-[11rem] min-h-[10rem] flex flex-col items-center justify-center text-center gap-2 p-4 rounded-xl border-2 cursor-pointer transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary focus-within:ring-2 focus-within:ring-primary
                 ${layout === l.value
                   ? 'layout-selected'
                   : 'layout-unselected'

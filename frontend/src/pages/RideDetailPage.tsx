@@ -159,7 +159,7 @@ function InviteSection({ rideId, canCancelInvites }: { rideId: string; canCancel
         <button
           type="submit"
           disabled={isSubmitting}
-          className="button-primary flex items-center justify-center gap-2 sm:shrink-0 h-10 sm:h-auto"
+          className="button-primary flex items-center justify-center gap-2 sm:shrink-0 h-11 sm:h-11"
         >
           <FiUserPlus size={16} />
           <span className="sm:hidden">Pozvat</span>
@@ -340,7 +340,7 @@ function PassengersSection({
                       type="button"
                       onClick={() => onTransferDriver(p.user_id, p.full_name ?? 'Neznámý')}
                       disabled={transferringUserId === p.user_id}
-                      className="button-secondary text-xs flex items-center justify-center gap-1 flex-1 sm:flex-none h-10"
+                      className="button-secondary text-xs flex items-center justify-center gap-1 flex-1 sm:flex-none h-11"
                     >
                       <FiRepeat size={12} />
                       {transferringUserId === p.user_id ? 'Předávám...' : 'Předat řízení'}
@@ -350,7 +350,7 @@ function PassengersSection({
                       onClick={() => onRemovePassenger(p.user_id, p.full_name ?? 'Neznámý')}
                       disabled={removingUserId === p.user_id || isThisOwner}
                       title={isThisOwner ? 'Majitel nemůže být odebrán ze své jízdy.' : undefined}
-                      className="button-danger text-xs flex items-center justify-center gap-1 flex-1 sm:flex-none h-10"
+                      className="button-danger text-xs flex items-center justify-center gap-1 flex-1 sm:flex-none h-11"
                     >
                       <FiUserX size={16} />
                       {removingUserId === p.user_id ? 'Odebírám...' : ''}
@@ -754,7 +754,7 @@ export default function RideDetailPage() {
             {isPastRide ? null : isOwner ? (
               <button
                 onClick={handleDelete}
-                className="button-danger text-sm hover-opacity-80 flex items-center gap-2 h-10"
+                className="button-danger text-sm hover-opacity-80 flex items-center gap-2 h-11"
               >
                 <FiTrash size={14} />
                 <span>Smazat jízdu</span>
@@ -763,7 +763,7 @@ export default function RideDetailPage() {
               <button
                 onClick={handleLeave}
                 disabled={!canLeaveRide}
-                className="button-secondary text-sm flex items-center gap-2 h-10"
+                className="button-secondary text-sm flex items-center gap-2 h-11"
                 title={!canLeaveRide ? 'Aktuální řidič musí nejdříve předat řízení.' : undefined}
               >
                 <FiLogOut size={14} />
@@ -802,7 +802,7 @@ export default function RideDetailPage() {
                 type="button"
                 onClick={() => void handleFinalizeInvite(false)}
                 disabled={finishingInvite || selectedSeat == null}
-                className="button-primary flex-1 sm:flex-none h-10"
+                className="button-primary flex-1 sm:flex-none h-11"
               >
                 {finishingInvite ? 'Ukládám...' : 'Potvrdit vybrané sedadlo'}
               </button>
@@ -810,7 +810,7 @@ export default function RideDetailPage() {
                 type="button"
                 onClick={() => void handleFinalizeInvite(true)}
                 disabled={finishingInvite}
-                className="button-secondary flex-1 sm:flex-none h-10"
+                className="button-secondary flex-1 sm:flex-none h-11"
               >
                 {finishingInvite ? 'Ukládám...' : 'Nechat systém vybrat'}
               </button>
@@ -830,7 +830,7 @@ export default function RideDetailPage() {
               <button
                 type="button"
                 onClick={() => setStoryAnonymized((prev) => !prev)}
-                className="button-secondary flex items-center gap-2 h-10"
+                className="button-secondary flex items-center gap-2 h-11"
                 aria-pressed={storyAnonymized}
               >
                 {storyAnonymized ? <FiEyeOff size={16} /> : <FiEye size={16} />}

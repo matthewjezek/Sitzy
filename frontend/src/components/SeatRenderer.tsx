@@ -248,6 +248,7 @@ const SeatVisual = styled.img<{ $state: SeatStateType }>`
   pointer-events: none;
   filter: ${props => seatFilters[props.$state]};
   transition: transform 0.2s ease, filter 0.2s ease, opacity 0.2s ease;
+  clip-path: inset(17% 0 12% 0);
 `;
 
 const SeatButton = styled.button<{
@@ -264,7 +265,6 @@ const SeatButton = styled.button<{
   pointer-events: auto;
   width: ${props => props.$layout === 'praq' || props.$layout === 'minivan (7 seats)' ? '26.4%' : '29.33%'};
   height: ${props => props.$layout === 'praq' || props.$layout === 'minivan (7 seats)' ? '31.7%' : '35.2%'};
-  clip-path: inset(17% 0 12% 0);
   border: none;
   background: transparent;
   padding: 0;
@@ -279,6 +279,20 @@ const SeatButton = styled.button<{
   &:focus-visible { outline: 3px solid rgba(59, 130, 246, 0.35); outline-offset: 0.3rem; border-radius: 1rem; }
   &:hover:not(:disabled) ${SeatVisual} { transform: scale(1.04); }
   &:disabled { cursor: not-allowed; opacity: 0.84; }
+
+  ${props => props.$interactive && css`
+    &:not(:disabled)::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: max(44px, 100%);
+      height: max(44px, 100%);
+      min-width: 44px;
+      min-height: 44px;
+    }
+  `}
 `;
 
 const SeatNumber = styled.span<{ $orientation: SeatOrientation }>`
@@ -321,11 +335,11 @@ const OccupantAvatar = styled.div<{ $isDriver?: boolean; $orientation: SeatOrien
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background: #6366f1; /* Indigo */
+  background: var(--color-avatar-bg, #6366f1);
   color: white;
   font-weight: 700;
   font-size: ${props => props.$compact ? '0.55rem' : '0.85rem'};
-  border: ${props => props.$compact ? '1px' : '2px'} solid ${props => props.$isDriver ? '#f59e0b' : '#3b82f6'}; /* Amber for driver, Blue for passenger */
+  border: ${props => props.$compact ? '1px' : '2px'} solid ${props => props.$isDriver ? 'var(--color-driver, #f59e0b)' : 'var(--color-passenger, #3b82f6)'};
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15), ${props => props.$isDriver ? '0 0 8px rgba(245, 158, 11, 0.4)' : 'none'};
   z-index: 6;
   pointer-events: none;

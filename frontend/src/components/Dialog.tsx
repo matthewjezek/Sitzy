@@ -16,6 +16,7 @@ const DeleteDialog = ({ ref, children, toggle, action }: DeleteDialogProps) => {
     <dialog
       className="dialog-card"
       ref={ref}
+      aria-labelledby="delete-dialog-title"
       onClick={(e) => {
         if (e.currentTarget === e.target) {
           toggle();
@@ -55,6 +56,7 @@ const WarningDialog = ({ ref, children, toggle }: WarningDialogProps) => {
     <dialog
       className="dialog-card"
       ref={ref}
+      aria-labelledby="warning-dialog-title"
       onClick={(e) => {
         if (e.currentTarget === e.target) {
           toggle();
@@ -91,6 +93,7 @@ const SuccessDialog = ({ ref, children, toggle }: SuccessDialogProps) => {
     <dialog
       className="dialog-card"
       ref={ref}
+      aria-labelledby="success-dialog-title"
       onClick={(e) => {
         if (e.currentTarget === e.target) {
           toggle();
@@ -99,7 +102,7 @@ const SuccessDialog = ({ ref, children, toggle }: SuccessDialogProps) => {
     >
       <div className="dialog-header">
         <div className="dialog-success-image">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M20 7L9.00004 18L3.99994 13" />
           </svg>
         </div>
@@ -123,6 +126,7 @@ const MyDialog = ({ ref, children, toggle }: MyDialogProps) => {
     <dialog
       className="dialog-card"
       ref={ref}
+      aria-labelledby="my-dialog-title"
       onClick={(e) => {
         if (e.currentTarget === e.target) {
           toggle();
@@ -328,7 +332,7 @@ const NotificationDialog = ({ ref, toggle, notifications, onMarkAsRead, onMarkAl
         <div className="dialog-content">
           {notifications.length === 0 ? (
             <div className="empty-state !p-4">
-              <div className="empty-state-icon !w-12 !h-12">
+              <div className="empty-state-icon !w-12 !h-12" aria-hidden="true">
                 <FiBell size={24} />
               </div>
               <p className="empty-state-title !text-lg">Žádné notifikace</p>
@@ -371,10 +375,10 @@ const NotificationDialog = ({ ref, toggle, notifications, onMarkAsRead, onMarkAl
                         notification.type === "error" ? "notification-error" :
                         "notification-info"
                       }`}>
-                        {notification.type === 'success' ? <FiCheck size={14} /> :
-                         notification.type === 'warning' ? <FiClock size={14} /> :
-                         notification.type === 'error' ? <FiX size={14} /> :
-                         <FiBell size={14} />}
+                        {notification.type === 'success' ? <FiCheck size={14} aria-hidden="true" /> :
+                         notification.type === 'warning' ? <FiClock size={14} aria-hidden="true" /> :
+                         notification.type === 'error' ? <FiX size={14} aria-hidden="true" /> :
+                         <FiBell size={14} aria-hidden="true" />}
                       </div>
                       <div className="flex-1">
                         <h4 className="font-semibold text-gray-900 text-sm">
@@ -429,7 +433,7 @@ type InvitationDialogProps = {
 // Dialog for accepting/declining invitation
 const InvitationDialog = ({ ref, toggle, invitation, onAccept, onDecline, loading }: InvitationDialogProps) => {
   return (
-    <dialog className="dialog-card !max-w-sm" ref={ref}>
+    <dialog className="dialog-card !max-w-sm" ref={ref} aria-labelledby="invitation-dialog-title">
       <div className="dialog-header">
         <div className="flex flex-row-reverse justify-between m-0">
           <button
@@ -442,7 +446,7 @@ const InvitationDialog = ({ ref, toggle, invitation, onAccept, onDecline, loadin
           </button>
           <div className="dialog-title text-xl flex items-center gap-2">
             <FiMail className="text-indigo-500" aria-hidden="true" />
-            <h1>Pozvánka na jízdu</h1>
+            <h1 id="invitation-dialog-title">Pozvánka na jízdu</h1>
           </div>
         </div>
 
@@ -456,6 +460,7 @@ const InvitationDialog = ({ ref, toggle, invitation, onAccept, onDecline, loadin
                   strokeWidth={1.5}
                   fill="none"
                   viewBox="0 0 24 24"
+                  aria-hidden="true"
                 >
                   <rect x="2" y="10" width="20" height="9" rx="2" />
                   <path d="m20.772 10.156-1.368-4.105A2.995 2.995 0 0 0 16.559 4H7.441a2.995 2.995 0 0 0-2.845 2.051l-1.368 4.105A2.003 2.003 0 0 0 2 12" />
@@ -560,6 +565,7 @@ const ConfirmDialog = ({
     <dialog
       className="dialog-card"
       ref={ref}
+      aria-labelledby="confirm-dialog-title"
       onClick={(e) => {
         if (e.currentTarget === e.target) {
           toggle();
@@ -571,7 +577,7 @@ const ConfirmDialog = ({
           {icon}
         </div>
         <div className="dialog-content">
-          <h3 className="dialog-title">{title}</h3>
+          <h3 id="confirm-dialog-title" className="dialog-title">{title}</h3>
           <p className="dialog-message">{message}</p>
         </div>
         <div className="dialog-actions">
