@@ -1,4 +1,4 @@
-import { forwardRef, useMemo } from 'react'
+import { forwardRef, useMemo, useState, useRef, useEffect } from 'react'
 import { FiClock } from 'react-icons/fi'
 import { BiCar } from 'react-icons/bi'
 import logoLight from '../assets/sitzy_logo_full.svg'
@@ -59,6 +59,42 @@ export const RideSummaryCard = forwardRef<HTMLDivElement, RideSummaryCardProps>(
       return [driver, ...storyPassengers]
     }, [ride?.driver?.avatar_url, storyDriverName, anonymized, storyPassengers])
 
+    const titleRef = useRef<HTMLHeadingElement>(null)
+    const [maxVisiblePeople, setMaxVisiblePeople] = useState(4)
+
+    useEffect(() => {
+      const measure = () => {
+        if (titleRef.current) {
+          const height = titleRef.current.clientHeight
+          // Adjust passenger list rows based on destination title wrap lines to prevent card overflow
+          if (height <= 28) {
+            setMaxVisiblePeople(6) // 1 line title: show up to 6 passengers (3 rows)
+          } else if (height <= 52) {
+            setMaxVisiblePeople(4) // 2 lines title: show up to 4 passengers (2 rows)
+          } else {
+            setMaxVisiblePeople(2) // 3+ lines title: show up to 2 passengers (1 row)
+          }
+        }
+      }
+
+      measure()
+      const timer = setTimeout(measure, 50)
+      window.addEventListener('resize', measure)
+      return () => {
+        clearTimeout(timer)
+        window.removeEventListener('resize', measure)
+      }
+    }, [ride.destination])
+
+    const visiblePeople = useMemo(() => {
+      if (storyPeople.length > maxVisiblePeople) {
+        return storyPeople.slice(0, maxVisiblePeople - 1)
+      }
+      return storyPeople
+    }, [storyPeople, maxVisiblePeople])
+
+    const extraPeopleCount = storyPeople.length - visiblePeople.length
+
     const seatRendererLayout = mapCarLayoutForSeatRenderer(ride?.car?.layout)
 
     return (
@@ -75,7 +111,7 @@ export const RideSummaryCard = forwardRef<HTMLDivElement, RideSummaryCardProps>(
 
         <div className="story-card-heading">
           <p className="story-card-label">Cíl jízdy</p>
-          <h3 className="story-card-title">{ride.destination}</h3>
+          <h3 ref={titleRef} className="story-card-title">{ride.destination}</h3>
         </div>
 
         <div className="story-card-meta">
@@ -108,7 +144,7 @@ export const RideSummaryCard = forwardRef<HTMLDivElement, RideSummaryCardProps>(
         </div>
 
         <div className="story-people">
-          {storyPeople.slice(0, storyPeople.length > 4 ? 3 : 4).map((person) => (
+          {visiblePeople.map((person) => (
             <div key={person.id} className={`story-person ${person.isDriver ? 'story-person-driver' : ''}`}>
               <div className="story-person-avatar" aria-hidden="true">
                 {person.avatar ? (
@@ -123,10 +159,10 @@ export const RideSummaryCard = forwardRef<HTMLDivElement, RideSummaryCardProps>(
               </div>
             </div>
           ))}
-          {storyPeople.length > 4 && (
+          {storyPeople.length > maxVisiblePeople && (
             <div className="story-person">
               <div className="story-person-avatar" aria-hidden="true">
-                <span>+{storyPeople.length - 3}</span>
+                <span>+{extraPeopleCount}</span>
               </div>
               <div className="story-person-info">
                 <span className="story-person-name">Další</span>

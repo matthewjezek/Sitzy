@@ -67,6 +67,39 @@ def get_colored_seat(seat_src: Image.Image, color_hex: str) -> Image.Image:
     return Image.merge("RGBA", (r_tinted, g_tinted, b_tinted, a))
 
 
+def get_fitting_font_and_text(
+    text: str, max_width: int, initial_size: int, min_size: int = 24
+) -> tuple[ImageFont.FreeTypeFont | ImageFont.ImageFont, str]:
+    """Dynamically scales down the font size or truncates text with ellipsis
+    to fit max_width."""
+    size = initial_size
+    while size >= min_size:
+        font = _load_font(size)
+        if hasattr(font, "getlength"):
+            length = font.getlength(text)
+        else:
+            length = len(text) * (size * 0.6)
+
+        if length <= max_width:
+            return font, text
+        size -= 2
+
+    # Truncate with ellipsis if it still exceeds max_width at min_size
+    font = _load_font(min_size)
+    truncated_text = text
+    while len(truncated_text) > 3:
+        truncated_text = truncated_text[:-1]
+        test_text = truncated_text + "..."
+        if hasattr(font, "getlength"):
+            length = font.getlength(test_text)
+        else:
+            length = len(test_text) * (min_size * 0.6)
+        if length <= max_width:
+            return font, test_text
+
+    return font, text[:10] + "..."
+
+
 def draw_ride_og_image(
     destination: str,
     departure_time: datetime,
@@ -82,8 +115,6 @@ def draw_ride_og_image(
     draw = ImageDraw.Draw(canvas)
 
     # 2. Load fonts
-    font_dest = _load_font(64)
-    font_meta = _load_font(32)
     font_sub = _load_font(24)
 
     # 3. Draw Left Panel (Ride Details)
@@ -109,34 +140,54 @@ def draw_ride_og_image(
         font_title = _load_font(44)
         draw.text((80, 70), "SITZY", fill="#aa9bf7", font=font_title)
 
-    # Destination name
-    draw.text((80, 150), f"Cesta do: {destination}", fill="#ffffff", font=font_dest)
+    # Destination name with dynamic font fitting to prevent overlap with car layout
+    dest_text = f"Cesta do: {destination}"
+    font_dest, final_dest_text = get_fitting_font_and_text(
+        dest_text, max_width=560, initial_size=64, min_size=28
+    )
+    draw.text((80, 150), final_dest_text, fill="#ffffff", font=font_dest)
 
     # Meta details
     formatted_time = format_czech_datetime(departure_time)
-    draw.text((80, 290), f"Vyrážíme: {formatted_time}", fill="#94a3b8", font=font_meta)
-
-    layout_label_cs = "Kupé" if car_layout == "Coupe" else car_layout
     draw.text(
-        (80, 350),
-        f"Vozidlo: {car_name} ({layout_label_cs})",
-        fill="#94a3b8",
-        font=font_meta,
+        (80, 290), f"Vyrážíme: {formatted_time}", fill="#94a3b8", font=_load_font(32)
     )
 
-    # Capacity summary badge
+    # Vehicle details with dynamic font fitting
+    layout_label_cs = "Kupé" if car_layout == "Coupe" else car_layout
+    vehicle_text = f"Vozidlo: {car_name} ({layout_label_cs})"
+    font_vehicle, final_vehicle_text = get_fitting_font_and_text(
+        vehicle_text, max_width=560, initial_size=32, min_size=20
+    )
+    draw.text(
+        (80, 350),
+        final_vehicle_text,
+        fill="#94a3b8",
+        font=font_vehicle,
+    )
+
+    # Capacity summary badge (dynamically sized based on text length)
     # Driver is always implicitly occupied in seat 1, so occupied count includes seat 1
     total_seats_lookup = {"Coupe": 2, "Sedan": 4, "Minivan": 7}
     total_seats = total_seats_lookup.get(car_layout, 4)
     occupied_count = len(set(occupied_seat_positions) | {1})
 
-    badge_rect = [80, 430, 380, 485]
+    badge_text = f"Obsazeno: {occupied_count} ze {total_seats} míst"
+    if hasattr(font_sub, "getlength"):
+        text_width = font_sub.getlength(badge_text)
+    else:
+        text_width = len(badge_text) * (24 * 0.6)
+
+    badge_right = 80 + 25 + int(text_width) + 25
+    badge_right = min(badge_right, 640)  # Ensure it does not overflow left boundary
+    badge_rect = [80, 430, badge_right, 485]
+
     draw.rounded_rectangle(
         badge_rect, radius=24, fill="#1e293b", outline="#7350f2", width=3
     )
     draw.text(
         (105, 442),
-        f"Obsazeno: {occupied_count} ze {total_seats} míst",
+        badge_text,
         fill="#f8fafc",
         font=font_sub,
     )
