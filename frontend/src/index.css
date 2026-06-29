@@ -1529,7 +1529,7 @@
   }
 
   .badge-indigo {
-    background-color: var(--color-primary-border);
+    background-color: rgba(115, 80, 242, 0.1);
   }
 
   .dark .badge-indigo {

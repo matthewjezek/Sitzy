@@ -876,7 +876,7 @@ export default function SettingsPage() {
       >
         <h3 id="delete-dialog-title" className="dialog-title">Opravdu chcete smazat svůj účet?</h3>
         {localStorage.getItem('survey_token') && (
-          <div className="p-3 mb-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300 leading-normal text-left">
+          <div className="p-3 mb-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-300 leading-normal text-left">
             <strong>Účastníku průzkumu:</strong> Smazáním účtu splníte poslední úkol a budete automaticky přesměrováni zpět k odeslání závěrečného dotazníku dotazníkového šetření.
           </div>
         )}

@@ -214,17 +214,17 @@ export default function SurveyRedirectPage() {
             <button
               onClick={handleRedirectToTally}
               disabled={redirecting}
-              className="button-primary w-full h-12 mt-4 flex items-center justify-center gap-2 group transition-all duration-200 hover:scale-[1.02] disabled:opacity-50 hover:cursor-pointer"
+              className="button-primary w-full h-auto min-h-[3rem] py-3 mt-4 flex items-center justify-center gap-2 group transition-all duration-200 hover:scale-[1.02] disabled:opacity-50 hover:cursor-pointer text-sm"
             >
               {redirecting ? (
                 <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white" />
+                  <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white shrink-0" />
                   <span>Přesměrovávám...</span>
                 </>
               ) : (
                 <>
-                  <span>Přejít k závěrečnému dotazníku</span>
-                  <FiArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                  <span className="text-center leading-snug">Přejít k závěrečnému dotazníku</span>
+                  <FiArrowRight size={16} className="group-hover:translate-x-1 transition-transform shrink-0" />
                 </>
               )}
             </button>
