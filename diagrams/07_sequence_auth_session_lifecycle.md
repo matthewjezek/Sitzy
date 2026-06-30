@@ -2,15 +2,19 @@
 
 ```mermaid
 sequenceDiagram
-    actor User as 👤 Uživatel
-    participant Frontend as 🖥️ Frontend<br/>(React)
-    participant Backend as 🔌 Backend<br/>(FastAPI)
-    participant Redis as 🧠 Redis
-    participant Database as 💾 Database
+    actor User as Uživatel
+    participant Frontend as Frontend<br/>(React)
+    participant Backend as Backend<br/>(FastAPI)
+    participant Redis as Redis
+    participant Database as Database
 
     User->>Frontend: Přihlásí se přes OAuth
-    Frontend->>Backend: /auth/oauth/*/init
+    Frontend->>Backend: POST /auth/oauth/*/init
     Backend->>Redis: Uloží state / PKCE data
+    Backend->>Frontend: authorization_url
+    Frontend->>User: Přesměrování na OAuth dialog
+    User->>Frontend: Callback na /auth/callback?code=...
+    Frontend->>Backend: GET /auth/oauth/callback?code=...
     Backend->>Database: Vytvoří nebo najde User + SocialAccount
     Backend->>Database: Vytvoří SocialSession
     Backend->>Frontend: access_token + refresh_token cookie

@@ -29,7 +29,7 @@ classDiagram
         -datetime expires_at
         -string | null user_agent
         -datetime created_at
-        -datetime revoked_at
+        -datetime | null revoked_at
     }
 
     class IntegrationAuditLog {
@@ -56,7 +56,7 @@ classDiagram
         -UUID driver_id
         -boolean is_active
         -datetime assigned_at
-        -datetime revoked_at
+        -datetime | null revoked_at
     }
 
     class Ride {
@@ -111,22 +111,23 @@ classDiagram
 
 ## Poznámky:
 
-### 📐 Architektura
+### Architektura
 
 - **Data modely** - definovány pomocí SQLAlchemy ORM
 - **Business logika** - implementována v routerech (FastAPI), ne na modelech
 - **Schémata** - Pydantic modely pro validaci a serializaci
 
-### 🔑 Klíčové vlastnosti
+### Klíčové vlastnosti
 
 - Všechny modely používají **UUID** jako primární klíč
 - `User.email` a `SocialAccount.email` jsou nullable
-- `SocialSession.refresh_token` je nullable, `user_agent` je nullable
+- `SocialSession.refresh_token`, `user_agent` a `revoked_at` jsou nullable
+- `CarDriver.revoked_at` je nullable
 - **Seat** má composite PK `(car_id, position)`
 - **CarDriver** vzniká až při vytvoření první jízdy, ne při vytvoření auta
 - Pouze jeden `is_active=true` CarDriver na auto
 
-### 🔐 OAuth Flow
+### OAuth Flow
 
 - **SocialAccount** - trvalé propojení s OAuth providerem (Facebook, X)
 - **SocialSession** - dočasné tokeny s dual FK na User i SocialAccount

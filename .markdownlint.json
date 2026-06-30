@@ -3,6 +3,7 @@
         "punctuation": "."
     },
     "MD033": {"allowed_elements": ["input"]},
+    "MD024": false,
     "MD013": {
         "tables": false
     }

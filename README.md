@@ -19,9 +19,9 @@ ostatními účastníky jízdy.
 - **Vizuální přehled**: Reálný náhled na obsazenost auta pro každou naplánovanou
   jízdu.
 
-### Technologický stack (CZ)
+### Technologický stack
 
-#### Backend (CZ)
+#### Backend
 
 - **Framework**: FastAPI (Python 3.11+)
 - **Databáze**: PostgreSQL s SQLAlchemy 2.0 (ORM)
@@ -29,7 +29,7 @@ ostatními účastníky jízdy.
 - **Cache/Session**: Redis (stav OAuth a správa relací)
 - **Zabezpečení**: JWT (Access/Refresh tokeny), PKCE pro OAuth přes X (Twitter)
 
-#### Frontend (CZ)
+#### Frontend
 
 - **Framework**: React 19 + TypeScript
 - **Styling**: Tailwind CSS v4
@@ -37,7 +37,7 @@ ostatními účastníky jízdy.
 - **Správa stavu**: Vlastní hooky s Axios pro komunikaci s API
 - **Validace**: Zod + React Hook Form
 
-#### DevOps a nástroje (CZ)
+#### DevOps a nástroje
 
 - **Kontejnerizace**: Docker & Docker Compose
 - **Testování**: Playwright (E2E), Pytest (Backend)
@@ -59,7 +59,7 @@ Spusťte potřebné služby (PostgreSQL, Redis):
 docker-compose up -d db redis
 ```
 
-#### Nastavení Backendů (CZ)
+#### Nastavení Backendů
 
 1. Přejděte do adresáře `api` (nebo kořenového adresáře projektu podle vašeho
    nastavení venv).
@@ -81,7 +81,7 @@ docker-compose up -d db redis
    uvicorn api.main:app --reload
    ```
 
-#### Nastavení Frontendu (CZ)
+#### Nastavení Frontendu
 
 1. Přejděte do adresáře `frontend`.
 2. Nainstalujte závislosti:
@@ -96,23 +96,67 @@ docker-compose up -d db redis
    npm run dev
    ```
 
-### Konfigurace OAuth (CZ)
+### Testování a kontrola kvality
 
-#### Registrace aplikace na Facebooku (CZ)
+Aplikace obsahuje sadu nástrojů pro zajištění kvality kódu a testování:
+
+#### Backend
+
+- **Spuštění testů (Pytest)**:
+
+  ```bash
+  pytest api/tests  # nebo 'make test'
+  ```
+
+- **Formátování a linting**:
+
+  ```bash
+  make format  # Spustí black, isort, flake8 a mypy na adresář api
+  ```
+
+#### Frontend
+
+- **Spuštění E2E testů (Playwright)**:
+
+  ```bash
+  cd frontend
+  npm run test:e2e
+  ```
+
+- **Linting a přístupnost (A11y)**:
+
+  ```bash
+  cd frontend
+  npm run lint  # Statická analýza kódu
+  npm run a11y  # Kontrola accessibility (a11y)
+  ```
+
+#### Git Pre-commit Hooks
+
+Pro automatické spuštění kontrol před každým commitem nainstalujte
+pre-commit hooks:
+
+```bash
+npm run prepare  # nebo 'make setup-hooks'
+```
+
+### Konfigurace OAuth
+
+#### Registrace aplikace na Facebooku
 
 1. Navštivte [developers.facebook.com](https://developers.facebook.com).
 2. Vytvořte novou aplikaci s využitím "Authenticate and request data from users
    with Facebook Login".
 3. V sekci **App Settings -> Basic** získejte své `App ID` a `App Secret`.
 
-#### Registrace aplikace na X (Twitteru) (CZ)
+#### Registrace aplikace na X (Twitteru)
 
 1. Navštivte [developer.twitter.com](https://developer.twitter.com).
 2. Vytvořte nový Project a App.
 3. Povolte **User authentication settings** s OAuth 2.0.
 4. Nastavte **Callback URI** na `http://localhost:5173/auth/callback`.
 
-#### Bezpečnostní klíče (CZ)
+#### Bezpečnostní klíče
 
 Vygenerujte silné tajné klíče pro JWT:
 
@@ -123,7 +167,7 @@ python -c "import secrets; print(secrets.token_hex(32))"
 Spusťte dvakrát pro vygenerování `SECRET_KEY` a `REFRESH_SECRET_KEY` do vašeho
 souboru `.env`.
 
-### Struktura projektu (CZ)
+### Struktura projektu
 
 - `/api`: Zdrojový kód backendu (FastAPI).
 - `/frontend`: Zdrojový kód frontendu (React).
@@ -152,9 +196,9 @@ participants.
   various rides as either a driver or a passenger.
 - **Visual Overview**: Real-time car occupancy view for every scheduled ride.
 
-### Technical Stack (EN)
+### Technical Stack
 
-#### Backend (EN)
+#### Backend
 
 - **Framework**: FastAPI (Python 3.11+)
 - **Database**: PostgreSQL with SQLAlchemy 2.0 (ORM)
@@ -162,7 +206,7 @@ participants.
 - **Caching/Session**: Redis (OAuth state and session management)
 - **Security**: JWT (Access/Refresh tokens), PKCE for X/Twitter OAuth
 
-#### Frontend (EN)
+#### Frontend
 
 - **Framework**: React 19 + TypeScript
 - **Styling**: Tailwind CSS v4
@@ -178,7 +222,7 @@ participants.
 - Node.js 20+
 - Python 3.11+
 
-#### Infrastructure (EN)
+#### Infrastructure
 
 Start the required services (PostgreSQL, Redis):
 
@@ -186,7 +230,7 @@ Start the required services (PostgreSQL, Redis):
 docker-compose up -d db redis
 ```
 
-#### Backend Setup (EN)
+#### Backend Setup
 
 1. Navigate to the `api` directory (or project root).
 2. Install dependencies:
@@ -207,7 +251,7 @@ docker-compose up -d db redis
    uvicorn api.main:app --reload
    ```
 
-#### Frontend Setup (EN)
+#### Frontend Setup
 
 1. Navigate to the `frontend` directory.
 2. Install dependencies:
@@ -222,22 +266,66 @@ docker-compose up -d db redis
    npm run dev
    ```
 
-### OAuth Configuration (EN)
+### Testing and Quality Control
 
-#### Facebook App Registration (EN)
+Sitzy includes a set of tools to ensure code quality and running tests:
+
+#### Backend
+
+- **Run Tests (Pytest)**:
+
+  ```bash
+  pytest api/tests  # or 'make test'
+  ```
+
+- **Code Formatting & Linting**:
+
+  ```bash
+  make format  # Runs black, isort, flake8, and mypy on the api directory
+  ```
+
+#### Frontend
+
+- **Run E2E Tests (Playwright)**:
+
+  ```bash
+  cd frontend
+  npm run test:e2e
+  ```
+
+- **Linting & Accessibility (A11y)**:
+
+  ```bash
+  cd frontend
+  npm run lint  # Runs ESLint code quality checks
+  npm run a11y  # Runs accessibility checks
+  ```
+
+#### Git Pre-commit Hooks
+
+To automatically run checks before each commit, set up the
+pre-commit hooks:
+
+```bash
+npm run prepare  # or 'make setup-hooks'
+```
+
+### OAuth Configuration
+
+#### Facebook App Registration
 
 1. Visit [developers.facebook.com](https://developers.facebook.com).
 2. Create a new app with "Facebook Login".
 3. Retrieve your `App ID` and `App Secret` from settings.
 
-#### X (Twitter) App Registration (EN)
+#### X (Twitter) App Registration
 
 1. Visit [developer.twitter.com](https://developer.twitter.com).
 2. Create a new Project and App.
 3. Enable OAuth 2.0 and set **Callback URI** to
    `http://localhost:5173/auth/callback`.
 
-### Project Structure (EN)
+### Project Structure
 
 - `/api`: FastAPI backend source code.
 - `/frontend`: React frontend source code.

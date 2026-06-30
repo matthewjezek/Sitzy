@@ -1,4 +1,4 @@
-# 📊 Sitzy - Mermaid Diagramy
+# Sitzy - Mermaid Diagramy
 
 Všechny diagramy jsou ve formátu **Mermaid**, který je nativně podporovaný v:
 
@@ -9,7 +9,7 @@ Všechny diagramy jsou ve formátu **Mermaid**, který je nativně podporovaný 
 - Obsidian
 - a mnoho dalších nástrojů
 
-## 📁 Soubory
+## Soubory
 
 | Soubor | Obsah |
 | ------ | ----- |
@@ -23,21 +23,21 @@ Všechny diagramy jsou ve formátu **Mermaid**, který je nativně podporovaný 
 
 ---
 
-## 📋 Obsah Diagramů
+## Obsah Diagramů
 
-### 1️⃣ Use Case Diagram
+### Use Case Diagram
 
 - **Role**: Řidič vs. Pasažér
 - **Interakce**: Registrace, přihlášení, vytvoření auta, pozvánky
 - **Tok**: Majitel → Řidič → Pasažér
 
-### 2️⃣ ER Diagram - Aktuální stav
+### ER Diagram - Aktuální stav
 
 - OAuth identity a session tabulky
 - 1:N vztah User:Car
 - Oddělení majitele a řidiče přes `CAR_DRIVERS`
 
-### 3️⃣ ER Diagram - OAuth architektura ⭐
+### ER Diagram - OAuth architektura
 
 - **OAuth tabulky**: `SOCIAL_ACCOUNTS`, `SOCIAL_SESSIONS`
 - **1:N User:Car** (více aut na uživatele)
@@ -45,37 +45,37 @@ Všechny diagramy jsou ve formátu **Mermaid**, který je nativně podporovaný 
 - **Audit log**: `INTEGRATION_AUDIT_LOGS` pro události OAuth/integrací
 - **Optimalizace**: Composite PKs, explicitní enum statusy
 
-### 4️⃣ Sequence Diagram - OAuth
+### Sequence Diagram - OAuth
 
 - Kompletní OAuth 2.0 flow
 - Facebook/X integration
 - JWT token generation
 - Auto-registration nových uživatelů
 
-### 5️⃣ Sequence Diagram - Multiple Cars
+### Sequence Diagram - Multiple Cars
 
 - Scénář: Alice (majitel) → Bob (řidič) → Charlie (pasažér)
 - Přiřazení řidiče k autu
 - Vytvoření jízdy
 - Pozvání pasažérů
 
-### 6️⃣ Class Diagram
+### Class Diagram
 
 - Python SQLAlchemy modely
 - Vztahy mezi třídami
 - Metody a atributy
 
-### 7️⃣ State Diagram - Invitation Lifecycle
+### State Diagram - Invitation Lifecycle
 
 - Stav pozvánky od vytvoření po přijetí, zamítnutí, expiraci nebo smazání
 - Přijetí vytváří `Passenger` záznam
 
-### 8️⃣ Sequence Diagram - Auth Session Lifecycle
+### Sequence Diagram - Auth Session Lifecycle
 
 - OAuth login, access token, refresh cookie a revokace session
 - Ověření každého requestu proti `SocialSession`
 
-## ✅ Kontrolní seznam
+## Kontrolní seznam
 
 - [x] Use Case diagram
 - [x] ER diagram - aktuální stav
@@ -89,6 +89,6 @@ Všechny diagramy jsou ve formátu **Mermaid**, který je nativně podporovaný 
 
 ---
 
-**Poslední aktualizace**: 15. dubna 2026
+**Poslední aktualizace**: 30. června 2026
 
 **Formát**: Mermaid (Markdown kompatibilní)
