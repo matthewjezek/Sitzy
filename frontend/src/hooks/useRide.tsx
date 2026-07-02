@@ -69,7 +69,7 @@ export function useRide() {
           user_id: "me",
           seat_position: Number(userSeat),
           full_name: mockName,
-          avatar_url: mockAvatar
+          avatar_url: mockAvatar ?? ''
         })
       }
       
