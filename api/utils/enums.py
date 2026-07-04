@@ -11,3 +11,4 @@ class InvitationStatus(str, Enum):
     PENDING = "Pending"
     ACCEPTED = "Accepted"
     REJECTED = "Rejected"
+    EXPIRED = "Expired"
