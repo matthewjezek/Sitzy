@@ -27,10 +27,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const res = await instance.get<User>('/auth/me');
       setUser(res.data);
-      if (localStorage.getItem('survey_token')) {
-        localStorage.setItem('survey_user_name', res.data.full_name || '');
-        localStorage.setItem('survey_user_avatar', res.data.avatar_url || '');
-      }
     } catch (error) {
       console.error("Nepodařilo se načíst uživatele", error);
       setUser(null);

@@ -60,9 +60,7 @@ export async function startSurveySession(user: {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        socialId: activeAccount.social_id,
         platform: activeAccount.provider,
-        userName: user.full_name || 'Anonymní',
         existingToken: token
       })
     })

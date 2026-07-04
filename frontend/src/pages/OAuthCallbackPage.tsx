@@ -36,8 +36,6 @@ export default function OAuthCallbackPage() {
 
         try {
           const userRes = await instance.get('/auth/me')
-          localStorage.setItem('survey_user_name', userRes.data.full_name || '')
-          localStorage.setItem('survey_user_avatar', userRes.data.avatar_url || '')
           await startSurveySession(userRes.data)
         } catch (err) {
           console.error('Failed to initialize survey session:', err)
