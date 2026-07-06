@@ -30,6 +30,70 @@ export default async function middleware(request: Request) {
     }
   }
 
+  // Intercept survey route to serve custom static OG tags
+  if (url.pathname === '/survey') {
+    try {
+      const indexRes = await fetch(new URL('/index.html', request.url))
+      if (indexRes.ok) {
+        let html = await indexRes.text()
+        const title = 'Uživatelský průzkum — Sitzy'
+        const description = 'Pomoz nám otestovat Sitzy! Průzkum je zcela anonymní, proto tě na konci poprosíme o smazání účtu (tím vymažeš všechna data a přejdeš na dotazník). Víme, že je to docela dost klikání, ale moc nám to pomůže! 🙌'
+        const imageUrl = `${url.origin}/OG_survey.png`
+
+        html = html
+          .replace(/<title>Sitzy<\/title>/, `<title>${title}</title>`)
+          .replace(
+            /<meta property="og:url" content="[^"]*"\s*\/?>/g,
+            `<meta property="og:url" content="${url.origin}/survey" />`
+          )
+          .replace(
+            /<meta property="og:title" content="[^"]*"\s*\/?>/g,
+            `<meta property="og:title" content="${title}" />`
+          )
+          .replace(
+            /<meta property="og:description" content="[^"]*"\s*\/?>/g,
+            `<meta property="og:description" content="${description}" />`
+          )
+          .replace(
+            /<meta property="og:image" content="[^"]*"\s*\/?>/g,
+            `<meta property="og:image" content="${imageUrl}" />`
+          )
+          .replace(
+            /<meta name="twitter:title" content="[^"]*"\s*\/?>/g,
+            `<meta name="twitter:title" content="${title}" />`
+          )
+          .replace(
+            /<meta name="twitter:description" content="[^"]*"\s*\/?>/g,
+            `<meta name="twitter:description" content="${description}" />`
+          )
+          .replace(
+            /<meta name="twitter:image" content="[^"]*"\s*\/?>/g,
+            `<meta name="twitter:image" content="${imageUrl}" />`
+          )
+          .replace(
+            /<meta itemprop="name" content="[^"]*"\s*\/?>/g,
+            `<meta itemprop="name" content="${title}" />`
+          )
+          .replace(
+            /<meta itemprop="description" content="[^"]*"\s*\/?>/g,
+            `<meta itemprop="description" content="${description}" />`
+          )
+          .replace(
+            /<meta itemprop="image" content="[^"]*"\s*\/?>/g,
+            `<meta itemprop="image" content="${imageUrl}" />`
+          )
+
+        return new Response(html, {
+          headers: {
+            'content-type': 'text/html; charset=utf-8',
+          },
+        })
+      }
+    } catch (e) {
+      console.error('Failed to serve survey OG tags in middleware:', e)
+    }
+  }
+
   // Intercept invite ingress routes for crawlers/previews (or all visitors) to serve dynamic OG tags
   const inviteMatch = url.pathname.match(/^\/i\/([^/]+)/)
   if (inviteMatch) {
