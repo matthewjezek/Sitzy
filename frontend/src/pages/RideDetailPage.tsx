@@ -13,6 +13,7 @@ import {
   FiEye,
   FiEyeOff,
   FiCopy,
+  FiInfo,
 } from 'react-icons/fi'
 import { BiCar } from 'react-icons/bi'
 import { toast } from 'react-toastify'
@@ -723,6 +724,20 @@ export default function RideDetailPage() {
   return (
     <div className="page-container flex-col pt-6 pb-10">
       <div className="page-content max-w-md md:max-w-2xl lg:max-w-6xl mx-auto p-4 md:p-6 flex flex-col gap-6">
+
+        {requiresSeatSelection && (
+          <div className="info-card flex flex-col sm:flex-row items-center sm:items-start gap-4 shadow-md animate-pulse">
+            <div className="p-3 bg-accent/10 text-accent rounded-full shrink-0">
+              <FiInfo size={24} />
+            </div>
+            <div className="flex-1 flex flex-col gap-1">
+              <h2 className="text-lg font-bold text-accent">Je vyžadována volba sedadla</h2>
+              <p className="text-sm text-secondary leading-relaxed">
+                Byli jste pozváni do této jízdy. Abyste potvrdili svou účast a dokončili přijetí pozvánky, vyberte si prosím své sedadlo v plánku níže.
+              </p>
+            </div>
+          </div>
+        )}
 
         <div className="card p-4 md:p-6 flex flex-col gap-4 relative overflow-hidden">
           <div className="absolute -top-10 -right-10 w-36 h-36 rounded-full bg-accent/10 blur-2xl pointer-events-none" aria-hidden="true" />
