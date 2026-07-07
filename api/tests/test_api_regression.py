@@ -874,3 +874,68 @@ def test_invitation_schema_allows_local_domain():
 
     with pytest.raises(ValidationError):
         InvitationCreate(invited_email="invalid-email")
+
+
+def test_get_my_rides_includes_driver_rides_real_db():
+    from sqlalchemy import create_engine, event
+    from sqlalchemy.orm import sessionmaker
+
+    from api.deps import UserContext
+    from api.models import Base, Car, CarDriver, Passenger, Ride, User
+
+    engine = create_engine("sqlite:///:memory:")
+
+    @event.listens_for(engine, "connect")
+    def connect(dbapi_connection, connection_record):
+        dbapi_connection.create_function(
+            "now", 0, lambda: datetime.now(timezone.utc).isoformat()
+        )
+
+    Base.metadata.create_all(bind=engine)
+    Session = sessionmaker(bind=engine)
+    db = Session()
+
+    # Create users
+    user_a = User(email="user_a@example.com", full_name="User A")
+    user_b = User(email="user_b@example.com", full_name="User B")
+    db.add_all([user_a, user_b])
+    db.commit()
+
+    # Create car owned by user A
+    car = Car(owner_id=user_a.id, name="Skoda Octavia", layout="Sedan")
+    db.add(car)
+    db.commit()
+
+    # Create car driver for User B
+    car_driver = CarDriver(car_id=car.id, driver_id=user_b.id, is_active=True)
+    db.add(car_driver)
+    db.commit()
+
+    # Create Ride where User B is the driver
+    ride = Ride(
+        car_id=car.id,
+        car_driver_id=car_driver.id,
+        departure_time=datetime.now(timezone.utc) + timedelta(days=1),
+        destination="Prague",
+    )
+    db.add(ride)
+    db.commit()
+
+    # Create passenger record for User A (User A is passenger now)
+    passenger_a = Passenger(user_id=user_a.id, ride_id=ride.id, seat_position=2)
+    db.add(passenger_a)
+    db.commit()
+
+    # User B (driver, not owner, not passenger) gets their rides
+    ctx_b = UserContext(user=user_b, session_id=uuid4())
+    res_b = rides.get_my_rides(request=None, db=db, ctx=ctx_b)
+
+    assert len(res_b) == 1
+    assert res_b[0].id == ride.id
+
+    # User A (owner, not driver, passenger) gets their rides
+    ctx_a = UserContext(user=user_a, session_id=uuid4())
+    res_a = rides.get_my_rides(request=None, db=db, ctx=ctx_a)
+
+    assert len(res_a) == 1
+    assert res_a[0].id == ride.id

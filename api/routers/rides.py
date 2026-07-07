@@ -204,14 +204,16 @@ def get_my_rides(
     db: Session = Depends(get_db),
     ctx: UserContext = Depends(get_current_user),
 ) -> list[RideOut]:
-    """Get all rides where the user is a passenger or car owner."""
+    """Get all rides where the user is a passenger, car owner, or driver."""
     rides = (
         db.query(Ride)
         .join(Car, Ride.car_id == Car.id)
+        .join(CarDriver, Ride.car_driver_id == CarDriver.id)
         .outerjoin(Passenger, Ride.id == Passenger.ride_id)
         .filter(
             or_(
                 Car.owner_id == ctx.user.id,
+                CarDriver.driver_id == ctx.user.id,
                 Passenger.user_id == ctx.user.id,
             )
         )

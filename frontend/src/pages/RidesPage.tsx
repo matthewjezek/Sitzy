@@ -7,7 +7,7 @@ import { formatLocalDateTime } from '../utils/datetime'
 import ErrorView from '../components/ErrorView'
 
 type TimeFilter = 'all_time' | 'upcoming' | 'history'
-type RoleFilter = 'all_roles' | 'organizing' | 'participating'
+type RoleFilter = 'all_roles' | 'driver' | 'passenger' | 'owner'
 type SortBy = 'date_asc' | 'date_desc' | 'alpha'
 
 function RidesListSkeleton() {
@@ -61,8 +61,9 @@ export default function RidesPage() {
       if (timeFilter === 'upcoming' && isPast) return false
       if (timeFilter === 'history' && !isPast) return false
 
-      if (roleFilter === 'organizing' && ride.driver_user_id !== user?.id) return false
-      if (roleFilter === 'participating' && !ride.passengers.some(p => p.user_id === user?.id)) return false
+      if (roleFilter === 'driver' && ride.driver_user_id !== user?.id) return false
+      if (roleFilter === 'passenger' && !ride.passengers.some(p => p.user_id === user?.id)) return false
+      if (roleFilter === 'owner' && ride.car?.owner_id !== user?.id) return false
 
       return true
     })
@@ -208,8 +209,9 @@ export default function RidesPage() {
                 className="form-input flex-1 cursor-pointer py-2"
               >
                 <option value="all_roles">Všechny role</option>
-                <option value="organizing">Organizuji</option>
-                <option value="participating">Jedu jako pasažér</option>
+                <option value="driver">Řídím</option>
+                <option value="passenger">Jedu jako pasažér</option>
+                <option value="owner">Vlastním auto</option>
               </select>
 
               <select 
