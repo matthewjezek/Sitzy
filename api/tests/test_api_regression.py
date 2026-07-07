@@ -579,6 +579,41 @@ def test_accept_invitation_requires_email_match(fake_user_context):
     assert response.json()["detail"] == "This is not your invitation."
 
 
+def test_accept_invitation_success(fake_user_context):
+    car = _car(fake_user_context.user.id)
+    ride = _ride(car, fake_user_context.user.id)
+    invitation = SimpleNamespace(
+        id=uuid4(),
+        token="invite-token",
+        ride_id=ride.id,
+        invited_email="owner@example.com",  # Matches fake_user_context.user.email
+        status=InvitationStatus.PENDING,
+        expires_at=datetime.now(timezone.utc) + timedelta(hours=1),
+        ride=ride,
+    )
+    fake_db = FakeDB(
+        query_results={
+            Invitation: FakeQuery(first_result=invitation),
+            Passenger: FakeQuery(first_result=None),
+        }
+    )
+    client = create_client(
+        router=invitations.router,
+        prefix="/invitations",
+        fake_db=fake_db,
+        current_user=fake_user_context,
+    )
+
+    response = client.post(
+        "/invitations/invite-token/accept",
+        json={"seat_position": 2},
+    )
+
+    assert response.status_code == 200
+    assert invitation.status == InvitationStatus.ACCEPTED
+    assert any(isinstance(p, Passenger) for p in fake_db.added)
+
+
 def test_accept_invitation_rejects_past_ride(fake_user_context):
     ride = SimpleNamespace(
         id=uuid4(),

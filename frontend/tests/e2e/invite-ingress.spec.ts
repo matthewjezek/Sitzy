@@ -40,15 +40,20 @@ test.describe('Invite ingress route /i/:inviteToken', () => {
     expect(redirect).toBe(`/rides/${RIDE_ID}?invite=${encodeURIComponent(INVITE_TOKEN)}`)
   })
 
-  test('authenticated user: pre-validate and navigate directly to ride detail', async ({ page }) => {
+  test('authenticated user: pre-validate, navigate to ride detail and accept invitation successfully', async ({ page }) => {
     await seedAuthenticated(page)
     await mockAuthenticatedApi(page, {
       ride: {
         id: RIDE_ID,
-        car: null,
+        car: {
+          id: 'car-1',
+          owner_id: 'owner-2',
+          name: 'Rodinný vůz',
+          layout: 'Minivan',
+        },
         car_id: 'car-1',
-        car_driver_id: 'driver-1',
-        driver_user_id: 'user-1',
+        car_driver_id: 'driver-2',
+        driver_user_id: 'driver-2',
         departure_time: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
         destination: 'Testtown',
         created_at: new Date().toISOString(),
@@ -81,6 +86,69 @@ test.describe('Invite ingress route /i/:inviteToken', () => {
 
     await page.goto(`/i/${INVITE_TOKEN}`)
 
+    await expect(page).toHaveURL(`/rides/${RIDE_ID}?invite=${INVITE_TOKEN}`)
+    await expect(page.getByText('Vyberte sedadlo pro dokončení přijetí pozvánky.')).toBeVisible()
+
+    await page.getByRole('button', { name: 'Nechat systém vybrat' }).click()
+
+    await expect(page.getByText('Pozvánka přijata a sedadlo potvrzeno.')).toBeVisible()
+    await expect(page).toHaveURL(`/rides/${RIDE_ID}`)
+  })
+
+  test('authenticated user: pre-validate, navigate to ride detail and fail accepting due to email mismatch', async ({ page }) => {
+    await seedAuthenticated(page)
+    await mockAuthenticatedApi(page, {
+      acceptInvitationStatus: 403,
+      acceptInvitationDetail: 'This is not your invitation.',
+      ride: {
+        id: RIDE_ID,
+        car: {
+          id: 'car-1',
+          owner_id: 'owner-2',
+          name: 'Rodinný vůz',
+          layout: 'Minivan',
+        },
+        car_id: 'car-1',
+        car_driver_id: 'driver-2',
+        driver_user_id: 'driver-2',
+        departure_time: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+        destination: 'Testtown',
+        created_at: new Date().toISOString(),
+        passengers: [],
+      },
+      invites: [
+        {
+          invited_email: 'different-email@example.com',
+          status: 'Pending',
+          created_at: new Date().toISOString(),
+          token: INVITE_TOKEN,
+          ride_id: RIDE_ID,
+        }
+      ]
+    })
+
+    await page.route(RESOLVE_GLOB, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          ride_id: RIDE_ID,
+          status: 'PENDING',
+          expires_at: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+          destination: 'Testtown',
+          departure_time: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+        }),
+      })
+    })
+
+    await page.goto(`/i/${INVITE_TOKEN}`)
+
+    await expect(page).toHaveURL(`/rides/${RIDE_ID}?invite=${INVITE_TOKEN}`)
+    await expect(page.getByText('Vyberte sedadlo pro dokončení přijetí pozvánky.')).toBeVisible()
+
+    await page.getByRole('button', { name: 'Nechat systém vybrat' }).click()
+
+    await expect(page.getByText('Nepodařilo se dokončit výběr sedadla. Pozvánka zůstává čekající.')).toBeVisible()
     await expect(page).toHaveURL(`/rides/${RIDE_ID}?invite=${INVITE_TOKEN}`)
   })
 })
