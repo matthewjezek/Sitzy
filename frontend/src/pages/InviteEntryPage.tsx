@@ -37,7 +37,12 @@ export default function InviteEntryPage() {
         setLoading(false)
       } catch (error) {
         if (isAxiosError(error)) {
-          if (error.response?.status === 410) {
+          if (error.response?.status === 403) {
+            setErrorMsg(
+              (error.response.data as { detail?: string })?.detail ??
+                'Tato pozvánka je určena pro jiný účet. Přihlaste se prosím správným účtem.'
+            )
+          } else if (error.response?.status === 410) {
             setErrorMsg('Pozvánka vypršela. Požádejte o novou.')
           } else if (error.response?.status === 404) {
             setErrorMsg('Pozvánka nebyla nalezena.')
@@ -56,7 +61,7 @@ export default function InviteEntryPage() {
 
   const handleAccept = () => {
     if (!inviteDetails || !inviteToken) return
-    const targetPath = `/rides/${inviteDetails.ride_id}?invite=${encodeURIComponent(inviteToken)}`
+    const targetPath = `/i/${encodeURIComponent(inviteToken)}`
     localStorage.setItem('post_login_redirect', targetPath)
     navigate('/login')
   }

@@ -138,6 +138,40 @@ def resolve_invitation_token(
     if invitation.expires_at < datetime.now(timezone.utc):
         raise HTTPException(status_code=410, detail="Invitation has expired.")
 
+    # Validate email match if authenticated
+    auth_header = request.headers.get("authorization")
+    if auth_header and auth_header.startswith("Bearer "):
+        token_str = auth_header.split(" ")[1]
+        try:
+            from jose import jwt
+
+            from api.config import settings
+            from api.models import User
+
+            payload = jwt.decode(
+                token_str, settings.secret_key, algorithms=[settings.algorithm]
+            )
+            user_id = payload.get("sub")
+            if user_id:
+                user = db.query(User).filter(User.id == UUID(user_id)).first()
+                if (
+                    user
+                    and user.email
+                    and invitation.invited_email.lower() != "public@sitzy.local"
+                ):
+                    if invitation.invited_email.lower() != user.email.lower():
+                        raise HTTPException(
+                            status_code=403,
+                            detail=(
+                                "Tato pozvánka je určena pro jiný účet. "
+                                "Přihlaste se prosím správným účtem."
+                            ),
+                        )
+        except HTTPException:
+            raise
+        except Exception:
+            pass
+
     emit_integration_event(
         event="invite_link_resolved",
         metadata={

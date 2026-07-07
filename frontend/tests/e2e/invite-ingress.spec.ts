@@ -37,7 +37,7 @@ test.describe('Invite ingress route /i/:inviteToken', () => {
     await expect(page.getByText('Přihlášení k pozvánce')).toBeVisible()
 
     const redirect = await page.evaluate(() => localStorage.getItem('post_login_redirect'))
-    expect(redirect).toBe(`/rides/${RIDE_ID}?invite=${encodeURIComponent(INVITE_TOKEN)}`)
+    expect(redirect).toBe(`/i/${encodeURIComponent(INVITE_TOKEN)}`)
   })
 
   test('authenticated user: pre-validate, navigate to ride detail and accept invitation successfully', async ({ page }) => {
@@ -98,8 +98,6 @@ test.describe('Invite ingress route /i/:inviteToken', () => {
   test('authenticated user: pre-validate, navigate to ride detail and fail accepting due to email mismatch', async ({ page }) => {
     await seedAuthenticated(page)
     await mockAuthenticatedApi(page, {
-      acceptInvitationStatus: 403,
-      acceptInvitationDetail: 'This is not your invitation.',
       ride: {
         id: RIDE_ID,
         car: {
@@ -129,27 +127,18 @@ test.describe('Invite ingress route /i/:inviteToken', () => {
 
     await page.route(RESOLVE_GLOB, async (route) => {
       await route.fulfill({
-        status: 200,
+        status: 403,
         contentType: 'application/json',
         body: JSON.stringify({
-          ride_id: RIDE_ID,
-          status: 'PENDING',
-          expires_at: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
-          destination: 'Testtown',
-          departure_time: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+          detail: 'Tato pozvánka je určena pro jiný účet. Přihlaste se prosím správným účtem.',
         }),
       })
     })
 
     await page.goto(`/i/${INVITE_TOKEN}`)
 
-    await expect(page).toHaveURL(`/rides/${RIDE_ID}?invite=${INVITE_TOKEN}`)
-    await expect(page.getByText('Vyberte sedadlo pro dokončení přijetí pozvánky.')).toBeVisible()
-
-    await page.getByRole('button', { name: 'Nechat systém vybrat' }).click()
-
-    await expect(page.getByText('Nepodařilo se dokončit výběr sedadla. Pozvánka zůstává čekající.')).toBeVisible()
-    await expect(page).toHaveURL(`/rides/${RIDE_ID}?invite=${INVITE_TOKEN}`)
+    await expect(page).toHaveURL(`/i/${INVITE_TOKEN}`)
+    await expect(page.getByText('Tato pozvánka je určena pro jiný účet. Přihlaste se prosím správným účtem.')).toBeVisible()
   })
 })
 
