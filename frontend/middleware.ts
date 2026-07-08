@@ -30,10 +30,17 @@ export default async function middleware(request: Request) {
     }
   }
 
+  const normalizedPathname = url.pathname.replace(/\/$/, '') || '/'
+
   // Intercept survey route to serve custom static OG tags
-  if (url.pathname === '/survey') {
+  if (normalizedPathname === '/survey') {
     try {
-      const indexRes = await fetch(new URL('/index.html', request.url))
+      const headers = new Headers()
+      const secret = request.headers.get('x-worker-secret')
+      if (secret) {
+        headers.set('x-worker-secret', secret)
+      }
+      const indexRes = await fetch(new URL('/index.html', request.url), { headers })
       if (indexRes.ok) {
         let html = await indexRes.text()
         const title = 'Uživatelský průzkum — Sitzy'
@@ -118,7 +125,12 @@ export default async function middleware(request: Request) {
         const { ride_id, destination, departure_time, driver_name, car_name } = data
 
         if (ride_id) {
-          const indexRes = await fetch(new URL('/index.html', request.url))
+          const headers = new Headers()
+          const secret = request.headers.get('x-worker-secret')
+          if (secret) {
+            headers.set('x-worker-secret', secret)
+          }
+          const indexRes = await fetch(new URL('/index.html', request.url), { headers })
           if (indexRes.ok) {
             let html = await indexRes.text()
             const departureTimeFormatted = departure_time ? formatLocalDateTime(departure_time) : ''
