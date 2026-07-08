@@ -24,9 +24,13 @@ export default async function middleware(request: Request) {
   // Enforce the worker secret in deployed preview or production environments
   const expectedSecret = process.env.WORKER_SECRET
   if (expectedSecret && process.env.VERCEL_ENV && process.env.VERCEL_ENV !== 'development') {
-    const secret = request.headers.get('x-worker-secret')
-    if (secret !== expectedSecret) {
-      return new Response('Forbidden', { status: 403 })
+    // Bypass secret check for static files (images, stylesheets, scripts, manifests, fonts)
+    const isStaticFile = /\.(png|jpg|jpeg|gif|svg|ico|webp|css|js|webmanifest|woff2?|ttf|eot)$/i.test(url.pathname)
+    if (!isStaticFile) {
+      const secret = request.headers.get('x-worker-secret')
+      if (secret !== expectedSecret) {
+        return new Response('Forbidden', { status: 403 })
+      }
     }
   }
 
