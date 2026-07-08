@@ -1,38 +1,31 @@
-# State Diagram - Lifecycle Pozvánky a Účasti na Jízdě
+# State Diagram – Životní cyklus pozvánky
+
+Tento stavový diagram znázorňuje stavy, kterými prochází pozvánka od svého vytvoření až po ukončení platnosti nebo přijetí. Stavy odpovídají hodnotám enumerátoru `InvitationStatus` v databázi.
 
 ```mermaid
+%%{init: {"theme": "neutral", "themeVariables": {"fontFamily": "sans-serif"}}}%%
 stateDiagram-v2
-    [*] --> Pending: vytvoření pozvánky
+    state "Čekající" as Cekajici
+    state "Přijatá" as Prijata
+    state "Zamítnutá" as Zamitnuta
+    state "Expirovaná" as Expirovana
 
-    Pending --> Accepted: POST /invitations/{token}/accept
-    Pending --> Rejected: POST /invitations/{token}/reject
-    Pending --> Deleted: DELETE /invitations/{token}
-    Pending --> Expired: expires_at < now()
+    [*] --> Cekajici : vytvoření pozvánky (Pending)
 
-    Accepted --> [*]
-    Rejected --> [*]
-    Deleted --> [*]
-    Expired --> [*]
+    Cekajici --> Prijata : přijetí a výběr sedadla (Accepted)
+    Cekajici --> Zamitnuta : odmítnutí pozvánky (Rejected)
+    Cekajici --> Expirovana : vypršení platnosti (Expired)
+    Cekajici --> [*] : smazání pořadatelem (DELETE)
 
-    state Accepted {
-        [*] --> PassengerCreated
-        PassengerCreated --> SeatAssigned
+    state Prijata {
+        state "Vytvořen pasažér" as VytvorenPasazer
+        state "Přiřazeno sedadlo" as PrirazenoSedadlo
+        
+        [*] --> VytvorenPasazer : zápis do databáze
+        VytvorenPasazer --> PrirazenoSedadlo : obsazení místa v autě
     }
 
-    note right of Pending
-        Pozvánka je vázaná na ride_id,<br/>
-        ne na car_id.<br/>
-        Přijetí vytvoří Passenger záznam.
-    end note
-
-    note right of Deleted
-        DELETE odstraní invitation row.<br/>
-        Na rozdíl od ACCEPT/REJECT se stav neukládá do DB.
-    end note
+    Prijata --> [*]
+    Zamitnuta --> [*]
+    Expirovana --> [*]
 ```
-
-## Co diagram pokrývá
-
-- Přechody pozvánky mezi `PENDING`, `ACCEPTED`, `REJECTED` a expirací
-- Mazání pozvánky vlastníkem auta
-- Vazbu mezi přijetím pozvánky a vytvořením `Passenger`

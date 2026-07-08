@@ -54,6 +54,17 @@ def _is_fake_email(email: str | None) -> bool:
 
 def _set_refresh_cookie(response: Response, refresh_token: str) -> None:
     """Set refresh token as HttpOnly, SameSite=Lax cookie."""
+    from urllib.parse import urlparse
+
+    domain: str | None = None
+    if settings.environment == "production":
+        parsed_url = urlparse(settings.frontend_origin)
+        hostname = parsed_url.hostname
+        if hostname:
+            parts = hostname.split(".")
+            if len(parts) >= 2:
+                domain = ".".join(parts[-2:])
+
     response.set_cookie(
         key="refresh_token",
         value=refresh_token,
@@ -61,18 +72,31 @@ def _set_refresh_cookie(response: Response, refresh_token: str) -> None:
         secure=settings.environment == "production",
         samesite="lax",
         max_age=settings.refresh_token_expire_days * 24 * 3600,
-        path="/auth",
+        path="/",
+        domain=domain,
     )
 
 
 def _clear_refresh_cookie(response: Response) -> None:
     """Clear refresh token cookie on logout."""
+    from urllib.parse import urlparse
+
+    domain: str | None = None
+    if settings.environment == "production":
+        parsed_url = urlparse(settings.frontend_origin)
+        hostname = parsed_url.hostname
+        if hostname:
+            parts = hostname.split(".")
+            if len(parts) >= 2:
+                domain = ".".join(parts[-2:])
+
     response.delete_cookie(
         key="refresh_token",
         httponly=True,
         secure=settings.environment == "production",
         samesite="lax",
-        path="/auth",
+        path="/",
+        domain=domain,
     )
 
 
