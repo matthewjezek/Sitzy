@@ -336,9 +336,12 @@ export default function Navigation() {
           >
             <SettingsIcon />
           </button>
-          <button className="nav-button glass gap-0 group transition-all duration-300 ease-in hover:gap-2 nav-hover-logout" onClick={handleLogout}>
+          <button
+            className="nav-button p-0 glass rounded-full w-11 h-11 flex items-center justify-center nav-hover-logout"
+            onClick={handleLogout}
+            aria-label="Odhlásit se"
+          >
             <LogoutIcon />
-            <span className="whitespace-nowrap max-w-0 overflow-hidden transition-all duration-300 ease-in group-hover:max-w-[100px]">Odhlásit se</span>
           </button>
         </div>
       </div>
