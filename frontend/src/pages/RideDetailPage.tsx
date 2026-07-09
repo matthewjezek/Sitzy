@@ -135,7 +135,7 @@ function InviteSection({ rideId, canCancelInvites }: { rideId: string; canCancel
         }
       },
       'warning',
-      'Zrušit'
+      'Zrušit pozvánku'
     )
   }
 

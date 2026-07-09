@@ -61,7 +61,12 @@ export default function SurveyRedirectPage() {
     })
 
     const targetSurveyUrl = `https://tally.so/r/1AOYoW${token ? `?token=${encodeURIComponent(token)}` : ''}`
-    window.location.href = targetSurveyUrl
+    const isPlaywrightTest = (window as unknown as { __PLAYWRIGHT_TEST__?: boolean }).__PLAYWRIGHT_TEST__
+    if (isPlaywrightTest) {
+      console.log('[Survey] Playwright test detected, skipping window.location.href redirect')
+    } else {
+      window.location.href = targetSurveyUrl
+    }
   }
 
   return (

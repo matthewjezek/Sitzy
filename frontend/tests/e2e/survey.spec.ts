@@ -87,6 +87,7 @@ test.describe('Survey flow tests', () => {
 
     // Setup completed survey state (only on localhost/127.0.0.1 to avoid interfering with tally.so redirect)
     await page.addInitScript(() => {
+      (window as unknown as { __PLAYWRIGHT_TEST__?: boolean }).__PLAYWRIGHT_TEST__ = true
       if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         localStorage.setItem('survey_token', 'test-survey-token-completed')
         localStorage.setItem('survey_completed', 'true')
@@ -123,10 +124,12 @@ test.describe('Survey flow tests', () => {
     expect(checkpointReported).toBe(true)
 
     // Local survey states should be cleared
-    const storedToken = await page.evaluate(() => localStorage.getItem('survey_token'))
-    const storedCompleted = await page.evaluate(() => localStorage.getItem('survey_completed'))
-    expect(storedToken).toBeNull()
-    expect(storedCompleted).toBeNull()
+    const storageState = await page.context().storageState()
+    const localOrigin = storageState.origins.find(o => o.origin.includes('127.0.0.1') || o.origin.includes('localhost'))
+    const storedToken = localOrigin?.localStorage.find(i => i.name === 'survey_token')?.value
+    const storedCompleted = localOrigin?.localStorage.find(i => i.name === 'survey_completed')?.value
+    expect(storedToken).toBeUndefined()
+    expect(storedCompleted).toBeUndefined()
   })
 
   test('survey mode unlinking: prevents unlinking active provider but allows other', async ({ page }) => {

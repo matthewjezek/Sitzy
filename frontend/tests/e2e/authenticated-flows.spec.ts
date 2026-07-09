@@ -299,9 +299,9 @@ test('accept-then-seat flow allows manual seat confirmation with seat_position p
   await expect(page.getByRole('button', { name: 'Potvrdit vybrané sedadlo' })).toBeEnabled()
   await page.getByRole('button', { name: 'Potvrdit vybrané sedadlo' }).click()
 
-  expect(acceptedSeatPosition).toBe(2)
   await expect(page).toHaveURL(/\/rides\/ride-1$/)
   await expect(page.getByText('Pozvánka přijata a sedadlo potvrzeno.')).toBeVisible()
+  expect(acceptedSeatPosition).toBe(2)
 })
 
 test('ride detail with invalid invite token is denied', async ({ page }) => {

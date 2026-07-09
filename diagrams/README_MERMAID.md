@@ -26,6 +26,8 @@ Všechny diagramy jsou ve formátu **Mermaid**, který je nativně podporovaný 
 | [11_er_auth_subset.md](11_er_auth_subset.md) | ER Diagram - Uživatelé a OAuth relace (výsek schématu) |
 | [12_sequence_delegated_auth_pkce.md](12_sequence_delegated_auth_pkce.md) | Sequence Diagram - Delegovaná bezheslová autentizace s CSRF a PKCE |
 | [13_erd_normalized.md](13_erd_normalized.md) | ER Diagram - Normalizované schéma databáze (kompletní) |
+| [14_integration_architecture.md](14_integration_architecture.md) | Flowchart - Integrační architektura a technologické hranice |
+| [15_component_diagram.md](15_component_diagram.md) | Flowchart - UML Komponentní diagram (React & FastAPI) |
 
 ---
 
@@ -116,6 +118,8 @@ Pokud používáte VS Code s rozšířením **Draw.io Integration** (od Henninga
 - [x] ER diagram - Uživatelé a OAuth relace (výsek)
 - [x] Sequence diagram - Delegovaná bezheslová autentizace s CSRF a PKCE
 - [x] ER diagram - Normalizované schéma databáze
+- [x] Flowchart - Integrační architektura a technologické hranice
+- [x] UML Komponentní diagram (React & FastAPI)
 - [x] README s instrukcemi
 
 ---
