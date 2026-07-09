@@ -238,6 +238,7 @@ def reset_demo_fixtures(
 ) -> dict[str, int | str]:
     """Delete demo-generated fixtures for the current authenticated user."""
     _ensure_dev_enabled()
+    _ensure_demo_account_allowed(ctx)
 
     cars = (
         db.query(Car)

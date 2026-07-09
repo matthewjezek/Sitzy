@@ -730,6 +730,8 @@ def facebook_data_deletion_callback(
     }
     """
     import base64
+    import hashlib
+    import hmac
     import json
     import secrets
 
@@ -737,16 +739,39 @@ def facebook_data_deletion_callback(
 
     try:
         # Decode signed_request (format: signature.payload)
-        # Production should verify HMAC signature with app secret
+        if '.' not in signed_request:
+            raise ValueError("Malformed signed_request")
         encoded_sig, payload = signed_request.split('.', 1)
 
-        # Add padding if needed for base64
-        padding = len(payload) % 4
-        if padding:
-            payload += '=' * (4 - padding)
+        # Decode signature
+        sig_padding = len(encoded_sig) % 4
+        if sig_padding:
+            encoded_sig_padded = encoded_sig + '=' * (4 - sig_padding)
+        else:
+            encoded_sig_padded = encoded_sig
+        decoded_sig = base64.urlsafe_b64decode(encoded_sig_padded)
 
-        decoded_payload = base64.urlsafe_b64decode(payload)
+        # Verify signature with facebook_client_secret
+        expected_sig = hmac.new(
+            settings.facebook_client_secret.encode('utf-8'),
+            msg=payload.encode('utf-8'),
+            digestmod=hashlib.sha256,
+        ).digest()
+
+        if not hmac.compare_digest(decoded_sig, expected_sig):
+            raise ValueError("Signature verification failed")
+
+        # Decode payload
+        payload_padding = len(payload) % 4
+        if payload_padding:
+            payload_padded = payload + '=' * (4 - payload_padding)
+        else:
+            payload_padded = payload
+        decoded_payload = base64.urlsafe_b64decode(payload_padded)
         data = json.loads(decoded_payload)
+
+        if data.get('algorithm', '').upper() != 'HMAC-SHA256':
+            raise ValueError("Unexpected signature algorithm")
 
         facebook_user_id = data.get('user_id')
 

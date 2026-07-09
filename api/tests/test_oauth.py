@@ -289,11 +289,18 @@ def test_facebook_deletion_callback_success(monkeypatch: pytest.MonkeyPatch):
     client = create_client(router=auth.router, prefix="/auth", fake_db=fake_db)
 
     # Construct valid signed_request
-    payload_data = {"user_id": "fb-123"}
-    payload_encoded = base64.urlsafe_b64encode(
-        json.dumps(payload_data).encode()
-    ).decode()
-    signed_request = f"sig.{payload_encoded}"
+    import hashlib
+    import hmac
+
+    payload_data = {"user_id": "fb-123", "algorithm": "HMAC-SHA256"}
+    payload_encoded = (
+        base64.urlsafe_b64encode(json.dumps(payload_data).encode()).decode().rstrip('=')
+    )
+    sig = hmac.new(
+        b"fb-secret", msg=payload_encoded.encode('utf-8'), digestmod=hashlib.sha256
+    ).digest()
+    sig_encoded = base64.urlsafe_b64encode(sig).decode().rstrip('=')
+    signed_request = f"{sig_encoded}.{payload_encoded}"
 
     response = client.post(
         "/auth/facebook/deletion",
@@ -314,6 +321,8 @@ def test_facebook_deletion_callback_success(monkeypatch: pytest.MonkeyPatch):
 
 def test_facebook_deletion_callback_user_not_found():
     import base64
+    import hashlib
+    import hmac
     import json
 
     from api.models import SocialAccount
@@ -322,11 +331,15 @@ def test_facebook_deletion_callback_user_not_found():
     fake_db = FakeDB(query_results={SocialAccount: FakeQuery(first_result=None)})
     client = create_client(router=auth.router, prefix="/auth", fake_db=fake_db)
 
-    payload_data = {"user_id": "fb-not-exists"}
-    payload_encoded = base64.urlsafe_b64encode(
-        json.dumps(payload_data).encode()
-    ).decode()
-    signed_request = f"sig.{payload_encoded}"
+    payload_data = {"user_id": "fb-not-exists", "algorithm": "HMAC-SHA256"}
+    payload_encoded = (
+        base64.urlsafe_b64encode(json.dumps(payload_data).encode()).decode().rstrip('=')
+    )
+    sig = hmac.new(
+        b"fb-secret", msg=payload_encoded.encode('utf-8'), digestmod=hashlib.sha256
+    ).digest()
+    sig_encoded = base64.urlsafe_b64encode(sig).decode().rstrip('=')
+    signed_request = f"{sig_encoded}.{payload_encoded}"
 
     response = client.post(
         "/auth/facebook/deletion",
@@ -347,10 +360,19 @@ def test_facebook_deletion_callback_invalid():
 
     # Missing user_id in signed request
     import base64
+    import hashlib
+    import hmac
     import json
 
-    payload_encoded = base64.urlsafe_b64encode(json.dumps({}).encode()).decode()
-    signed_request = f"sig.{payload_encoded}"
+    payload_data = {"algorithm": "HMAC-SHA256"}
+    payload_encoded = (
+        base64.urlsafe_b64encode(json.dumps(payload_data).encode()).decode().rstrip('=')
+    )
+    sig = hmac.new(
+        b"fb-secret", msg=payload_encoded.encode('utf-8'), digestmod=hashlib.sha256
+    ).digest()
+    sig_encoded = base64.urlsafe_b64encode(sig).decode().rstrip('=')
+    signed_request = f"{sig_encoded}.{payload_encoded}"
 
     response = client.post(
         "/auth/facebook/deletion",
@@ -362,6 +384,34 @@ def test_facebook_deletion_callback_invalid():
     response = client.post(
         "/auth/facebook/deletion",
         data={"signed_request": "malformed_request"},
+    )
+    assert response.status_code == 400
+
+    # Invalid signature
+    payload_data = {"user_id": "fb-123", "algorithm": "HMAC-SHA256"}
+    payload_encoded = (
+        base64.urlsafe_b64encode(json.dumps(payload_data).encode()).decode().rstrip('=')
+    )
+    signed_request = f"invalid_sig.{payload_encoded}"
+    response = client.post(
+        "/auth/facebook/deletion",
+        data={"signed_request": signed_request},
+    )
+    assert response.status_code == 400
+
+    # Missing/invalid algorithm
+    payload_data = {"user_id": "fb-123"}
+    payload_encoded = (
+        base64.urlsafe_b64encode(json.dumps(payload_data).encode()).decode().rstrip('=')
+    )
+    sig = hmac.new(
+        b"fb-secret", msg=payload_encoded.encode('utf-8'), digestmod=hashlib.sha256
+    ).digest()
+    sig_encoded = base64.urlsafe_b64encode(sig).decode().rstrip('=')
+    signed_request = f"{sig_encoded}.{payload_encoded}"
+    response = client.post(
+        "/auth/facebook/deletion",
+        data={"signed_request": signed_request},
     )
     assert response.status_code == 400
 
