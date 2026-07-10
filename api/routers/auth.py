@@ -1,6 +1,7 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
+import httpx
 from fastapi import (
     APIRouter,
     Depends,
@@ -11,6 +12,7 @@ from fastapi import (
     Response,
     status,
 )
+from fastapi.responses import RedirectResponse
 from jose import JWTError
 from sqlalchemy.orm import Session
 
@@ -31,6 +33,7 @@ from api.services.oauth_service import (
     XOAuthClient,
     create_or_update_session,
     find_or_create_user,
+    normalize_avatar_url,
 )
 from api.utils.integration_audit import emit_integration_event
 from api.utils.limiter import limiter
@@ -835,3 +838,59 @@ def facebook_data_deletion_callback(
         raise HTTPException(
             status_code=400, detail="Failed to process deletion request"
         )
+
+
+@router.get("/users/{user_id}/avatar")
+async def get_user_avatar(
+    user_id: UUID, db: Session = Depends(get_db)
+) -> RedirectResponse:
+    """Retrieve the user's avatar. If it is a Facebook avatar, dynamically
+    refresh it if expired (older than 12 hours) and redirect the client."""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user or not user.avatar_url:
+        raise HTTPException(status_code=404, detail="Avatar not found")
+
+    is_facebook = "fbsbx.com" in user.avatar_url or "facebook.com" in user.avatar_url
+    if is_facebook:
+        # Check if the avatar is stale (older than 12 hours)
+        age = datetime.now(timezone.utc) - user.updated_at.astimezone(timezone.utc)
+        if age > timedelta(hours=12):
+            social_account = next(
+                (sa for sa in user.social_accounts if sa.provider == "facebook"), None
+            )
+            if social_account:
+                fb_id = social_account.social_id
+                app_token = (
+                    f"{settings.facebook_client_id}|{settings.facebook_client_secret}"
+                )
+                url = f"https://graph.facebook.com/v20.0/{fb_id}/picture"
+                params = {
+                    "redirect": "false",
+                    "type": "large",
+                    "access_token": app_token,
+                }
+                try:
+                    async with httpx.AsyncClient(timeout=5.0) as client:
+                        response = await client.get(url, params=params)
+                        if response.status_code == 200:
+                            data = response.json()
+                            new_avatar_url = data.get("data", {}).get("url")
+                            if new_avatar_url:
+                                user.avatar_url = normalize_avatar_url(new_avatar_url)
+                                db.commit()
+                                logger.info(
+                                    "Successfully refreshed Facebook avatar "
+                                    f"for user {user.id}"
+                                )
+                except Exception as e:
+                    logger.warning(
+                        "Failed to refresh Facebook avatar for user " f"{user.id}: {e}"
+                    )
+            else:
+                logger.warning(
+                    f"User {user.id} has a Facebook avatar URL but no "
+                    "associated Facebook social account"
+                )
+
+    assert user.avatar_url is not None
+    return RedirectResponse(url=user.avatar_url)

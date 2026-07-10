@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, cast
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from .utils.base_models import BaseModelWithLabels
 from .utils.enums import CarLayout, InvitationStatus
@@ -12,6 +12,21 @@ if TYPE_CHECKING:
     from .models import Car, Invitation, Seat
 
 EMAIL_RE = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
+
+
+def get_facebook_proxy_url(user_id: UUID, current_avatar_url: str | None) -> str | None:
+    """Helper to rewrite a Facebook avatar URL to point to the local proxy endpoint."""
+    if current_avatar_url and (
+        "fbsbx.com" in current_avatar_url or "facebook.com" in current_avatar_url
+    ):
+        from urllib.parse import urlparse
+
+        from api.config import settings
+
+        parsed = urlparse(str(settings.facebook_redirect_uri))
+        base_url = f"{parsed.scheme}://{parsed.netloc}"
+        return f"{base_url}/auth/users/{user_id}/avatar"
+    return current_avatar_url
 
 
 # === User ===
@@ -38,6 +53,11 @@ class UserOut(BaseModelWithLabels["UserOut"], UserBase):
 
     model_config = ConfigDict(from_attributes=True)
 
+    @model_validator(mode="after")
+    def rewrite_avatar_url(self) -> "UserOut":
+        self.avatar_url = get_facebook_proxy_url(self.id, self.avatar_url)
+        return self
+
     @field_validator("email", mode="before")
     @classmethod
     def mask_fake_email(cls, v: object) -> object:
@@ -54,6 +74,11 @@ class UserBasicOut(BaseModel):
     avatar_url: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
+
+    @model_validator(mode="after")
+    def rewrite_avatar_url(self) -> "UserBasicOut":
+        self.avatar_url = get_facebook_proxy_url(self.id, self.avatar_url)
+        return self
 
 
 class SocialSessionOut(BaseModel):
@@ -170,6 +195,11 @@ class PassengerOut(BaseModel):
     avatar_url: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
+
+    @model_validator(mode="after")
+    def rewrite_avatar_url(self) -> "PassengerOut":
+        self.avatar_url = get_facebook_proxy_url(self.user_id, self.avatar_url)
+        return self
 
     @classmethod
     def from_passenger(cls, passenger: object) -> "PassengerOut":
