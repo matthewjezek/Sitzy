@@ -49,13 +49,13 @@ export default async function middleware(request: Request) {
         let html = await indexRes.text()
         const title = 'Uživatelský průzkum — Sitzy'
         const description = 'Pomoz nám otestovat Sitzy! Průzkum je zcela anonymní, proto tě na konci poprosíme o smazání účtu (tím vymažeš všechna data a přejdeš na dotazník). Víme, že je to docela dost klikání, ale moc nám to pomůže! 🙌'
-        const imageUrl = `${url.origin}/OG_survey.png`
+        const imageUrl = 'https://sitzy.page/OG_survey.png'
 
         html = html
           .replace(/<title>Sitzy<\/title>/, `<title>${title}</title>`)
           .replace(
             /<meta property="og:url" content="[^"]*"\s*\/?>/g,
-            `<meta property="og:url" content="${url.origin}/survey" />`
+            '<meta property="og:url" content="https://sitzy.page/survey" />'
           )
           .replace(
             /<meta property="og:title" content="[^"]*"\s*\/?>/g,
@@ -145,6 +145,10 @@ export default async function middleware(request: Request) {
 
             html = html
               .replace(/<title>Sitzy<\/title>/, `<title>Sitzy — Spolujízda ${destination ? `do ${destination}` : ''}</title>`)
+              .replace(
+                /<meta property="og:url" content="[^"]*"\s*\/?>/g,
+                `<meta property="og:url" content="https://sitzy.page/i/${inviteToken}" />`
+              )
               .replace(
                 /<meta property="og:title" content="[^"]*"\s*\/?>/g,
                 `<meta property="og:title" content="Sitzy — Spolujízda ${destination ? `do ${destination}` : ''}" />`
