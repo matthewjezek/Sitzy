@@ -2,134 +2,44 @@ import { test, expect } from '@playwright/test'
 import { mockAuthenticatedApi, seedAuthenticated, seedLoggedOut } from './helpers'
 
 test.describe('Survey flow tests', () => {
-  test('anonymous user: token initialization and start redirect to login', async ({ page }) => {
+  test('survey landing page: shows completion/thanks and clears any survey tokens', async ({ page }) => {
     await seedLoggedOut(page)
 
-    // Visit survey landing page with token
-    await page.goto('/survey?token=test-survey-token-123')
-
-    // Expect URL query param to be removed but local state to contain it
-    await expect(page).toHaveURL(/\/survey$/)
-    const token = await page.evaluate(() => localStorage.getItem('survey_token'))
-    expect(token).toBe('test-survey-token-123')
-
-    // Verify introduction screen tasks and tips are visible
-    await expect(page.getByRole('heading', { name: 'Integrace webových služeb do sociálních sítí' })).toBeVisible()
-    await expect(page.getByRole('heading', { name: 'Úkoly k vyzkoušení:' })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Začít průzkum' })).toBeVisible()
-
-    // Start survey redirects to login
-    await page.getByRole('button', { name: 'Začít průzkum' }).click()
-    await expect(page).toHaveURL(/\/login/)
-  })
-
-  test('anonymous user: starts survey from landing page without token generates a random token', async ({ page }) => {
-    await seedLoggedOut(page)
-
-    // Visit survey landing page WITHOUT token
-    await page.goto('/survey')
-
-    // Verify localStorage does not have token initially
-    let token = await page.evaluate(() => localStorage.getItem('survey_token'))
-    expect(token).toBeNull()
-
-    // Click "Začít průzkum"
-    await page.getByRole('button', { name: 'Začít průzkum' }).click()
-    await expect(page).toHaveURL(/\/login/)
-
-    // Verify a random token was generated and saved
-    token = await page.evaluate(() => localStorage.getItem('survey_token'))
-    expect(token).not.toBeNull()
-    expect(token).toMatch(/^pruz-/)
-  })
-
-  test('authenticated user: shows continue button on landing page and checklist on dashboard', async ({ page }) => {
-    await seedAuthenticated(page)
-    await mockAuthenticatedApi(page)
-
-    // Visit survey page with token while already logged in
-    await page.goto('/survey?token=test-survey-token-auth')
-
-    // Should NOT show completion screen because they haven't finished tasks
-    await expect(page.getByRole('heading', { name: 'Skvělá práce!' })).not.toBeVisible()
-
-    // Should show introduction with "Pokračovat v průzkumu"
-    const continueBtn = page.getByRole('button', { name: 'Pokračovat v průzkumu' })
-    await expect(continueBtn).toBeVisible()
-
-    // Click continue to go to dashboard
-    await continueBtn.click()
-    await expect(page).toHaveURL(/\/dashboard$/)
-
-    // Checklist widget should be visible on dashboard
-    const checklistToggle = page.getByRole('button', { name: /Úkoly \(\d\/\d\)/ })
-    await expect(checklistToggle).toBeVisible()
-
-    // Open checklist and verify tasks are listed
-    await checklistToggle.click()
-    await expect(page.getByText('Úkoly průzkumu')).toBeVisible()
-    await expect(page.getByText('Přihlášení (Facebook/X)')).toBeVisible()
-    await expect(page.getByText('Vytvoření jízdy')).toBeVisible()
-  })
-
-  test('completed survey: shows completion page, clears states on tally redirect', async ({ page }) => {
-    await seedLoggedOut(page)
-
-    // Intercept api checkpoint report
-    let checkpointReported = false
-    await page.route('**/api/checkpoint', async (route) => {
-      const postData = route.request().postDataJSON()
-      if (postData.checkpointName === 'survey_redirected' && postData.token === 'test-survey-token-completed') {
-        checkpointReported = true
-      }
-      await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' })
-    })
-
-    // Setup completed survey state (only on localhost/127.0.0.1 to avoid interfering with tally.so redirect)
+    // Pre-seed localStorage with survey tokens to test auto-clearing
     await page.addInitScript(() => {
-      (window as unknown as { __PLAYWRIGHT_TEST__?: boolean }).__PLAYWRIGHT_TEST__ = true
-      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        localStorage.setItem('survey_token', 'test-survey-token-completed')
-        localStorage.setItem('survey_completed', 'true')
-        localStorage.setItem('survey_completed_checkpoints', JSON.stringify(['login_oauth', 'create_ride']))
-      }
+      localStorage.setItem('survey_token', 'pre-existing-token')
+      localStorage.setItem('survey_completed', 'true')
+      localStorage.setItem('survey_completed_checkpoints', JSON.stringify(['login_oauth']))
     })
 
-    // Prevent real redirect navigation to tally.so during testing
-    await page.route('https://tally.so/**', async (route) => {
-      await route.fulfill({ status: 200, body: 'Mock Tally Page' })
-    })
+    // Visit survey page with token query parameter (to verify it doesn't get saved)
+    await page.goto('/survey?token=ignored-url-token')
 
-    await page.goto('/survey')
+    // Verify title and completion page content
+    await expect(page).toHaveTitle('Uživatelský průzkum dokončen - Sitzy')
+    await expect(page.getByRole('heading', { name: 'Děkujeme za vaši účast!' })).toBeVisible()
+    await expect(page.getByText('Uživatelský průzkum a testování aplikace Sitzy byly úspěšně ukončeny.')).toBeVisible()
 
-    // Should show completion screen
-    await expect(page.getByRole('heading', { name: 'Skvělá práce!' })).toBeVisible()
-    const tallyBtn = page.getByRole('button', { name: 'Přejít k závěrečnému dotazníku' })
-    await expect(tallyBtn).toBeVisible()
+    // Verify buttons are visible
+    const homeBtn = page.getByRole('button', { name: 'Hlavní stránka' })
+    const enterBtn = page.getByRole('button', { name: 'Vstoupit do aplikace' })
+    await expect(homeBtn).toBeVisible()
+    await expect(enterBtn).toBeVisible()
 
-    // Setup checkpoint promise
-    const checkpointPromise = page.waitForResponse(response =>
-      response.url().includes('/api/checkpoint') && response.status() === 200
-    )
-
-    // Click tally redirect
-    await tallyBtn.click()
-
-    // Wait for checkpoint to resolve
-    await checkpointPromise
-
-    // Wait briefly for synchronous localStorage removals to execute before navigation
+    // Wait briefly for localStorage side-effects to run on page mount
     await page.waitForTimeout(100)
 
-    expect(checkpointReported).toBe(true)
-
-    // Local survey states should be cleared
+    // Verify survey tokens were cleared from localStorage
     const storageState = await page.context().storageState()
     const localOrigin = storageState.origins.find(o => o.origin.includes('127.0.0.1') || o.origin.includes('localhost'))
     const storedToken = localOrigin?.localStorage.find(i => i.name === 'survey_token')?.value
     const storedCompleted = localOrigin?.localStorage.find(i => i.name === 'survey_completed')?.value
     expect(storedToken).toBeUndefined()
     expect(storedCompleted).toBeUndefined()
+
+    // Click "Hlavní stránka" and expect redirect to landing page
+    await homeBtn.click()
+    await expect(page).toHaveURL(/\/$/)
   })
 
   test('survey mode unlinking: prevents unlinking active provider but allows other', async ({ page }) => {

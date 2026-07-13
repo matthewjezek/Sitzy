@@ -137,24 +137,9 @@ const enforceCanonicalHost = () => {
   return false
 }
 
-// Handle survey token synchronously on load to ensure child components have access to it on first render
+// Survey is complete. Enforce canonical host only.
 const initSurveyToken = () => {
-  if (enforceCanonicalHost()) return
-
-  const params = new URLSearchParams(window.location.search)
-  const token = params.get('token')
-  if (token) {
-    if (window.location.hostname === '127.0.0.1') {
-      const newUrl = window.location.href.replace('127.0.0.1', 'localhost')
-      window.location.replace(newUrl)
-      return
-    }
-    localStorage.setItem('survey_token', token)
-    params.delete('token')
-    const newSearch = params.toString()
-    const newPath = window.location.pathname + (newSearch ? `?${newSearch}` : '')
-    window.history.replaceState({}, '', newPath)
-  }
+  enforceCanonicalHost()
 }
 initSurveyToken()
 

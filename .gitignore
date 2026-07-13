@@ -50,6 +50,7 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+test-results/
 
 # Translations
 *.mo
@@ -232,3 +233,5 @@ Thumbs.db
 unrelated/
 docs/
 .agents/
+output/
+prepare_notebooklm_sources.py

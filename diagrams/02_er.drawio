@@ -1,0 +1,283 @@
+<mxfile host="65bd71144e">
+    <diagram id="Sitzy_Class_Diagram" name="Sitzy ER Diagram">
+        <mxGraphModel dx="683" dy="424" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1650" pageHeight="1200" background="#FFFFFF" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="User_Node" value="#User" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=32;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;html=1;fillColor=#8A8A8A;strokeColor=default;fontColor=#F8FAFC;separatorColor=#334155;strokeWidth=2;shadow=1;fontSize=14;spacingLeft=10;spacingTop=4;" parent="1" vertex="1">
+                    <mxGeometry x="500" y="450" width="220" height="214" as="geometry"/>
+                </mxCell>
+                <mxCell id="User_tableName" value="&lt;i&gt;table: users&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=11;fontColor=#10B981;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="User_Node" vertex="1">
+                    <mxGeometry y="32" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="User_id" value="&lt;b&gt;id&lt;/b&gt;: UUID (PK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="User_Node" vertex="1">
+                    <mxGeometry y="58" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="User_email" value="&lt;b&gt;email&lt;/b&gt;: string (UQ, idx, nullable)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="User_Node" vertex="1">
+                    <mxGeometry y="84" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="User_full_name" value="&lt;b&gt;full_name&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="User_Node" vertex="1">
+                    <mxGeometry y="110" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="User_avatar_url" value="&lt;b&gt;avatar_url&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="User_Node" vertex="1">
+                    <mxGeometry y="136" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="User_created_at" value="&lt;b&gt;created_at&lt;/b&gt;: datetime" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="User_Node" vertex="1">
+                    <mxGeometry y="162" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="User_updated_at" value="&lt;b&gt;updated_at&lt;/b&gt;: datetime" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="User_Node" vertex="1">
+                    <mxGeometry y="188" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="IntegrationAuditLog_Node" value="#IntegrationAuditLog" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=32;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;html=1;fillColor=#8A8A8A;strokeColor=default;fontColor=#F8FAFC;separatorColor=#334155;strokeWidth=2;shadow=1;fontSize=14;spacingLeft=10;spacingTop=4;" parent="1" vertex="1">
+                    <mxGeometry x="100" y="100" width="220" height="214" as="geometry"/>
+                </mxCell>
+                <mxCell id="IntegrationAuditLog_tableName" value="&lt;i&gt;table: integration_audit_logs&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=11;fontColor=#10B981;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="IntegrationAuditLog_Node" vertex="1">
+                    <mxGeometry y="32" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="IntegrationAuditLog_id" value="&lt;b&gt;id&lt;/b&gt;: UUID (PK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="IntegrationAuditLog_Node" vertex="1">
+                    <mxGeometry y="58" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="IntegrationAuditLog_user_id" value="&lt;b&gt;user_id&lt;/b&gt;: UUID (FK, nullable)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="IntegrationAuditLog_Node" vertex="1">
+                    <mxGeometry y="84" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="IntegrationAuditLog_event" value="&lt;b&gt;event&lt;/b&gt;: string (idx)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="IntegrationAuditLog_Node" vertex="1">
+                    <mxGeometry y="110" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="IntegrationAuditLog_provider" value="&lt;b&gt;provider&lt;/b&gt;: string (nullable)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="IntegrationAuditLog_Node" vertex="1">
+                    <mxGeometry y="136" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="IntegrationAuditLog_metadata_json" value="&lt;b&gt;metadata_json&lt;/b&gt;: json" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="IntegrationAuditLog_Node" vertex="1">
+                    <mxGeometry y="162" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="IntegrationAuditLog_created_at" value="&lt;b&gt;created_at&lt;/b&gt;: datetime" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="IntegrationAuditLog_Node" vertex="1">
+                    <mxGeometry y="188" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="SocialAccount_Node" value="#SocialAccount" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=32;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;html=1;fillColor=#8A8A8A;strokeColor=default;fontColor=#F8FAFC;separatorColor=#334155;strokeWidth=2;shadow=1;fontSize=14;spacingLeft=10;spacingTop=4;" parent="1" vertex="1">
+                    <mxGeometry x="100" y="443" width="220" height="214" as="geometry"/>
+                </mxCell>
+                <mxCell id="SocialAccount_tableName" value="&lt;i&gt;table: social_accounts&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=11;fontColor=#10B981;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="SocialAccount_Node" vertex="1">
+                    <mxGeometry y="32" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="SocialAccount_id" value="&lt;b&gt;id&lt;/b&gt;: UUID (PK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="SocialAccount_Node" vertex="1">
+                    <mxGeometry y="58" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="SocialAccount_user_id" value="&lt;b&gt;user_id&lt;/b&gt;: UUID (FK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="SocialAccount_Node" vertex="1">
+                    <mxGeometry y="84" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="SocialAccount_provider" value="&lt;b&gt;provider&lt;/b&gt;: string (&#39;facebook | x&#39;)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="SocialAccount_Node" vertex="1">
+                    <mxGeometry y="110" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="SocialAccount_social_id" value="&lt;b&gt;social_id&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="SocialAccount_Node" vertex="1">
+                    <mxGeometry y="136" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="SocialAccount_email" value="&lt;b&gt;email&lt;/b&gt;: string (nullable)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="SocialAccount_Node" vertex="1">
+                    <mxGeometry y="162" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="SocialAccount_linked_at" value="&lt;b&gt;linked_at&lt;/b&gt;: datetime" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="SocialAccount_Node" vertex="1">
+                    <mxGeometry y="188" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="SocialSession_Node" value="#SocialSession" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=32;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;html=1;fillColor=#8A8A8A;strokeColor=default;fontColor=#F8FAFC;separatorColor=#334155;strokeWidth=2;shadow=1;fontSize=14;spacingLeft=10;spacingTop=4;" parent="1" vertex="1">
+                    <mxGeometry x="100" y="800" width="220" height="292" as="geometry"/>
+                </mxCell>
+                <mxCell id="SocialSession_tableName" value="&lt;i&gt;table: social_sessions&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=11;fontColor=#10B981;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="SocialSession_Node" vertex="1">
+                    <mxGeometry y="32" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="SocialSession_id" value="&lt;b&gt;id&lt;/b&gt;: UUID (PK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="SocialSession_Node" vertex="1">
+                    <mxGeometry y="58" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="SocialSession_user_id" value="&lt;b&gt;user_id&lt;/b&gt;: UUID (FK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="SocialSession_Node" vertex="1">
+                    <mxGeometry y="84" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="SocialSession_social_account_id" value="&lt;b&gt;social_account_id&lt;/b&gt;: UUID (FK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="SocialSession_Node" vertex="1">
+                    <mxGeometry y="110" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="SocialSession_access_token" value="&lt;b&gt;access_token&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="SocialSession_Node" vertex="1">
+                    <mxGeometry y="136" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="SocialSession_refresh_token" value="&lt;b&gt;refresh_token&lt;/b&gt;: string (nullable)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="SocialSession_Node" vertex="1">
+                    <mxGeometry y="162" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="SocialSession_expires_at" value="&lt;b&gt;expires_at&lt;/b&gt;: datetime" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="SocialSession_Node" vertex="1">
+                    <mxGeometry y="188" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="SocialSession_user_agent" value="&lt;b&gt;user_agent&lt;/b&gt;: string (nullable)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="SocialSession_Node" vertex="1">
+                    <mxGeometry y="214" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="SocialSession_created_at" value="&lt;b&gt;created_at&lt;/b&gt;: datetime" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="SocialSession_Node" vertex="1">
+                    <mxGeometry y="240" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="SocialSession_revoked_at" value="&lt;b&gt;revoked_at&lt;/b&gt;: datetime (nullable)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="SocialSession_Node" vertex="1">
+                    <mxGeometry y="266" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Car_Node" value="#Car" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=32;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;html=1;fillColor=#8A8A8A;strokeColor=default;fontColor=#F8FAFC;separatorColor=#334155;strokeWidth=2;shadow=1;fontSize=14;spacingLeft=10;spacingTop=4;" parent="1" vertex="1">
+                    <mxGeometry x="900" y="100" width="220" height="214" as="geometry"/>
+                </mxCell>
+                <mxCell id="Car_tableName" value="&lt;i&gt;table: cars&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=11;fontColor=#10B981;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Car_Node" vertex="1">
+                    <mxGeometry y="32" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Car_id" value="&lt;b&gt;id&lt;/b&gt;: UUID (PK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Car_Node" vertex="1">
+                    <mxGeometry y="58" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Car_owner_id" value="&lt;b&gt;owner_id&lt;/b&gt;: UUID (FK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Car_Node" vertex="1">
+                    <mxGeometry y="84" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Car_name" value="&lt;b&gt;name&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Car_Node" vertex="1">
+                    <mxGeometry y="110" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Car_layout" value="&lt;b&gt;layout&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Car_Node" vertex="1">
+                    <mxGeometry y="136" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Car_created_at" value="&lt;b&gt;created_at&lt;/b&gt;: datetime" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Car_Node" vertex="1">
+                    <mxGeometry y="162" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Car_updated_at" value="&lt;b&gt;updated_at&lt;/b&gt;: datetime" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Car_Node" vertex="1">
+                    <mxGeometry y="188" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="CarDriver_Node" value="#CarDriver" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=32;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;html=1;fillColor=#8A8A8A;strokeColor=default;fontColor=#F8FAFC;separatorColor=#334155;strokeWidth=2;shadow=1;fontSize=14;spacingLeft=10;spacingTop=4;" parent="1" vertex="1">
+                    <mxGeometry x="900" y="443" width="220" height="214" as="geometry"/>
+                </mxCell>
+                <mxCell id="CarDriver_tableName" value="&lt;i&gt;table: car_drivers&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=11;fontColor=#10B981;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="CarDriver_Node" vertex="1">
+                    <mxGeometry y="32" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="CarDriver_id" value="&lt;b&gt;id&lt;/b&gt;: UUID (PK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="CarDriver_Node" vertex="1">
+                    <mxGeometry y="58" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="CarDriver_car_id" value="&lt;b&gt;car_id&lt;/b&gt;: UUID (FK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="CarDriver_Node" vertex="1">
+                    <mxGeometry y="84" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="CarDriver_driver_id" value="&lt;b&gt;driver_id&lt;/b&gt;: UUID (FK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="CarDriver_Node" vertex="1">
+                    <mxGeometry y="110" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="CarDriver_is_active" value="&lt;b&gt;is_active&lt;/b&gt;: boolean" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="CarDriver_Node" vertex="1">
+                    <mxGeometry y="136" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="CarDriver_assigned_at" value="&lt;b&gt;assigned_at&lt;/b&gt;: datetime" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="CarDriver_Node" vertex="1">
+                    <mxGeometry y="162" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="CarDriver_revoked_at" value="&lt;b&gt;revoked_at&lt;/b&gt;: datetime (nullable)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="CarDriver_Node" vertex="1">
+                    <mxGeometry y="188" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Passenger_Node" value="#Passenger" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=32;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;html=1;fillColor=#8A8A8A;strokeColor=default;fontColor=#F8FAFC;separatorColor=#334155;strokeWidth=2;shadow=1;fontSize=14;spacingLeft=10;spacingTop=4;" parent="1" vertex="1">
+                    <mxGeometry x="900" y="800" width="220" height="162" as="geometry"/>
+                </mxCell>
+                <mxCell id="Passenger_tableName" value="&lt;i&gt;table: passengers&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=11;fontColor=#10B981;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Passenger_Node" vertex="1">
+                    <mxGeometry y="32" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Passenger_id" value="&lt;b&gt;id&lt;/b&gt;: UUID (PK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Passenger_Node" vertex="1">
+                    <mxGeometry y="58" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Passenger_user_id" value="&lt;b&gt;user_id&lt;/b&gt;: UUID (FK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Passenger_Node" vertex="1">
+                    <mxGeometry y="84" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Passenger_ride_id" value="&lt;b&gt;ride_id&lt;/b&gt;: UUID (FK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Passenger_Node" vertex="1">
+                    <mxGeometry y="110" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Passenger_seat_position" value="&lt;b&gt;seat_position&lt;/b&gt;: integer" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Passenger_Node" vertex="1">
+                    <mxGeometry y="136" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Seat_Node" value="#Seat" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=32;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;html=1;fillColor=#8A8A8A;strokeColor=default;fontColor=#F8FAFC;separatorColor=#334155;strokeWidth=2;shadow=1;fontSize=14;spacingLeft=10;spacingTop=4;" parent="1" vertex="1">
+                    <mxGeometry x="1300" y="158" width="220" height="110" as="geometry"/>
+                </mxCell>
+                <mxCell id="Seat_tableName" value="&lt;i&gt;table: seats&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=11;fontColor=#10B981;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Seat_Node" vertex="1">
+                    <mxGeometry y="32" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Seat_car_id" value="&lt;b&gt;car_id&lt;/b&gt;: UUID (PK, FK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Seat_Node" vertex="1">
+                    <mxGeometry y="58" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Seat_position" value="&lt;b&gt;position&lt;/b&gt;: integer (PK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Seat_Node" vertex="1">
+                    <mxGeometry y="84" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Ride_Node" value="#Ride" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=32;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;html=1;fillColor=#8A8A8A;strokeColor=default;fontColor=#F8FAFC;separatorColor=#334155;strokeWidth=2;shadow=1;fontSize=14;spacingLeft=10;spacingTop=4;" parent="1" vertex="1">
+                    <mxGeometry x="1300" y="443" width="220" height="214" as="geometry"/>
+                </mxCell>
+                <mxCell id="Ride_tableName" value="&lt;i&gt;table: rides&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=11;fontColor=#10B981;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Ride_Node" vertex="1">
+                    <mxGeometry y="32" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Ride_id" value="&lt;b&gt;id&lt;/b&gt;: UUID (PK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Ride_Node" vertex="1">
+                    <mxGeometry y="58" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Ride_car_id" value="&lt;b&gt;car_id&lt;/b&gt;: UUID (FK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Ride_Node" vertex="1">
+                    <mxGeometry y="84" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Ride_car_driver_id" value="&lt;b&gt;car_driver_id&lt;/b&gt;: UUID (FK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Ride_Node" vertex="1">
+                    <mxGeometry y="110" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Ride_departure_time" value="&lt;b&gt;departure_time&lt;/b&gt;: datetime (idx)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Ride_Node" vertex="1">
+                    <mxGeometry y="136" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Ride_destination" value="&lt;b&gt;destination&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Ride_Node" vertex="1">
+                    <mxGeometry y="162" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Ride_created_at" value="&lt;b&gt;created_at&lt;/b&gt;: datetime" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Ride_Node" vertex="1">
+                    <mxGeometry y="188" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Invitation_Node" value="#Invitation" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=32;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;html=1;fillColor=#8A8A8A;strokeColor=default;fontColor=#F8FAFC;separatorColor=#334155;strokeWidth=2;shadow=1;fontSize=14;spacingLeft=10;spacingTop=4;" parent="1" vertex="1">
+                    <mxGeometry x="1300" y="800" width="220" height="240" as="geometry"/>
+                </mxCell>
+                <mxCell id="Invitation_tableName" value="&lt;i&gt;table: invitations&lt;/i&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=11;fontColor=#10B981;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Invitation_Node" vertex="1">
+                    <mxGeometry y="32" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Invitation_id" value="&lt;b&gt;id&lt;/b&gt;: UUID (PK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Invitation_Node" vertex="1">
+                    <mxGeometry y="58" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Invitation_ride_id" value="&lt;b&gt;ride_id&lt;/b&gt;: UUID (FK)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Invitation_Node" vertex="1">
+                    <mxGeometry y="84" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Invitation_invited_email" value="&lt;b&gt;invited_email&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Invitation_Node" vertex="1">
+                    <mxGeometry y="110" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Invitation_token" value="&lt;b&gt;token&lt;/b&gt;: string (UQ)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Invitation_Node" vertex="1">
+                    <mxGeometry y="136" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Invitation_status" value="&lt;b&gt;status&lt;/b&gt;: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Invitation_Node" vertex="1">
+                    <mxGeometry y="162" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Invitation_created_at" value="&lt;b&gt;created_at&lt;/b&gt;: datetime" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Invitation_Node" vertex="1">
+                    <mxGeometry y="188" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Invitation_expires_at" value="&lt;b&gt;expires_at&lt;/b&gt;: datetime" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=12;spacingRight=12;fontSize=12;fontColor=#94A3B8;overflow=hidden;rotatable=0;points=[];portConstraint=eastwest;whiteSpace=wrap;html=1;" parent="Invitation_Node" vertex="1">
+                    <mxGeometry y="214" width="220" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="Edge_0" value="owns" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#64748B;strokeWidth=1.5;endArrow=classic;endSize=8;startArrow=none;fontColor=#94A3B8;fontSize=10;" parent="1" source="User_Node" target="Car_Node" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="Edge_1" value="has" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#64748B;strokeWidth=1.5;endArrow=classic;endSize=8;startArrow=none;fontColor=#94A3B8;fontSize=10;" parent="1" source="User_Node" target="SocialAccount_Node" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="Edge_2" value="has" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#64748B;strokeWidth=1.5;endArrow=classic;endSize=8;startArrow=none;fontColor=#94A3B8;fontSize=10;" parent="1" source="User_Node" target="SocialSession_Node" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="Edge_3" value="logs" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#64748B;strokeWidth=1.5;endArrow=classic;endSize=8;startArrow=none;fontColor=#94A3B8;fontSize=10;" parent="1" source="User_Node" target="IntegrationAuditLog_Node" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="Edge_4" value="acts as" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#64748B;strokeWidth=1.5;endArrow=classic;endSize=8;startArrow=none;fontColor=#94A3B8;fontSize=10;" parent="1" source="User_Node" target="CarDriver_Node" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="Edge_5" value="rides as" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#64748B;strokeWidth=1.5;endArrow=classic;endSize=8;startArrow=none;fontColor=#94A3B8;fontSize=10;" parent="1" source="User_Node" target="Passenger_Node" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="Edge_6" value="authenticates" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#64748B;strokeWidth=1.5;endArrow=classic;endSize=8;startArrow=none;fontColor=#94A3B8;fontSize=10;" parent="1" source="SocialAccount_Node" target="SocialSession_Node" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="Edge_7" value="contains" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#64748B;strokeWidth=1.5;endArrow=classic;endSize=8;startArrow=none;fontColor=#94A3B8;fontSize=10;" parent="1" source="Car_Node" target="Seat_Node" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="Edge_8" value="has history of" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#64748B;strokeWidth=1.5;endArrow=classic;endSize=8;startArrow=none;fontColor=#94A3B8;fontSize=10;" parent="1" source="Car_Node" target="CarDriver_Node" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="Edge_9" value="used for" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#64748B;strokeWidth=1.5;endArrow=classic;endSize=8;startArrow=none;fontColor=#94A3B8;fontSize=10;" parent="1" source="Car_Node" target="Ride_Node" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="Edge_10" value="records" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#64748B;strokeWidth=1.5;endArrow=classic;endSize=8;startArrow=none;fontColor=#94A3B8;fontSize=10;" parent="1" source="CarDriver_Node" target="Ride_Node" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="Edge_11" value="carries" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#64748B;strokeWidth=1.5;endArrow=classic;endSize=8;startArrow=none;fontColor=#94A3B8;fontSize=10;" parent="1" source="Ride_Node" target="Passenger_Node" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="Edge_12" value="sends" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#64748B;strokeWidth=1.5;endArrow=classic;endSize=8;startArrow=none;fontColor=#94A3B8;fontSize=10;" parent="1" source="Ride_Node" target="Invitation_Node" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
