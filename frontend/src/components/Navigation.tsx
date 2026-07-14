@@ -289,9 +289,12 @@ export default function Navigation() {
       {/* ── Desktop ── */}
       <div className="navigation hidden lg:flex items-center">
         <div className="flex items-center gap-2 flex-1">
-          <button className="nav-button glass gap-0 group transition-all duration-300 ease-in hover:gap-2" onClick={() => navigate(-1)}>
+          <button
+            className="nav-button p-0 glass rounded-full w-11 h-11 flex items-center justify-center"
+            onClick={() => navigate(-1)}
+            aria-label="Zpět"
+          >
             <ArrowLeftIcon />
-            <span className="whitespace-nowrap max-w-0 overflow-hidden transition-all duration-300 ease-in group-hover:max-w-[100px]">Zpět</span>
           </button>
           <button className={`nav-button glass nav-hover-rocket ${isActive('/dashboard') ? 'glass-active' : ''}`} onClick={() => navigate('/dashboard')}>
             <RocketIcon />Start
